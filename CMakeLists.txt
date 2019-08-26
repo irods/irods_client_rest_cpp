@@ -1,0 +1,81 @@
+cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
+
+find_package(IRODS 4.3.0 EXACT REQUIRED CONFIG)
+
+set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang)
+set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
+project(server CXX)
+
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++17)
+
+link_directories(/usr/local/lib/)
+
+aux_source_directory(model MODEL_SOURCES)
+file(GLOB QUERY_API_SOURCES
+"api/QueryApi.h"
+"api/QueryApi.cpp"
+"impl/QueryApiImpl.h"
+"impl/QueryApiImpl.cpp"
+)
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
+add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-parameter)
+
+include_directories(model)
+include_directories(api)
+include_directories(impl)
+
+set(QUERY_API_SERVER_SOURCES
+QueryApiMainServer.cpp
+    ${MODEL_SOURCES}
+    ${QUERY_API_SOURCES})
+
+add_executable(query_api_server
+${QUERY_API_SERVER_SOURCES})
+
+link_libraries(c++abi)
+include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
+                    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
+                    ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include)
+
+include_directories(model)
+include_directories(api)
+include_directories(impl)
+
+include_directories(${IRODS_INCLUDE_DIRS})
+include_directories(${IRODS_EXTERNALS_FULLPATH_AVRO}/include)
+include_directories(${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
+include_directories(${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include)
+include_directories(${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include)
+include_directories(${IRODS_EXTERNALS_FULLPATH_ZMQ}/include)
+#include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include)
+include_directories(/opt/irods-externals/json3.4.0-0/include)
+
+
+
+target_link_libraries(query_api_server pistache pthread)
+
+target_link_libraries(
+    query_api_server
+    pistache
+    pthread
+    irods_client
+    irods_plugin_dependencies
+    irods_common
+    ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+    ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
+)
+
+
