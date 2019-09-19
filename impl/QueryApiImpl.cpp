@@ -14,7 +14,6 @@
 #include <memory>
 #include <iostream>
 #include "irods_query.hpp"
-#include "connection_pool.hpp"
 #include "boost/format.hpp"
 #include "json.hpp"
 
@@ -66,26 +65,32 @@ using namespace io::swagger::server::model;
 
 QueryApiImpl::QueryApiImpl(Pistache::Address addr)
     : QueryApi(addr)
-    { }
-
-void QueryApiImpl::catalog_query(const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &rowOffset, const Pistache::Optional<std::string> &queryLimit, Pistache::Http::ResponseWriter &response) {
-    rodsEnv env{};
-    _getRodsEnv(env);
-    auto tmp_pool = std::make_shared<irods::connection_pool>(
+    {
+        rodsEnv env{};
+        _getRodsEnv(env);
+        connection_pool_ = std::make_shared<irods::connection_pool>(
             1,
             env.rodsHost,
             env.rodsPort,
             env.rodsUserName,
             env.rodsZone,
             env.irodsConnectionPoolRefreshTime);
-    auto conn = tmp_pool->get_connection();
 
+    }
+
+void QueryApiImpl::catalog_query(
+        const Pistache::Optional<std::string> &queryString,
+        const Pistache::Optional<std::string> &queryLimit,
+        const Pistache::Optional<std::string> &rowOffset,
+        const Pistache::Optional<std::string> &queryType,
+        Pistache::Http::ResponseWriter &response) {
+    auto conn = connection_pool_->get_connection();
     std::string query_string;
     if(url_decode(queryString.get(), query_string)) {
-        uint32_t row_offset = std::stoi(rowOffset.get());
-        uint32_t query_limit = std::stoi(queryLimit.get());
-
-        irods::query<rcComm_t> qobj{&static_cast<rcComm_t&>(conn), query_string, query_limit, row_offset};
+        uintmax_t row_offset  = std::stoi(rowOffset.get());
+        uintmax_t query_limit = std::stoi(queryLimit.get());
+        auto query_type  = irods::query<rcComm_t>::convert_string_to_query_type(queryType.get());
+        irods::query<rcComm_t> qobj{&static_cast<rcComm_t&>(conn), query_string, query_limit, row_offset, query_type};
 
         nlohmann::json results = nlohmann::json::object();
         nlohmann::json arrays = nlohmann::json::array();

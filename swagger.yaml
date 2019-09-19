@@ -31,16 +31,9 @@ paths:
       parameters:
       - name: query_string
         in: query
-        description: pass an query string using the general query language
+        description: pass a query string using the general query language or a query type
         required: true
         type: string
-      - name: row_offset
-        in: query
-        description: number of records to skip for pagination
-        required: false
-        type: integer
-        minimum: 0
-        format: int32
       - name: query_limit
         in: query
         description: maximum number of records to return
@@ -48,7 +41,20 @@ paths:
         type: integer
         maximum: 50
         minimum: 0
-        format: int32
+        format: string
+      - name: row_offset
+        in: query
+        description: number of records to skip for pagination
+        required: false
+        type: integer
+        minimum: 0
+        format: string
+      - name: query_type
+        in: query
+        description: string description of the query type "general" or "specific"
+        required: true
+        type: string
+
       responses:
         200:
           description: search results matching criteria

@@ -12,7 +12,7 @@
 /*
  * QueryApi.h
  *
- * 
+ *
  */
 
 #ifndef QueryApi_H_
@@ -59,12 +59,13 @@ private:
     /// searches iRODS Catalog using the General Query Language
     /// </summary>
     /// <remarks>
-    /// By passing in the appropriate options, you can search for anything within the iRODS Catalog 
+    /// By passing in the appropriate options, you can search for anything within the iRODS Catalog
     /// </remarks>
     /// <param name="queryString">pass an query string using the general query language</param>
-    /// <param name="rowOffset">number of records to skip for pagination (optional)</param>
-    /// <param name="queryLimit">maximum number of records to return (optional)</param>
-    virtual void catalog_query(const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &rowOffset, const Pistache::Optional<std::string> &queryLimit, Pistache::Http::ResponseWriter &response) = 0;
+    /// <param name="queryLimit">maximum number of records to return</param>
+    /// <param name="rowOffset">number of records to skip for pagination</param>
+    /// <param name="queryType">string description of the query type "general" or "specific"</param>
+    virtual void catalog_query(const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, const Pistache::Optional<std::string> &queryType, Pistache::Http::ResponseWriter &response) = 0;
 
 };
 

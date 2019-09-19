@@ -31,6 +31,8 @@
 #include "Query_results.h"
 #include <string>
 
+#include "connection_pool.hpp"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -42,9 +44,13 @@ class QueryApiImpl : public io::swagger::server::api::QueryApi {
 public:
     QueryApiImpl(Pistache::Address addr);
     ~QueryApiImpl() { };
-
-    void catalog_query(const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &rowOffset, const Pistache::Optional<std::string> &queryLimit, Pistache::Http::ResponseWriter &response);
-
+void catalog_query(
+        const Pistache::Optional<std::string> &queryString,
+        const Pistache::Optional<std::string> &queryLimit,
+        const Pistache::Optional<std::string> &rowOffset,
+        const Pistache::Optional<std::string> &queryType,
+        Pistache::Http::ResponseWriter &response);
+std::shared_ptr<irods::connection_pool> connection_pool_;
 };
 
 }
