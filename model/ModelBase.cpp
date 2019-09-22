@@ -1,6 +1,6 @@
 /**
-* iRODS Query API
-* This is the iRODS Query API
+* iRODS REST API
+* This is the iRODS REST API
 *
 * OpenAPI spec version: 1.0.0
 * Contact: info@irods.org

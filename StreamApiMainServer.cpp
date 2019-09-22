@@ -1,6 +1,6 @@
 /**
-* iRODS Query API
-* This is the iRODS Query API
+* iRODS REST API
+* This is the iRODS REST API
 *
 * OpenAPI spec version: 1.0.0
 * Contact: info@irods.org
@@ -13,14 +13,14 @@
 #include "pistache/endpoint.h"
 #include "pistache/http.h"
 #include "pistache/router.h"
-#include "QueryApiImpl.h"
+#include "StreamApiImpl.h"
 
 using namespace io::swagger::server::api;
 
 int main() {
     Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(8080));
 
-    QueryApiImpl server(addr);
+    StreamApiImpl server(addr);
     server.init(2);
     server.start();
 

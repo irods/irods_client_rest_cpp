@@ -1,6 +1,6 @@
 /**
-* iRODS Query API
-* This is the iRODS Query API
+* iRODS REST API
+* This is the iRODS REST API
 *
 * OpenAPI spec version: 1.0.0
 * Contact: info@irods.org
@@ -25,13 +25,14 @@
 #include <pistache/router.h>
 #include <pistache/optional.h>
 #include <memory>
+#include "ModelBase.h"
 
 #include <QueryApi.h>
 
 #include "Query_results.h"
 #include <string>
 
-#include "connection_pool.hpp"
+#include "irods_rest_query_api_implementation.h"
 
 namespace io {
 namespace swagger {
@@ -44,13 +45,10 @@ class QueryApiImpl : public io::swagger::server::api::QueryApi {
 public:
     QueryApiImpl(Pistache::Address addr);
     ~QueryApiImpl() { };
-void catalog_query(
-        const Pistache::Optional<std::string> &queryString,
-        const Pistache::Optional<std::string> &queryLimit,
-        const Pistache::Optional<std::string> &rowOffset,
-        const Pistache::Optional<std::string> &queryType,
-        Pistache::Http::ResponseWriter &response);
-std::shared_ptr<irods::connection_pool> connection_pool_;
+
+    void catalog_query(const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response);
+
+irods::rest::query irods_query_;
 };
 
 }

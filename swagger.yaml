@@ -1,0 +1,186 @@
+---
+swagger: "2.0"
+info:
+  description: This is the iRODS REST API
+  version: 1.0.0
+  title: iRODS REST API
+  contact:
+    email: info@irods.org
+  license:
+    name: BSD 3-Clause
+    url: https://opensource.org/licenses/BSD-3-Clause
+host: virtserver.swaggerhub.com
+basePath: /jasoncoposky/irods-rest/1.0.0
+security:
+  - BearerAuth:
+      - read
+      - write
+  - BasicAuth:
+      - read
+      - write
+  - ApiKeyAuth: []
+tags:
+- name: auth
+  description: authentication endpoint
+- name: query
+  description: general query endpoint
+- name: rodsadmin
+  description: Secured Admin-only calls
+- name: rodsuser
+  description: Operations available to regular users
+schemes:
+- https
+paths:
+  /token:
+    post:
+      tags:
+        - auth
+      summary:
+        obtain an encoded jwt for access
+      operationId: obtainToken
+      description: |
+          Obtain a JWT token for accessing REST endpoints
+      parameters:
+        - in: query
+          name: userName
+          required: true
+          type: string
+        - in: query
+          name: password
+          required: false
+          type: string
+        - in: query
+          name: authType
+          required: false
+          type: string
+          enum: [PAM, STANDARD]
+      security: []
+      responses:
+        200:
+          description: Successfully authenticated
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: JWT token to use in subsequent operations
+        401:
+          description: Authorization failed
+
+  /stream:
+    get:
+      tags:
+        - stream
+      summary: streams bytes to/from a data thinger
+      operationId: stream
+      description: |
+        Obtains an HTTP stream of file bytes
+      parameters:
+        - name: path
+          in: query
+          description: irods absolute logical path to the file
+          required: true
+          type: string
+        - in: query
+          name: offset
+          description: number of bytes to skip for pagination
+          type: integer
+          format: int32
+          minimum: 0
+        - in: query
+          name: limit
+          description: maximum number of bytes to return
+          type: integer
+          format: int32
+          minimum: 1
+      security:
+        - BasicAuth: [read]
+        - ApiKeyAuth: [read]
+        - BearerAuth: [read]
+
+      responses:
+        '200':
+          description: bytestream of a requested data thinger
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: bad input parameter
+        '404':
+          description: data not found/no access
+
+  /query:
+    get:
+      tags:
+      - query
+      summary: searches iRODS Catalog using the General Query Language
+      description: |
+        By passing in the appropriate options, you can search for
+        anything within the iRODS Catalog
+      operationId: catalogQuery
+      produces:
+      - application/json
+      parameters:
+      - name: query_string
+        in: query
+        description: pass a query string using the general query language or a query type
+        required: true
+        type: string
+      - name: query_limit
+        in: query
+        description: maximum number of records to return
+        required: false
+        type: integer
+        maximum: 50
+        minimum: 0
+        format: string
+      - name: row_offset
+        in: query
+        description: number of records to skip for pagination
+        required: false
+        type: integer
+        minimum: 0
+        format: string
+      - name: query_type
+        in: query
+        description: string description of the query type "general" or "specific"
+        required: true
+        type: string
+
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/query_results'
+        400:
+          description: bad input parameter
+
+definitions:
+  query_results:
+    type: object
+    required:
+    - results
+    properties:
+      results:
+        type: string
+        example: { "results" : [ [], [] ] }
+
+components:
+  securitySchemes:
+
+    BasicAuth:
+      type: http
+      scheme: basic
+
+    ApiKeyAuth:        # arbitrary name for the security scheme
+      type: apiKey
+      in: header       # can be "header", "query" or "cookie"
+      name: X-API-KEY  # name of the header, query parameter or cookie
+
+    BearerAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
