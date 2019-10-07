@@ -23,7 +23,7 @@ AuthApiImpl::AuthApiImpl(Pistache::Address addr)
     : AuthApi(addr)
     { }
 
-void AuthApiImpl::obtain_token(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &userName, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &authType, Pistache::Http::ResponseWriter &response) {
+void AuthApiImpl::obtain_token(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &userName, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &authType, Pistache::Http::ResponseWriter &response) {
     MACRO_IRODS_AUTH_API_IMPLEMENTATION
 }
 

@@ -10,7 +10,7 @@
 * Do not edit the class manually.
 */
 
-#include "StreamApi.h"
+#include "StreamPutApi.h"
 
 namespace io {
 namespace swagger {
@@ -19,36 +19,36 @@ namespace api {
 
 using namespace io::swagger::server::model;
 
-StreamApi::StreamApi(Pistache::Address addr)
+StreamPutApi::StreamPutApi(Pistache::Address addr)
     : httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
 { };
 
-void StreamApi::init(size_t thr = 2) {
+void StreamPutApi::init(size_t thr = 2) {
     auto opts = Pistache::Http::Endpoint::options()
         .threads(thr);
     httpEndpoint->init(opts);
     setupRoutes();
 }
 
-void StreamApi::start() {
+void StreamPutApi::start() {
     httpEndpoint->setHandler(router.handler());
     httpEndpoint->serve();
 }
 
-void StreamApi::shutdown() {
+void StreamPutApi::shutdown() {
     httpEndpoint->shutdown();
 }
 
-void StreamApi::setupRoutes() {
+void StreamPutApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/stream", Routes::bind(&StreamApi::stream_handler, this));
+    Routes::Put(router, base + "/stream", Routes::bind(&StreamPutApi::stream_handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&StreamApi::stream_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&StreamPutApi::stream_put_api_default_handler, this));
 }
 
-void StreamApi::stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void StreamPutApi::stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
 
     // Getting the query params
     auto path = request.query().get("path");
@@ -56,7 +56,7 @@ void StreamApi::stream_handler(const Pistache::Rest::Request &request, Pistache:
     auto limit = request.query().get("limit");
     
     try {
-      this->stream(request.headers(), path, offset, limit, response);
+      this->stream(request.headers(), request.body(), path, offset, limit, response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());
@@ -65,7 +65,7 @@ void StreamApi::stream_handler(const Pistache::Rest::Request &request, Pistache:
 
 }
 
-void StreamApi::stream_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void StreamPutApi::stream_put_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
     response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
 }
 

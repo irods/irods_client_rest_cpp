@@ -10,7 +10,7 @@
 * Do not edit the class manually.
 */
 
-#include "StreamApiImpl.h"
+#include "StreamPutApiImpl.h"
 
 namespace io {
 namespace swagger {
@@ -19,11 +19,11 @@ namespace api {
 
 using namespace io::swagger::server::model;
 
-StreamApiImpl::StreamApiImpl(Pistache::Address addr)
-    : StreamApi(addr)
+StreamPutApiImpl::StreamPutApiImpl(Pistache::Address addr)
+    : StreamPutApi(addr)
     { }
 
-void StreamApiImpl::stream(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) {
+void StreamPutApiImpl::stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) {
     MACRO_IRODS_STREAM_API_IMPLEMENTATION
 }
 

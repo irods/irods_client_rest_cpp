@@ -13,14 +13,14 @@
 #include "pistache/endpoint.h"
 #include "pistache/http.h"
 #include "pistache/router.h"
-#include "AuthApiImpl.h"
+#include "StreamGetApiImpl.h"
 
 using namespace io::swagger::server::api;
 
 int main() {
     Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(8080));
 
-    AuthApiImpl server(addr);
+    StreamGetApiImpl server(addr);
     server.init(2);
     server.start();
 

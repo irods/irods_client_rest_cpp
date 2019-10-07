@@ -15,7 +15,8 @@ set(
     API_SERVER_NAMES
     Query
     Auth
-    Stream
+    StreamPut
+    StreamGet
     )
 
 foreach(API_NAME ${API_SERVER_NAMES})

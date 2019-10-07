@@ -46,9 +46,8 @@ public:
     QueryApiImpl(Pistache::Address addr);
     ~QueryApiImpl() { };
 
-    void catalog_query(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response);
-
-irods::rest::query irods_query_;
+    void catalog_query(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response);
+    irods::rest::query irods_query_;
 };
 
 }

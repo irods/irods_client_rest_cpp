@@ -10,13 +10,13 @@
 * Do not edit the class manually.
 */
 /*
- * StreamApi.h
+ * StreamPutApi.h
  *
  * 
  */
 
-#ifndef StreamApi_H_
-#define StreamApi_H_
+#ifndef StreamPutApi_H_
+#define StreamPutApi_H_
 
 
 #include <pistache/endpoint.h>
@@ -35,10 +35,10 @@ namespace api {
 
 using namespace io::swagger::server::model;
 
-class  StreamApi {
+class  StreamPutApi {
 public:
-    StreamApi(Pistache::Address addr);
-    virtual ~StreamApi() {};
+    StreamPutApi(Pistache::Address addr);
+    virtual ~StreamPutApi() {};
     void init(size_t thr);
     void start();
     void shutdown();
@@ -49,7 +49,7 @@ private:
     void setupRoutes();
 
     void stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void stream_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void stream_put_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
@@ -59,12 +59,12 @@ private:
     /// streams bytes to/from a data thinger
     /// </summary>
     /// <remarks>
-    /// Obtains an HTTP stream of file bytes 
+    /// Sends an HTTP stream of file bytes 
     /// </remarks>
     /// <param name="path">irods absolute logical path to the file</param>
     /// <param name="offset">number of bytes to skip for pagination (optional)</param>
     /// <param name="limit">maximum number of bytes to return (optional)</param>
-    virtual void stream(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) = 0;
+    virtual void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) = 0;
 
 };
 
@@ -73,5 +73,5 @@ private:
 }
 }
 
-#endif /* StreamApi_H_ */
+#endif /* StreamPutApi_H_ */
 

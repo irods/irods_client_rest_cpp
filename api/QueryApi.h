@@ -66,7 +66,8 @@ private:
     /// <param name="queryType">string description of the query type \&quot;general\&quot; or \&quot;specific\&quot;</param>
     /// <param name="queryLimit">maximum number of records to return (optional)</param>
     /// <param name="rowOffset">number of records to skip for pagination (optional)</param>
-    virtual void catalog_query(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response) = 0;
+    virtual void catalog_query(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response) = 0;
+
 };
 
 }

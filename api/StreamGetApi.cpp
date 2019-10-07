@@ -10,7 +10,7 @@
 * Do not edit the class manually.
 */
 
-#include "AuthApi.h"
+#include "StreamGetApi.h"
 
 namespace io {
 namespace swagger {
@@ -19,44 +19,44 @@ namespace api {
 
 using namespace io::swagger::server::model;
 
-AuthApi::AuthApi(Pistache::Address addr)
+StreamGetApi::StreamGetApi(Pistache::Address addr)
     : httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
 { };
 
-void AuthApi::init(size_t thr = 2) {
+void StreamGetApi::init(size_t thr = 2) {
     auto opts = Pistache::Http::Endpoint::options()
         .threads(thr);
     httpEndpoint->init(opts);
     setupRoutes();
 }
 
-void AuthApi::start() {
+void StreamGetApi::start() {
     httpEndpoint->setHandler(router.handler());
     httpEndpoint->serve();
 }
 
-void AuthApi::shutdown() {
+void StreamGetApi::shutdown() {
     httpEndpoint->shutdown();
 }
 
-void AuthApi::setupRoutes() {
+void StreamGetApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/token", Routes::bind(&AuthApi::obtain_token_handler, this));
+    Routes::Get(router, base + "/stream", Routes::bind(&StreamGetApi::stream_handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&AuthApi::auth_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&StreamGetApi::stream_get_api_default_handler, this));
 }
 
-void AuthApi::obtain_token_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void StreamGetApi::stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
 
     // Getting the query params
-    auto userName = request.query().get("userName");
-    auto password = request.query().get("password");
-    auto authType = request.query().get("authType");
+    auto path = request.query().get("path");
+    auto offset = request.query().get("offset");
+    auto limit = request.query().get("limit");
     
     try {
-      this->obtain_token(request.headers(), request.body(), userName, password, authType, response);
+      this->stream(request.headers(), request.body(), path, offset, limit, response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());
@@ -65,7 +65,7 @@ void AuthApi::obtain_token_handler(const Pistache::Rest::Request &request, Pista
 
 }
 
-void AuthApi::auth_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void StreamGetApi::stream_get_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
     response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
 }
 

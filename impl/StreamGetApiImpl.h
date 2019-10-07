@@ -11,13 +11,13 @@
 */
 
 /*
-* StreamApiImpl.h
+* StreamGetApiImpl.h
 *
 * 
 */
 
-#ifndef STREAM_API_IMPL_H_
-#define STREAM_API_IMPL_H_
+#ifndef STREAM_GET_API_IMPL_H_
+#define STREAM_GET_API_IMPL_H_
 
 
 #include <pistache/endpoint.h>
@@ -27,7 +27,7 @@
 #include <memory>
 #include "ModelBase.h"
 
-#include <StreamApi.h>
+#include <StreamGetApi.h>
 
 #include <string>
 
@@ -40,13 +40,14 @@ namespace api {
 
 using namespace io::swagger::server::model;
 
-class StreamApiImpl : public io::swagger::server::api::StreamApi {
+class StreamGetApiImpl : public io::swagger::server::api::StreamGetApi {
 public:
-    StreamApiImpl(Pistache::Address addr);
-    ~StreamApiImpl() { };
+    StreamGetApiImpl(Pistache::Address addr);
+    ~StreamGetApiImpl() { };
 
-    void stream(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
+    void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
     irods::rest::stream irods_stream_;
+
 };
 
 }
