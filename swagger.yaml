@@ -69,11 +69,54 @@ paths:
   /stream:
     get:
       tags:
-        - stream
+        - stream_get
       summary: streams bytes to/from a data thinger
       operationId: stream
       description: |
         Obtains an HTTP stream of file bytes
+      parameters:
+        - name: path
+          in: query
+          description: irods absolute logical path to the file
+          required: true
+          type: string
+        - in: query
+          name: offset
+          description: number of bytes to skip for pagination
+          type: integer
+          format: int32
+          minimum: 0
+        - in: query
+          name: limit
+          description: maximum number of bytes to return
+          type: integer
+          format: int32
+          minimum: 1
+      security:
+        - BasicAuth: [read]
+        - ApiKeyAuth: [read]
+        - BearerAuth: [read]
+
+      responses:
+        '200':
+          description: bytestream of a requested data thinger
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: bad input parameter
+        '404':
+          description: data not found/no access
+
+    put:
+      tags:
+        - stream_put
+      summary: streams bytes to/from a data thinger
+      operationId: stream
+      description: |
+        Sends an HTTP stream of file bytes
       parameters:
         - name: path
           in: query
