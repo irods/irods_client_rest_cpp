@@ -64,7 +64,7 @@ private:
     /// <param name="path">irods absolute logical path to the file</param>
     /// <param name="offset">number of bytes to skip for pagination (optional)</param>
     /// <param name="limit">maximum number of bytes to return (optional)</param>
-    virtual void stream(const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) = 0;
+    virtual void stream(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) = 0;
 
 };
 

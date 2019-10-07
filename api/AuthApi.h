@@ -64,7 +64,7 @@ private:
     /// <param name="userName"></param>
     /// <param name="password"> (optional)</param>
     /// <param name="authType"> (optional)</param>
-    virtual void obtain_token(const Pistache::Optional<std::string> &userName, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &authType, Pistache::Http::ResponseWriter &response) = 0;
+    virtual void obtain_token(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &userName, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &authType, Pistache::Http::ResponseWriter &response) = 0;
 
 };
 

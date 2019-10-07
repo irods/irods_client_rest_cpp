@@ -33,6 +33,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
     add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-parameter)
 
     include_directories(irods_specific_implementation)
+    include_directories(jwt-cpp)
     include_directories(model)
     include_directories(api)
     include_directories(impl)
@@ -83,6 +84,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
         ${EXECUTABLE_NAME}
         pistache
         pthread
+        crypto
         irods_client
         irods_plugin_dependencies
         irods_common

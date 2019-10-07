@@ -23,8 +23,8 @@ StreamApiImpl::StreamApiImpl(Pistache::Address addr)
     : StreamApi(addr)
     { }
 
-void StreamApiImpl::stream(const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) {
-    response.send(Pistache::Http::Code::Ok, "Do some magic\n");
+void StreamApiImpl::stream(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) {
+    MACRO_IRODS_STREAM_API_IMPLEMENTATION
 }
 
 }

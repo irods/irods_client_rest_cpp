@@ -31,6 +31,8 @@
 
 #include <string>
 
+#include "irods_rest_auth_api_implementation.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -43,8 +45,8 @@ public:
     AuthApiImpl(Pistache::Address addr);
     ~AuthApiImpl() { };
 
-    void obtain_token(const Pistache::Optional<std::string> &userName, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &authType, Pistache::Http::ResponseWriter &response);
-
+    void obtain_token(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &userName, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &authType, Pistache::Http::ResponseWriter &response);
+    irods::rest::auth irods_auth_;
 };
 
 }

@@ -23,7 +23,7 @@ QueryApiImpl::QueryApiImpl(Pistache::Address addr)
     : QueryApi(addr)
     { }
 
-void QueryApiImpl::catalog_query(const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response) {
+void QueryApiImpl::catalog_query(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response) {
     MACRO_IRODS_QUERY_API_IMPLEMENTATION
 }
 

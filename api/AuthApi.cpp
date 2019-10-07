@@ -56,7 +56,7 @@ void AuthApi::obtain_token_handler(const Pistache::Rest::Request &request, Pista
     auto authType = request.query().get("authType");
     
     try {
-      this->obtain_token(userName, password, authType, response);
+      this->obtain_token(request.headers(), userName, password, authType, response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());

@@ -56,7 +56,7 @@ void StreamApi::stream_handler(const Pistache::Rest::Request &request, Pistache:
     auto limit = request.query().get("limit");
     
     try {
-      this->stream(path, offset, limit, response);
+      this->stream(request.headers(), path, offset, limit, response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());

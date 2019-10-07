@@ -31,6 +31,8 @@
 
 #include <string>
 
+#include "irods_rest_stream_api_implementation.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -43,8 +45,8 @@ public:
     StreamApiImpl(Pistache::Address addr);
     ~StreamApiImpl() { };
 
-    void stream(const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
-
+    void stream(const Pistache::Http::Header::Collection& headers, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
+    irods::rest::stream irods_stream_;
 };
 
 }
