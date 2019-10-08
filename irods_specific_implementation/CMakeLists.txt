@@ -17,6 +17,7 @@ set(
     Auth
     StreamPut
     StreamGet
+    List
     )
 
 foreach(API_NAME ${API_SERVER_NAMES})

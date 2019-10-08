@@ -63,8 +63,64 @@ paths:
               schema:
                 type: string
                 description: JWT token to use in subsequent operations
-        401:
+        '401':
           description: Authorization failed
+
+  /list:
+    get:
+      tags:
+        - list
+      summary: Recursively list the contents of a logical collection
+      operationId: stream
+      description: |
+        Recursively list the contents of a logical collection
+      parameters:
+        - name: path
+          in: query
+          description: irods absolute logical path of the collection
+          required: true
+          type: string
+        - in: query
+          name: stat
+          description: flag to include status information
+          type: boolean
+        - in: query
+          name: permissions
+          description: flag to include permission information
+          type: boolean
+        - in: query
+          name: metadata
+          description: flag to include metadata information
+          type: boolean
+        - in: query
+          name: offset
+          description: number of records to skip for pagination
+          type: integer
+          format: int32
+          minimum: 0
+        - in: query
+          name: limit
+          description: maximum number of records to return
+          type: integer
+          format: int32
+          minimum: 1
+      security:
+        - BasicAuth: [read]
+        - ApiKeyAuth: [read]
+        - BearerAuth: [read]
+
+      responses:
+        '200':
+          description: bytestream of a requested data thinger
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: bad input parameter
+        '404':
+          description: data not found/no access
 
   /stream:
     get:
