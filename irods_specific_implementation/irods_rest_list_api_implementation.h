@@ -84,7 +84,7 @@ class list : api_base {
             results["_embedded"] = objects;
 
             nlohmann::json links = nlohmann::json::object();
-            std::string base_url{"list?path=%s&stat=%s&permissions=%smetadata=%s?offset=%s?limit=%s"};
+            std::string base_url{"list?path=%s&stat=%s&permissions=%s&metadata=%s&offset=%s&limit=%s"};
             links["self"] = boost::str(boost::format(base_url)
                             % _logical_path
                             % _stat

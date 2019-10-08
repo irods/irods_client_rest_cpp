@@ -33,7 +33,6 @@ class query : api_base {
             auto query_type = irods::query<rcComm_t>::convert_string_to_query_type(_query_type);
             irods::query<rcComm_t> qobj{conn(), query_string, query_limit, row_offset, query_type};
 
-            nlohmann::json results = nlohmann::json::object();
             nlohmann::json arrays = nlohmann::json::array();
             for(auto row : qobj) {
                 nlohmann::json array = nlohmann::json::array();
@@ -43,7 +42,38 @@ class query : api_base {
 
                 arrays += array;
             }
-            results["results"] = arrays;
+
+            nlohmann::json results = nlohmann::json::object();
+            results["_embedded"] = arrays;
+
+            nlohmann::json links = nlohmann::json::object();
+            std::string base_url{"query?query_string=%s&query_limit=%s&row_offset=%s&query_type=%s"};
+            links["self"] = boost::str(boost::format(base_url)
+                            % _query_string
+                            % _query_limit
+                            % _row_offset
+                            % _query_type);
+            links["first"] = boost::str(boost::format(base_url)
+                            % _query_string
+                            % _query_limit
+                            % "0"
+                            % _query_type);
+            links["last"] = boost::str(boost::format(base_url)
+                            % _query_string
+                            % _query_limit
+                            % "FIXME"
+                            % _query_type);
+            links["next"] = boost::str(boost::format(base_url)
+                            % _query_string
+                            % _query_limit
+                            % std::to_string(row_offset+query_limit)
+                            % _query_type);
+            links["prev"] = boost::str(boost::format(base_url)
+                            % _query_string
+                            % _query_limit
+                            % std::to_string(std::max((uintmax_t)0, row_offset-query_limit))
+                            % _query_type);
+            results["_links"] = links;
 
             return std::forward_as_tuple(
                     Pistache::Http::Code::Ok,
