@@ -20,8 +20,7 @@ class query : api_base {
         const std::string& _row_offset,
         const std::string& _query_type) {
 
-        auto conn = get_connection();
-        authenticate(conn(), _auth_header);
+        auto conn = get_connection(_auth_header);
 
         try {
             std::string query_string{decode_url(_query_string)};

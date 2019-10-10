@@ -22,8 +22,7 @@ class stream : api_base {
         const std::string& _offset,
         const std::string& _limit) {
 
-        auto conn = get_connection();
-        authenticate(conn(), _auth_header);
+        auto conn = get_connection(_auth_header);
 
         try {
             uintmax_t offset = std::stoi(_offset);

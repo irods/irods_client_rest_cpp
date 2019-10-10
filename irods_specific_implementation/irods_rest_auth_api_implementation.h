@@ -48,9 +48,7 @@ class auth : api_base {
             auto token = jwt::create()
                              .set_issuer("irods-rest")
                              .set_type("JWS")
-                             .set_payload_claim("user_name", jwt::claim(std::string{_user_name}))
-                             .set_payload_claim("password", jwt::claim(std::string{_password}))
-                             .set_payload_claim("auth_type", jwt::claim(std::string{_auth_type}))
+                             .set_payload_claim(USER_NAME_KW, jwt::claim(std::string{_user_name}))
                              .sign(jwt::algorithm::hs256{zone_key});
 
 

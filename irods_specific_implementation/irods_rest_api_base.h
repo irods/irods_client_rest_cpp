@@ -18,50 +18,87 @@ namespace irods {
 namespace rest {
 class connection_handle {
     public:
+        connection_handle() {
+            rodsEnv env;
+            _getRodsEnv(env);
+            conn_ = _rcConnect(
+                        env.rodsHost,
+                        env.rodsPort,
+                        env.rodsUserName,
+                        env.rodsZone,
+                        env.rodsUserName,
+                        env.rodsZone,
+                        &err_,
+                        0,
+                        NO_RECONN);
+        } // ctor
+
+        connection_handle(
+            const std::string& _user_name) {
+            rodsEnv env;
+            _getRodsEnv(env);
+            conn_ = _rcConnect(
+                        env.rodsHost,
+                        env.rodsPort,
+                        env.rodsUserName,
+                        env.rodsZone,
+                        _user_name.c_str(),
+                        env.rodsZone,
+                        &err_,
+                        0,
+                        NO_RECONN);
+        } // ctor
+
         connection_handle(rcComm_t* _c) : conn_{_c} {}
+
         virtual ~connection_handle() { rcDisconnect(conn_); }
         rcComm_t* operator()() {
             return conn_;
         }
 
     private:
-        rcComm_t* conn_;
+        rErrMsg_t  err_;
+        rcComm_t*  conn_;
 }; // class connection_handle
 
 class api_base {
     public:
-    static void no_log_in(rcComm_t&) {};
-    public:
-    api_base() {
-        rodsEnv env{};
-        _getRodsEnv(env);
-
-        connection_pool_ = std::make_shared<irods::connection_pool>(
-                               3,
-                               env.rodsHost,
-                               env.rodsPort,
-                               env.rodsUserName,
-                               env.rodsZone,
-                               env.irodsConnectionPoolRefreshTime,
-                               no_log_in);
-    } // ctor
-
-    virtual ~api_base() {
-    }
+    api_base() {   } // ctor
+    virtual ~api_base() {   } // dtor
 
     protected:
+        const std::string USER_NAME_KW{"user_name"};
+
         connection_handle get_connection() {
-            auto conn = connection_pool_->get_connection();
-            return connection_handle(conn.release());
+            auto conn_hdl = connection_handle();
+            int err = clientLogin(conn_hdl());
+            if(err < 0) {
+                THROW(err,
+                    boost::format("[%s] failed to login")
+                    % conn_hdl()->clientUser.userName);
+            }
+            return conn_hdl;
         } // get_connection
 
-        void authenticate(
-            rcComm_t*         _comm,
-            const std::string _header) {
+        connection_handle get_connection(
+            const std::string& _header) {
+            auto conn_hdl = connection_handle(decode_token(_header));
+            int err = clientLogin(conn_hdl());
+            if(err < 0) {
+                THROW(err,
+                    boost::format("[%s] failed to login")
+                    % conn_hdl()->clientUser.userName);
+            }
+            return conn_hdl;
+        } // get_connection
+
+        std::string decode_token(
+            const std::string& _header) {
             // use the zone key as our secret
             std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
 
             // remove Authorization: from the string
+            // TODO: Expect Bearer: as well
             std::string token = _header.substr(_header.find(":")+1);
 
             // chomp the spaces
@@ -75,28 +112,8 @@ class api_base {
             // decode the token
             auto decoded = jwt::decode(token);
             auto payload = decoded.get_payload_claims();
-
-            const std::string& user_name = payload["user_name"].as_string();
-            const std::string& password  = payload["password"].as_string();
-            const std::string& auth_type = payload["auth_type"].as_string();
-
-            // set password in context string for auth
-            kvp_map_t kvp;
-            kvp[irods::AUTH_PASSWORD_KEY] = password;
-            kvp[irods::AUTH_USER_NAME_KEY] = user_name;
-            std::string context = irods::escaped_kvp_string(kvp);
-
-            int err = clientLogin(
-                          _comm,
-                          context.c_str(),
-                          auth_type.c_str());
-            if(err < 0) {
-                THROW(err,
-                    boost::format("[%s] failed to login with type [%s]")
-                    % user_name
-                    % auth_type);
-            }
-        } // authenticate
+            return payload[USER_NAME_KW].as_string();
+        } // decode_token
 
         std::string decode_url(const std::string& _in) {
             std::string out;
@@ -133,7 +150,6 @@ class api_base {
         } // decode_url
 
     private:
-    std::shared_ptr<irods::connection_pool> connection_pool_;
 
 }; // class api_base
 }; // namespace rest
