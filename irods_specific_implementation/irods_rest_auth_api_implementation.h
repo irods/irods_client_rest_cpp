@@ -46,11 +46,16 @@ class auth : api_base {
             }
 
             auto token = jwt::create()
-                             .set_issuer("irods-rest")
                              .set_type("JWS")
+                             .set_issuer(ISSUE_CLAIM)
+                             .set_subject(SUBJECT_CLAIM)
+                             .set_audience(AUDIENCE_CLAIM)
+                             .set_not_before(std::chrono::system_clock::now())
+                             .set_issued_at(std::chrono::system_clock::now())
+                             // TODO: consider how to handle token revocation, token refresh
+                             //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
                              .set_payload_claim(USER_NAME_KW, jwt::claim(std::string{_user_name}))
                              .sign(jwt::algorithm::hs256{zone_key});
-
 
             return std::forward_as_tuple(
                        Pistache::Http::Code::Ok,

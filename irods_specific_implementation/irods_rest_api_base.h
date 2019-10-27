@@ -68,6 +68,9 @@ class api_base {
 
     protected:
         const std::string USER_NAME_KW{"user_name"};
+        const std::string ISSUE_CLAIM{"irods-rest"};
+        const std::string SUBJECT_CLAIM{"irods-rest"};
+        const std::string AUDIENCE_CLAIM{"irods-rest"};
 
         connection_handle get_connection() {
             auto conn_hdl = connection_handle();
@@ -98,7 +101,7 @@ class api_base {
             std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
 
             // remove Authorization: from the string
-            // TODO: Expect Bearer: as well
+            // TODO: should we verify use of 'Bearer:' ?
             std::string token = _header.substr(_header.find(":")+1);
 
             // chomp the spaces
@@ -111,6 +114,10 @@ class api_base {
 
             // decode the token
             auto decoded = jwt::decode(token);
+            auto verifier = jwt::verify()
+                                .allow_algorithm(jwt::algorithm::hs256{zone_key})
+                                .with_issuer(ISSUE_CLAIM);
+            verifier.verify(decoded);
             auto payload = decoded.get_payload_claims();
             return payload[USER_NAME_KW].as_string();
         } // decode_token
