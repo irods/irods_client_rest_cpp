@@ -33,10 +33,10 @@ class list : api_base {
 
             std::string logical_path{decode_url(_logical_path)};
 
-            uintmax_t limit_counter{0};
-            uintmax_t offset_counter{0};
-            const uintmax_t offset = std::stoi(_offset);
-            const uintmax_t limit  = std::stoi(_limit);
+            intmax_t limit_counter{0};
+            intmax_t offset_counter{0};
+            const intmax_t offset = std::stoi(_offset);
+            const intmax_t limit  = std::stoi(_limit);
 
             const bool stat        = ("true" == _stat);
             const bool permissions = ("true" == _permissions);
@@ -103,7 +103,7 @@ class list : api_base {
                             % _stat
                             % _permissions
                             % _metadata
-                            % "FIXME"
+                            % "UNSUPPORTED"
                             % _limit);
             links["next"] = boost::str(boost::format(base_url)
                             % _logical_path
@@ -117,7 +117,7 @@ class list : api_base {
                             % _stat
                             % _permissions
                             % _metadata
-                            % std::to_string(std::max((uintmax_t)0, offset-limit))
+                            % std::to_string(std::max((intmax_t)0, offset-limit))
                             % _limit);
             results["_links"] = links;
 
