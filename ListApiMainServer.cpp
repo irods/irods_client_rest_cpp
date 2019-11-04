@@ -18,7 +18,7 @@
 using namespace io::swagger::server::api;
 
 int main() {
-    Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(8080));
+    Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(8081));
 
     ListApiImpl server(addr);
     server.init(2);

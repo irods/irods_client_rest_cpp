@@ -44,7 +44,7 @@ class stream : api_base {
                                std::string{read_buff});
                 }
                 else {
-                    auto write_size = _body.size() > limit ? limit : _body.size();
+                    auto write_size = std::min(_body.size(), limit);
                     ds.write(_body.c_str(), write_size);
                     return std::forward_as_tuple(
                                Pistache::Http::Code::Ok, "Success");

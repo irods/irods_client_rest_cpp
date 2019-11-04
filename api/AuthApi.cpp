@@ -42,7 +42,7 @@ void AuthApi::shutdown() {
 void AuthApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/token", Routes::bind(&AuthApi::obtain_token_handler, this));
+    Routes::Post(router, base + "/auth", Routes::bind(&AuthApi::obtain_token_handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&AuthApi::auth_api_default_handler, this));

@@ -54,7 +54,7 @@ void StreamGetApi::stream_handler(const Pistache::Rest::Request &request, Pistac
     auto path = request.query().get("path");
     auto offset = request.query().get("offset");
     auto limit = request.query().get("limit");
-    
+
     try {
       this->stream(request.headers(), request.body(), path, offset, limit, response);
     } catch (std::runtime_error & e) {

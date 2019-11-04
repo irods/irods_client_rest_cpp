@@ -71,12 +71,12 @@ paths:
       tags:
         - list
       summary: Recursively list the contents of a logical collection
-      operationId: stream
+      operationId: list
       description: |
         Recursively list the contents of a logical collection
       parameters:
-        - name: path
-          in: query
+        - in: query
+          name: path
           description: irods absolute logical path of the collection
           required: true
           type: string
@@ -131,8 +131,8 @@ paths:
       description: |
         Obtains an HTTP stream of file bytes
       parameters:
-        - name: path
-          in: query
+        - in: query
+          name: path
           description: irods absolute logical path to the file
           required: true
           type: string
@@ -174,8 +174,8 @@ paths:
       description: |
         Sends an HTTP stream of file bytes
       parameters:
-        - name: path
-          in: query
+        - in: query
+          name: path
           description: irods absolute logical path to the file
           required: true
           type: string
