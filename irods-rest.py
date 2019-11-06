@@ -8,7 +8,7 @@ except ImportError:
 
 
 def base_url():
-    return "http://localhost/jasoncoposky/irods-rest/1.0.0/"
+    return "http://localhost/irods-rest/1.0.0/"
 
 def authenticate(_user_name, _password, _auth_type):
     buffer = StringIO()

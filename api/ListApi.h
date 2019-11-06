@@ -43,7 +43,7 @@ public:
     void start();
     void shutdown();
 
-    const std::string base = "/jasoncoposky/irods-rest/1.0.0";
+    const std::string base = "/irods-rest/1.0.0";
 
 private:
     void setupRoutes();
