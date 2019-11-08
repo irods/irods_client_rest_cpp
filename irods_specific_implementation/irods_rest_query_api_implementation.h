@@ -7,7 +7,7 @@
 #define MACRO_IRODS_QUERY_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_query_(headers.getRaw("Authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get()); \
+    std::tie(code, message) = irods_query_(headers.getRaw("Authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get(), base); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -18,7 +18,8 @@ class query : api_base {
         const std::string& _query_string,
         const std::string& _query_limit,
         const std::string& _row_offset,
-        const std::string& _query_type) {
+        const std::string& _query_type,
+        const std::string& _base_url) {
 
         auto conn = get_connection(_auth_header);
 
@@ -55,7 +56,7 @@ class query : api_base {
             double dbl_query_limit = static_cast<double>(query_limit);
             double dbl_total_row_count = static_cast<double>(total_row_count);
             nlohmann::json links = nlohmann::json::object();
-            std::string base_url{"query?query_string=%s&query_limit=%s&row_offset=%s&query_type=%s"};
+            std::string base_url{_base_url+"query?query_string=%s&query_limit=%s&row_offset=%s&query_type=%s"};
             links["self"] = boost::str(boost::format(base_url)
                             % _query_string
                             % _query_limit

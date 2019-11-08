@@ -10,7 +10,7 @@ info:
     name: BSD 3-Clause
     url: https://opensource.org/licenses/BSD-3-Clause
 host: virtserver.swaggerhub.com
-basePath: /jasoncoposky/irods-rest/1.0.0
+basePath: /irods-rest/1.0.0
 security:
   - BearerAuth:
       - read
@@ -31,13 +31,40 @@ tags:
 schemes:
 - https
 paths:
+  /access:
+    post:
+      tags:
+        - access
+      summary:
+        obtain an access token and url for a given object
+      operationId: access
+      description: |
+        obtain an access token and url for a given object
+      parameters:
+        - in: query
+          name: path
+          description: irods absolute logical path of the object
+          required: true
+          type: string
+      security: []
+      responses:
+        200:
+          description: token acquired
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: access token and url o use in subsequent operations
+        '401':
+          description: token acquisition failed
+
   /token:
     post:
       tags:
         - auth
       summary:
         obtain an encoded jwt for access
-      operationId: obtainToken
+      operationId: obtain_token
       description: |
           Obtain a JWT token for accessing REST endpoints
       parameters:

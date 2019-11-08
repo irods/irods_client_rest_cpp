@@ -7,7 +7,7 @@
 #define MACRO_IRODS_LIST_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_list_(headers.getRaw("Authorization").value(), path.get(), stat.get(), permissions.get(), metadata.get(), offset.get(), limit.get()); \
+    std::tie(code, message) = irods_list_(headers.getRaw("Authorization").value(), path.get(), stat.get(), permissions.get(), metadata.get(), offset.get(), limit.get(), base); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -25,7 +25,8 @@ class list : api_base {
         const std::string& _permissions,
         const std::string& _metadata,
         const std::string& _offset,
-        const std::string& _limit) {
+        const std::string& _limit,
+        const std::string& _base_url) {
 
         auto conn = get_connection(_auth_header);
 
@@ -83,7 +84,7 @@ class list : api_base {
             results["_embedded"] = objects;
 
             nlohmann::json links = nlohmann::json::object();
-            std::string base_url{"list?path=%s&stat=%s&permissions=%s&metadata=%s&offset=%s&limit=%s"};
+            std::string base_url{_base_url+"/list?path=%s&stat=%s&permissions=%s&metadata=%s&offset=%s&limit=%s"};
             links["self"] = boost::str(boost::format(base_url)
                             % _logical_path
                             % _stat

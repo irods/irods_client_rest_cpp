@@ -25,6 +25,24 @@ def authenticate(_user_name, _password, _auth_type):
 
     return body
 
+def access(_token, _logical_path):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
+    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(c.CUSTOMREQUEST, 'POST')
+
+    url = '{0}access?path={1}'.format(base_url(), _logical_path)
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body
+
 def list(_token, _path, _stat, _permissions, _metadata, _offset, _limit):
     buffer = StringIO()
     c = pycurl.Curl()
@@ -179,6 +197,9 @@ elif('list' == cmd):
     mdata  = get_flag(args, 'metadata')
     perms  = get_flag(args, 'permissions')
     print list(token, path, stat, perms, mdata, offset, limit)
+elif('access' == cmd):
+    path = get_value(args, 'logical_path')
+    print access(token, path)
 else:
     pass
 

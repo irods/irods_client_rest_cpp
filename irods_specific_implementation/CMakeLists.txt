@@ -13,6 +13,7 @@ project(server CXX)
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++17)
 set(
     API_SERVER_NAMES
+    Access
     Query
     Auth
     StreamPut
