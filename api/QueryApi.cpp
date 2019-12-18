@@ -67,7 +67,7 @@ void QueryApi::catalog_query_handler(const Pistache::Rest::Request &request, Pis
 }
 
 void QueryApi::query_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-    response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested Query method does not exist");
 }
 
 }

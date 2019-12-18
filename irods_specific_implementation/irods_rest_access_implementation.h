@@ -14,7 +14,8 @@
     std::tie(code, message) = irods_access_(headers.getRaw("Authorization").value(), path.get(), base); \
     response.send(code, message);
 
-namespace irods::rest {
+namespace irods {
+namespace rest {
 
 namespace sc = std::chrono;
 using sclk = sc::system_clock;
@@ -133,4 +134,5 @@ class access : api_base {
     } // rx_ticket
 
 }; // class access
-}; // namespace irods::rest
+}; // namespace rest
+}; // namespace irods

@@ -1,30 +1,29 @@
 server {
     listen 80;
 
-    location /irods-rest/1.0.0/auth {
+    location /irods-rest/1.0.0/access {
         proxy_pass http://localhost:8080;
     }
 
-    location /irods-rest/1.0.0/list {
+    location /irods-rest/1.0.0/auth {
         proxy_pass http://localhost:8081;
     }
 
-    location /irods-rest/1.0.0/query {
+    location /irods-rest/1.0.0/list {
         proxy_pass http://localhost:8082;
+    }
+
+    location /irods-rest/1.0.0/query {
+        proxy_pass http://localhost:8083;
     }
 
     location /irods-rest/1.0.0/stream {
         if ($request_method = GET ) {
-            proxy_pass http://localhost:8083;
+            proxy_pass http://localhost:8084;
         }
 
         if ($request_method = PUT ) {
-            proxy_pass http://localhost:8084;
+            proxy_pass http://localhost:8085;
         }
     }
-
-    location /irods-rest/1.0.0/access {
-        proxy_pass http://localhost:8089;
-    }
-
 }
