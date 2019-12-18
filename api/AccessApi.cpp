@@ -64,7 +64,7 @@ void AccessApi::access_handler(const Pistache::Rest::Request &request, Pistache:
 }
 
 void AccessApi::access_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-    response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested Access method does not exist");
 }
 
 }

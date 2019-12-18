@@ -66,7 +66,7 @@ void StreamGetApi::stream_handler(const Pistache::Rest::Request &request, Pistac
 }
 
 void StreamGetApi::stream_get_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-    response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested StreamGet method does not exist");
 }
 
 }

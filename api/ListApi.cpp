@@ -69,7 +69,7 @@ void ListApi::stream_handler(const Pistache::Rest::Request &request, Pistache::H
 }
 
 void ListApi::list_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-    response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested List method does not exist");
 }
 
 }

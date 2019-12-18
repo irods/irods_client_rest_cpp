@@ -201,7 +201,7 @@ elif('access' == cmd):
     path = get_value(args, 'logical_path')
     print access(token, path)
 else:
-    pass
+    print('Command ['+cmd+'] is not supported.')
 
 
 

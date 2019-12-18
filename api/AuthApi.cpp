@@ -54,7 +54,7 @@ void AuthApi::obtain_token_handler(const Pistache::Rest::Request &request, Pista
     auto userName = request.query().get("userName");
     auto password = request.query().get("password");
     auto authType = request.query().get("authType");
-    
+
     try {
       this->obtain_token(request.headers(), request.body(), userName, password, authType, response);
     } catch (std::runtime_error & e) {
@@ -66,7 +66,7 @@ void AuthApi::obtain_token_handler(const Pistache::Rest::Request &request, Pista
 }
 
 void AuthApi::auth_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-    response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested Authentication method does not exist");
 }
 
 }

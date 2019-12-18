@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+# See "man chkconfig" for information on next two lines (RedHatCompatible Only)
+# chkconfig: 2345 90 10
+# description: iRODS
+#
+#
+# Following lines are in conformance with LSB 1.2 spec
+### BEGIN INIT INFO
+# Provides:          irods_client_rest_cpp
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Manages the iRODS C++ REST service
+# Description:       Manages the iRODS C++ REST service
+### END INIT INFO
+
+
+set -e
+
+PROJECT="irods_client_rest_cpp"
+PREFIX="${PROJECT}_"
+
+# import service account information
+if [ -f /etc/irods/service_account.config ] ; then
+    # get service account information
+    . /etc/irods/service_account.config 2> /dev/null
+else
+    IRODS_SERVICE_ACCOUNT_NAME=`ls -ld /var/lib/irods | awk '{print $3}'`
+    IRODS_SERVICE_GROUP_NAME=`ls -ld /var/lib/irods | awk '{print $4}'`
+fi
+
+IRODS_HOME=/var/lib/irods
+IRODS_CTL=$IRODS_HOME/irodsctl
+
+DETECTEDOS=`$IRODS_HOME/packaging/find_os.sh`
+
+stop_irods_client_rest_cpp() {
+    for PID in `ps -ef | grep $PREFIX | grep -v 'grep' |  awk '{print $2}'`
+    do
+        su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "kill -9 $PID"
+    done
+}
+
+start_irods_client_rest_cpp() {
+    for API in `ls /usr/sbin/$PREFIX*`
+    do
+        su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$API&"
+    done
+}
+
+if [ "$DETECTEDOS" = "MacOSX" ] ; then
+    SU_SHELL_OPTS="-l"
+else
+    SU_SHELL_OPTS="--shell=/bin/bash --login"
+fi
+
+case $1 in
+status)
+    ps -ef | grep $PREFIX | grep -v "grep"
+    ;;
+start)
+    start_irods_client_rest_cpp
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
+        touch /var/lock/subsys/${PROJECT}
+    fi
+    ;;
+stop)
+    stop_irods_client_rest_cpp
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
+        touch /var/lock/subsys/${PROJECT}
+    fi
+    ;;
+restart)
+    stop_irods_client_rest_cpp
+    start_irods_client_rest_cpp
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
+        touch /var/lock/subsys/${PROJECT}
+    fi
+    ;;
+force-reload)
+    stop_irods_client_rest_cpp
+    start_irods_client_rest_cpp
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
+        touch /var/lock/subsys/${PROJECT}
+    fi
+    ;;
+*)
+    echo "/etc/init.d/${PROJECT} :: [$1] is not supported." 1>&2
+    echo "Usage: /etc/init.d/${PROJECT} {start|stop|status|restart|force-reload}" 1>&2
+    exit 1
+esac

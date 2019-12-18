@@ -66,7 +66,7 @@ void StreamPutApi::stream_handler(const Pistache::Rest::Request &request, Pistac
 }
 
 void StreamPutApi::stream_put_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-    response.send(Pistache::Http::Code::Not_Found, "The requested method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested StreamPut method does not exist");
 }
 
 }
