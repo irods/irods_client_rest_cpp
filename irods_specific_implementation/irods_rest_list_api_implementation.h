@@ -1,7 +1,8 @@
 
 #include "irods_rest_api_base.h"
-
 #include "filesystem.hpp"
+
+#include <fstream>
 
 // this is contractually tied directly to the swagger api definition, and the below implementation
 #define MACRO_IRODS_LIST_API_IMPLEMENTATION \
@@ -28,12 +29,10 @@ class list : api_base {
         const std::string& _limit,
         const std::string& _base_url) {
 
-        auto conn = get_connection(_auth_header);
-
         try {
+            auto conn = get_connection(_auth_header);
 
             std::string logical_path{decode_url(_logical_path)};
-
             intmax_t limit_counter{0};
             intmax_t offset_counter{0};
             const intmax_t offset = std::stoi(_offset);
@@ -46,7 +45,7 @@ class list : api_base {
             nlohmann::json objects = nlohmann::json::array();
 
             fsp start_path{_logical_path};
-            for(auto p : fcli::recursive_collection_iterator(*conn(), start_path)) {
+            for(auto & p : fcli::recursive_collection_iterator(*conn(), start_path)) {
                 // skip earlier entries for paging
                 if(offset > 0 && offset_counter < offset) {
                     ++offset_counter;
@@ -60,7 +59,6 @@ class list : api_base {
                     obj_info["type"] = type_to_string[object_status.type()];
                     obj_info["logical_path"] = p.path().string();
 
-
                     if(stat) { aggregate_stat_information(*conn(), obj_info, p.path()); }
                     if(permissions) { aggregate_permissions_information(obj_info, object_status.permissions()); }
                     if(metadata) { aggregate_metadata_information(*conn(), obj_info, p.path()); }
@@ -68,10 +66,9 @@ class list : api_base {
                     objects += obj_info;
                 }
                 catch(const exception& _e) {
-                    rodsLog(
-                        LOG_ERROR,
-                        "failed to capture results for object [%s]",
-                        p.path().string().c_str());
+                    return std::forward_as_tuple(
+                        Pistache::Http::Code::Bad_Request,
+                        _e.what());
                 }
 
                 ++limit_counter;

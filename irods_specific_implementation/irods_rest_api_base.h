@@ -8,14 +8,51 @@
 #include "irods_server_properties.hpp"
 
 #include "jwt.h"
+#include "json.hpp"
 
 #include <tuple>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <iostream>
 
 namespace irods {
 namespace rest {
+class configuration {
+    using json = nlohmann::json;
+
+    public:
+    configuration(const std::string& instance_name) :
+        instance_name_{instance_name},
+        configuration_{load(DEFAULT_CONFIGURATION_FILE)}
+    {
+    }
+
+    configuration(
+        const std::string& instance_name,
+        const std::string& file_name) :
+        instance_name_{instance_name},
+        configuration_{load(file_name)}
+    {
+    }
+
+    auto operator[](const std::string& key) {
+        return configuration_[instance_name_][key];
+    }
+
+    private:
+    const std::string DEFAULT_CONFIGURATION_FILE{"/etc/irods/irods_client_rest_cpp.json"};
+
+    json load(const std::string& file_name)
+    {
+        std::ifstream ifs(file_name);
+        return json::parse(ifs);
+    } // load
+
+    const std::string instance_name_;
+    const json        configuration_;
+}; // class configuration
+
 class connection_handle {
     public:
         connection_handle() {
@@ -31,6 +68,7 @@ class connection_handle {
                         &err_,
                         0,
                         NO_RECONN);
+            std::cout << "Connection Handle:" << conn_ << "\n";
         } // ctor
 
         connection_handle(
@@ -53,6 +91,7 @@ class connection_handle {
 
         virtual ~connection_handle() { rcDisconnect(conn_); }
         rcComm_t* operator()() {
+            std::cout << "Connection Handle:" << conn_ << "\n";
             return conn_;
         }
 

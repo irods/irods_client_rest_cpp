@@ -17,11 +17,13 @@
 
 using namespace io::swagger::server::api;
 
-int main() {
-    Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(8084));
+int main(int argc, char* argv[]) {
+    irods::rest::configuration cfg{"irods_rest_cpp_streamput_server"};
+    int port = cfg["port"];
+    Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(port));
 
     StreamPutApiImpl server(addr);
-    server.init(2);
+    server.init(cfg["threads"]);
     server.start();
 
     server.shutdown();
