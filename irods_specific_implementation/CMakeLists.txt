@@ -50,7 +50,7 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
 add_compile_options(-nostdinc++)
-add_compile_options(-std=c++17)
+add_compile_options(-std=c++14)
 link_libraries(c++abi)
 include_directories(
     ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
@@ -99,6 +99,7 @@ set(
     StreamPut
     StreamGet
     List
+    Foo
     )
 
 foreach(API_NAME ${API_SERVER_NAMES})

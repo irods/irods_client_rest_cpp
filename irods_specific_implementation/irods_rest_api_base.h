@@ -68,7 +68,6 @@ class connection_handle {
                         &err_,
                         0,
                         NO_RECONN);
-            std::cout << "Connection Handle:" << conn_ << "\n";
         } // ctor
 
         connection_handle(

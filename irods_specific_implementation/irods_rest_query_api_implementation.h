@@ -10,7 +10,8 @@
     std::tie(code, message) = irods_query_(headers.getRaw("Authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get(), base); \
     response.send(code, message);
 
-namespace irods::rest {
+namespace irods {
+namespace rest {
 class query : api_base {
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
@@ -110,4 +111,5 @@ class query : api_base {
         }
     } // operator()
 }; // class query
-}; // namespace irods::rest
+}; // namespace rest
+}; // namespace irods

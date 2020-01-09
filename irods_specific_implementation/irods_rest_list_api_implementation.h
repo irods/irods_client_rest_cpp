@@ -11,7 +11,8 @@
     std::tie(code, message) = irods_list_(headers.getRaw("Authorization").value(), path.get(), stat.get(), permissions.get(), metadata.get(), offset.get(), limit.get(), base); \
     response.send(code, message);
 
-namespace irods::rest {
+namespace irods {
+namespace rest {
 
 namespace fs   = irods::experimental::filesystem;
 namespace fcli = irods::experimental::filesystem::client;
@@ -190,4 +191,5 @@ class list : api_base {
         _obj_info["metadata"] = meta_arr;
     } // aggregate_metadata_information
 }; // class list
-}; // namespace irods::rest
+}; // namespace rest
+}; // namespace irods
