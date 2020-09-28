@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
 
-find_package(IRODS 4.2.7 EXACT REQUIRED CONFIG)
+find_package(IRODS 4.2.8 EXACT REQUIRED CONFIG)
 
 set(IRODS_PLUGIN_VERSION_MAJOR 1)
 set(IRODS_PLUGIN_VERSION_MINOR 0)
@@ -50,7 +50,7 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
 add_compile_options(-nostdinc++)
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
 link_libraries(c++abi)
 include_directories(
     ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
