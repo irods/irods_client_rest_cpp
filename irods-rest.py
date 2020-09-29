@@ -146,6 +146,23 @@ def query(_token, _string, _limit, _offset, _type):
 
     return body
 
+def zone_report(_token):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
+    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(c.CUSTOMREQUEST, 'POST')
+    url = '{0}zone_report'.format(base_url())
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body
+
 def get_arguments():
     full_args = sys.argv
     arg_list  = full_args[1:]
@@ -200,6 +217,8 @@ elif('list' == cmd):
 elif('access' == cmd):
     path = get_value(args, 'logical_path')
     print access(token, path)
+elif('zone_report' == cmd):
+    print zone_report(token)
 else:
     print('Command ['+cmd+'] is not supported.')
 
