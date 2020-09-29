@@ -99,7 +99,6 @@ set(
     StreamPut
     StreamGet
     List
-    Foo
     )
 
 foreach(API_NAME ${API_SERVER_NAMES})
