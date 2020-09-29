@@ -94,11 +94,12 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++17)
 set(
     API_SERVER_NAMES
     Access
-    Query
     Auth
-    StreamPut
-    StreamGet
     List
+    Query
+    StreamGet
+    StreamPut
+    ZoneReport
     )
 
 foreach(API_NAME ${API_SERVER_NAMES})

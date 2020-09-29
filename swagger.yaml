@@ -284,6 +284,29 @@ paths:
         400:
           description: bad input parameter
 
+  /zone_report:
+    get:
+      tags:
+      - zone_report
+      summary: produces a json description of an iRODS Zone
+      description: |
+        Produces an iRODS Zone Report, a json description of the entire
+        zone, including all configuration.  This API is for administrators
+        only.
+      operationId: zone_report
+      produces:
+      - application/json
+
+      responses:
+        200:
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: json representation of irods zone
+        400:
+          description: bad input parameter
+
 definitions:
   query_results:
     type: object
