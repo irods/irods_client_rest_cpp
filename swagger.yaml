@@ -57,6 +57,68 @@ paths:
                 description: access token and url o use in subsequent operations
         '401':
           description: token acquisition failed
+  /admin:
+    get:
+      tags:
+      - query
+      summary: Administration interface for changes to zone configuration
+      description: |
+        Interface for zone administration including modificaiton of users, resources, and
+        zone federation.
+      operationId: catalogQuery
+      produces:
+      - application/json
+      parameters:
+      - name: action
+        in: admin
+        description: dictates the action taken: add, modify, or remove
+        required: true
+        type: string
+      - name: target
+        in: admin
+        description: the subject of the action: user, zone, resource, childtoresc, childfromresc, token, group, rebalance, unusedAVUs, specificQuery
+        required: true
+        type: string
+      - name: arg2
+        in: admin
+        description: generic argument, could be user name, resource name, etc.
+        required: true
+        type: string
+      - name: arg3
+        in: admin
+        description: generic argument
+        required: true
+        type: string
+      - name: arg4
+        in: admin
+        description: generic argument
+        required: true
+        type: string
+      - name: arg5
+        in: admin
+        description: generic argument
+        required: true
+        type: string
+      - name: arg6
+        in: admin
+        description: generic argument
+        required: true
+        type: string
+      - name: arg7
+        in: admin
+        description: generic argument
+        required: true
+        type: string
+
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/query_results'
+        400:
+          description: bad input parameter
 
   /token:
     post:
