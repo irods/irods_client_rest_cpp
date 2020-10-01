@@ -124,18 +124,23 @@ def get(_token, _physical_path, _logical_path):
 
     return "Success"
 
-def query(_token, _string, _limit, _offset, _type):
+def admin(_token, _action, _target, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7):
     buffer = StringIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    params = { 'query_string' : _string,
-               'query_limit'  : _limit,
-               'row_offset'   : _offset,
-               'query_type'   : _type }
-    url = base_url()+'query?'+urllib.urlencode(params)
+    params = { 'action' : _action,
+               'target' : _target,
+               'arg2'   : _arg2,
+               'arg3'   : _arg3,
+               'arg4'   : _arg4,
+               'arg5'   : _arg5,
+               'arg6'   : _arg6,
+               'arg7'   : _arg7
+             }
+    url = base_url()+'admin?'+urllib.urlencode(params)
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -163,13 +168,39 @@ def zone_report(_token):
 
     return body
 
+def query(_token, _string, _limit, _offset, _type):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
+    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(c.CUSTOMREQUEST, 'GET')
+
+    params = { 'query_string' : _string,
+               'query_limit'  : _limit,
+               'row_offset'   : _offset,
+               'query_type'   : _type }
+    url = base_url()+'query?'+urllib.urlencode(params)
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body
+
+
+
 def get_arguments():
     full_args = sys.argv
     arg_list  = full_args[1:]
     options_list = [ 'user_name=',    'password=',      'command=',
                      'logical_path=', 'physical_path=', 'metadata',
                      'permissions',   'stat',           'offset=',
-                     'limit=',        'type=',          'query=' ]
+                     'limit=',        'type=',          'query=',
+                     'action=', 'target=', 'arg2=', 'arg3=', 'arg4=', 'arg5=', 'arg6=', 'arg7='
+                   ]
 
     try:
         arguments, values = getopt.getopt(arg_list, [], options_list)
@@ -182,7 +213,7 @@ def get_value(_args, _key):
     try:
         return _args['--'+_key]
     except:
-        return None
+        return ''
 
 def get_flag(_args, _key):
     try:
@@ -202,6 +233,16 @@ if('query' == cmd):
     limit  = get_value(args, 'limit')
     offset = get_value(args, 'offset')
     print query(token, qstr, limit, offset, qtype)
+elif('admin' == cmd):
+    action = get_value(args, 'action')
+    target = get_value(args, 'target')
+    arg2   = get_value(args, 'arg2')
+    arg3   = get_value(args, 'arg3')
+    arg4   = get_value(args, 'arg4')
+    arg5   = get_value(args, 'arg5')
+    arg6   = get_value(args, 'arg6')
+    arg7   = get_value(args, 'arg7')
+    print admin(token, action, target, arg2, arg3, arg4, arg5, arg6, arg7)
 elif('get' == cmd):
     print get(token, get_value(args,'physical_path'), get_value(args,'logical_path'))
 elif('put' == cmd):
