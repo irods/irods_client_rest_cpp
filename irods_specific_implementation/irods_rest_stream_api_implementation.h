@@ -8,12 +8,13 @@
 #define MACRO_IRODS_STREAM_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
+    irods_stream_.add_headers(response); \
     std::tie(code, message) = irods_stream_(headers.getRaw("Authorization").value(), body, path.get(), offset.get(), limit.get()); \
     response.send(code, message);
 
 namespace irods {
 namespace rest {
-class stream : api_base {
+class stream : public api_base {
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
         const std::string& _auth_header,
