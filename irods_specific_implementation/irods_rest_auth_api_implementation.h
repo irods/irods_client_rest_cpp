@@ -5,12 +5,13 @@
 #define MACRO_IRODS_AUTH_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
+    irods_auth_.add_headers(response); \
     std::tie(code, message) = irods_auth_(userName.get(), password.get(), authType.get()); \
     response.send(code, message);
 
 namespace irods {
 namespace rest {
-class auth : api_base {
+class auth : public api_base {
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
         const std::string& _user_name,
@@ -47,14 +48,14 @@ class auth : api_base {
 
             auto token = jwt::create()
                              .set_type("JWS")
-                             .set_issuer(ISSUE_CLAIM)
-                             .set_subject(SUBJECT_CLAIM)
-                             .set_audience(AUDIENCE_CLAIM)
+                             .set_issuer(keyword::issue_claim)
+                             .set_subject(keyword::subject_claim)
+                             .set_audience(keyword::audience_claim)
                              .set_not_before(std::chrono::system_clock::now())
                              .set_issued_at(std::chrono::system_clock::now())
                              // TODO: consider how to handle token revocation, token refresh
                              //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
-                             .set_payload_claim(USER_NAME_KW, jwt::claim(std::string{_user_name}))
+                             .set_payload_claim(keyword::user_name, jwt::claim(std::string{_user_name}))
                              .sign(jwt::algorithm::hs256{zone_key});
 
             return std::forward_as_tuple(
