@@ -28,7 +28,7 @@
         "port" : 8085,
         "threads" : 4,
         "host_name" : "localhost"
-    }
+    },
     "irods_rest_cpp_zone_report_server" : {
         "port" : 8086,
         "threads" : 4,

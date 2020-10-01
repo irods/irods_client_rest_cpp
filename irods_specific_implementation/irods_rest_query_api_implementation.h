@@ -7,6 +7,7 @@
 #define MACRO_IRODS_QUERY_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
+    irods_query_.add_headers(response); \
     std::tie(code, message) = irods_query_(headers.getRaw("Authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get(), base); \
     response.send(code, message);
 

@@ -6,13 +6,13 @@
 #define MACRO_IRODS_ADMIN_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
+    irods_admin_.add_headers(response); \
     std::tie(code, message) = irods_admin_(headers.getRaw("Authorization").value(), action.get(), target.get(), arg2.get(), arg3.get(), arg4.get(), arg5.get(), arg6.get(), arg7.get()); \
-    response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*"); \
     response.send(code, message);
 
 namespace irods {
 namespace rest {
-class admin : api_base {
+class admin : public api_base {
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
         const std::string& _auth_header,
