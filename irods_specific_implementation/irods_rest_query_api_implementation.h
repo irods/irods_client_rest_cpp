@@ -7,12 +7,13 @@
 #define MACRO_IRODS_QUERY_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
+    irods_query_.add_headers(response); \
     std::tie(code, message) = irods_query_(headers.getRaw("Authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get(), base); \
     response.send(code, message);
 
 namespace irods {
 namespace rest {
-class query : api_base {
+class query : public api_base {
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
         const std::string& _auth_header,

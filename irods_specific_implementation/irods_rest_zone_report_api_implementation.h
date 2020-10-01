@@ -6,11 +6,12 @@
 #define MACRO_IRODS_ZONE_REPORT_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
+    irods_zone_report_.add_headers(response); \
     std::tie(code, message) = irods_zone_report_(headers.getRaw("Authorization").value()); \
     response.send(code, message);
 
 namespace irods::rest {
-    class zone_report : api_base {
+    class zone_report : public api_base {
         public:
         std::tuple<Pistache::Http::Code &&, std::string> operator()(
             const std::string& _auth_header)

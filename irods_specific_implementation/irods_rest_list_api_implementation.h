@@ -8,6 +8,7 @@
 #define MACRO_IRODS_LIST_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
+    irods_list_.add_headers(response); \
     std::tie(code, message) = irods_list_(headers.getRaw("Authorization").value(), path.get(), stat.get(), permissions.get(), metadata.get(), offset.get(), limit.get(), base); \
     response.send(code, message);
 
@@ -18,7 +19,7 @@ namespace fs   = irods::experimental::filesystem;
 namespace fcli = irods::experimental::filesystem::client;
 using     fsp  = fs::path;
 
-class list : api_base {
+class list : public api_base {
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
         const std::string& _auth_header,
