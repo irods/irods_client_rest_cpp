@@ -30,4 +30,9 @@ server {
     location /irods-rest/1.0.0/zone_report {
         proxy_pass http://localhost:8086;
     }
+
+    location /irods-rest/1.0.0/admin {
+        proxy_pass http://localhost:8087;
+    }
+
 }
