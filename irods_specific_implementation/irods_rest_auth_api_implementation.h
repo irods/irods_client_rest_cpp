@@ -12,39 +12,21 @@
 namespace irods {
 namespace rest {
 class auth : public api_base {
+
+    using json = nlohmann::json;
+
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
         const std::string& _user_name,
         const std::string& _password,
         const std::string& _auth_type ) {
-        auto conn = get_connection();
 
-        std::string jwt;
         try {
+
+            auto conn = get_connection(_user_name, _password, _auth_type);
+
             // use the zone key as our secret
             std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
-
-            // pass the user name via the connection, used by client login
-            rstrcpy(
-                conn()->clientUser.userName,
-                _user_name.c_str(),
-                NAME_LEN);
-
-            // set password in context string for auth
-            kvp_map_t kvp;
-            kvp[ irods::AUTH_PASSWORD_KEY] = _password;
-
-            std::string context = irods::escaped_kvp_string(kvp);
-            int err = clientLogin(
-                          conn(),
-                          context.c_str(),
-                          _auth_type.c_str());
-            if(err < 0) {
-                THROW(err,
-                    boost::format("[%s] failed to login with type [%s]")
-                    % _user_name
-                    % _auth_type);
-            }
 
             auto token = jwt::create()
                              .set_type("JWS")
@@ -63,13 +45,14 @@ class auth : public api_base {
                        token);
         }
         catch(const irods::exception& _e) {
-            return std::forward_as_tuple(
-                       Pistache::Http::Code::Bad_Request, _e.what());
-        }
+            json msg{};
+            msg["error_code"]    = rodsErrorName(_e.code(), nullptr);
+            msg["error_message"] = boost::str(boost::format("[%s] failed to authenticate with type [%s]")
+                                   % _user_name % _auth_type);
 
-        return std::forward_as_tuple(
-                   Pistache::Http::Code::Ok,
-                   jwt);
+            return std::forward_as_tuple(
+                       Pistache::Http::Code::Bad_Request, msg.dump());
+        }
 
     } // operator()
 }; // class auth
