@@ -119,15 +119,39 @@ namespace rest {
             } // add_headers
 
         protected:
-            connection_handle get_connection() {
-                auto conn_hdl = connection_handle();
-                int err = clientLogin(conn_hdl());
+            connection_handle get_connection(
+                  const std::string& _user_name
+                , const std::string& _password
+                , const std::string& _auth_type) {
+
+                auto conn = connection_handle();
+
+                // pass the user name via the connection, used by client login
+                rstrcpy(
+                    conn()->clientUser.userName,
+                    _user_name.c_str(),
+                    NAME_LEN);
+                rstrcpy(
+                    conn()->proxyUser.userName,
+                    _user_name.c_str(),
+                    NAME_LEN);
+
+                // set password in context string for auth
+                kvp_map_t kvp;
+                kvp[ irods::AUTH_PASSWORD_KEY] = _password;
+
+                std::string context = irods::escaped_kvp_string(kvp);
+
+                int err = clientLogin(conn(), context.c_str(), _auth_type.c_str());
                 if(err < 0) {
                     THROW(err,
-                        boost::format("[%s] failed to login")
-                        % conn_hdl()->clientUser.userName);
+                        boost::format("[%s] failed to login with type [%s]")
+                        % _user_name
+                        % _auth_type);
                 }
-                return conn_hdl;
+
+                return conn;
+
             } // get_connection
 
             connection_handle get_connection(
