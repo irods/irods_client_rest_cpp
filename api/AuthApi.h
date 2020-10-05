@@ -61,10 +61,10 @@ private:
     /// <remarks>
     /// Obtain a JWT token for accessing REST endpoints 
     /// </remarks>
-    /// <param name="userName"></param>
+    /// <param name="user_name"></param>
     /// <param name="password"> (optional)</param>
-    /// <param name="authType"> (optional)</param>
-    virtual void obtain_token(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &userName, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &authType, Pistache::Http::ResponseWriter &response) = 0;
+    /// <param name="auth_type"> (optional)</param>
+    virtual void obtain_token(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &user_name, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &auth_type, Pistache::Http::ResponseWriter &response) = 0;
 
 };
 
