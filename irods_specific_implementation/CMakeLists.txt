@@ -150,23 +150,14 @@ foreach(API_NAME ${API_SERVER_NAMES})
     )
 
     link_libraries(c++abi)
-    include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
+    include_directories(${IRODS_INCLUDE_DIRS}
+                        ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
                         ${IRODS_EXTERNALS_FULLPATH_JSON}/include
-                        ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include)
+                        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
 
     include_directories(model)
     include_directories(api)
     include_directories(impl)
-
-    include_directories(${IRODS_INCLUDE_DIRS})
-    include_directories(${IRODS_EXTERNALS_FULLPATH_AVRO}/include)
-    include_directories(${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
-    include_directories(${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include)
-    include_directories(${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include)
-    include_directories(${IRODS_EXTERNALS_FULLPATH_ZMQ}/include)
-    #include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include)
-    include_directories(${IRODS_EXTERNALS_FULLPATH_JANSSON}/include)
-    include_directories(/opt/irods-externals/json3.4.0-0/include)
 
     target_link_libraries(
         ${EXECUTABLE_NAME}
@@ -176,11 +167,6 @@ foreach(API_NAME ${API_SERVER_NAMES})
         irods_client
         irods_plugin_dependencies
         irods_common
-        ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
-        ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-        ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
-        ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-        ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
     )
 
     install(

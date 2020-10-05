@@ -6,7 +6,7 @@
     Pistache::Http::Code code; \
     std::string message; \
     irods_auth_.add_headers(response); \
-    std::tie(code, message) = irods_auth_(userName.get(), password.get(), authType.get()); \
+    std::tie(code, message) = irods_auth_(user_name.get(), password.get(), auth_type.get()); \
     response.send(code, message);
 
 namespace irods {
