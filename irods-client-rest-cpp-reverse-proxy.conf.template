@@ -1,23 +1,45 @@
-server {
+iserver {
     listen 80;
 
+    add_header 'Access-Control-Allow-Origin' '*' always;
+    add_header 'Access-Control-Allow-Headers' '*' always;
+    add_header 'Access-Control-Allow-Methods' 'AUTHORIZATION,ACCEPT,GET,POST,OPTIONS,PUT,DELETE' always;
+
     location /irods-rest/1.0.0/access {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
         proxy_pass http://localhost:8080;
     }
 
     location /irods-rest/1.0.0/auth {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
         proxy_pass http://localhost:8081;
     }
 
     location /irods-rest/1.0.0/list {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
         proxy_pass http://localhost:8082;
     }
 
     location /irods-rest/1.0.0/query {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
         proxy_pass http://localhost:8083;
     }
 
     location /irods-rest/1.0.0/stream {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
         if ($request_method = GET ) {
             proxy_pass http://localhost:8084;
         }
@@ -28,11 +50,10 @@ server {
     }
 
     location /irods-rest/1.0.0/zone_report {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
         proxy_pass http://localhost:8086;
     }
-
-    location /irods-rest/1.0.0/admin {
-        proxy_pass http://localhost:8087;
-    }
-
 }
