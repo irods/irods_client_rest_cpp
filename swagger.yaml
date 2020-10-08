@@ -54,7 +54,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: access token and url o use in subsequent operations
+                description: access token and url to use in subsequent operations
         '401':
           description: token acquisition failed
   /admin:
@@ -120,41 +120,6 @@ paths:
         400:
           description: bad input parameter
 
-  /token:
-    post:
-      tags:
-        - auth
-      summary:
-        obtain an encoded jwt for access
-      operationId: obtain_token
-      description: |
-          Obtain a JWT token for accessing REST endpoints
-      parameters:
-        - in: query
-          name: user_name
-          required: true
-          type: string
-        - in: query
-          name: password
-          required: false
-          type: string
-        - in: query
-          name: auth_type
-          required: false
-          type: string
-          enum: [PAM, STANDARD]
-      security: []
-      responses:
-        200:
-          description: Successfully authenticated
-          content:
-            text/plain:
-              schema:
-                type: string
-                description: JWT token to use in subsequent operations
-        '401':
-          description: Authorization failed
-
   /list:
     get:
       tags:
@@ -164,30 +129,30 @@ paths:
       description: |
         Recursively list the contents of a logical collection
       parameters:
-        - in: query
+        - in: list
           name: path
           description: irods absolute logical path of the collection
           required: true
           type: string
-        - in: query
+        - in: list
           name: stat
           description: flag to include status information
           type: boolean
-        - in: query
+        - in: list
           name: permissions
           description: flag to include permission information
           type: boolean
-        - in: query
+        - in: list
           name: metadata
           description: flag to include metadata information
           type: boolean
-        - in: query
+        - in: list
           name: offset
           description: number of records to skip for pagination
           type: integer
           format: int32
           minimum: 0
-        - in: query
+        - in: list
           name: limit
           description: maximum number of records to return
           type: integer
