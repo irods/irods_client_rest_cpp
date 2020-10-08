@@ -161,7 +161,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
 
     target_link_libraries(
         ${EXECUTABLE_NAME}
-        pistache
+        /usr/local/lib/libpistache.a
         pthread
         crypto
         irods_client

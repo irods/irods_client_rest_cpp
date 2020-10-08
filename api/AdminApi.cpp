@@ -42,7 +42,7 @@ void AdminApi::shutdown() {
 void AdminApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/admin", Routes::bind(&AdminApi::catalog_admin_handler, this));
+    Routes::Post(router, base + "/admin", Routes::bind(&AdminApi::catalog_admin_handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&AdminApi::admin_api_default_handler, this));
