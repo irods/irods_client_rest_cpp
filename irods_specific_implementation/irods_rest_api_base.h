@@ -1,8 +1,11 @@
+#include "rodsClient.h"
+#include "rcConnect.h"
 #include "connection_pool.hpp"
 #include "boost/format.hpp"
 #include "json.hpp"
 #include "pistache/http_defs.h"
 
+#include "irods_native_auth_object.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
@@ -90,7 +93,6 @@ namespace rest {
 
             virtual ~connection_handle() { rcDisconnect(conn_); }
             rcComm_t* operator()() {
-                std::cout << "Connection Handle:" << conn_ << "\n";
                 return conn_;
             }
 
@@ -108,7 +110,7 @@ namespace rest {
 
     class api_base {
         public:
-            api_base() {   } // ctor
+            api_base() { load_client_api_plugins(); } // ctor
             virtual ~api_base() {   } // dtor
 
             auto add_headers(Pistache::Http::ResponseWriter& _response) -> void
@@ -123,6 +125,17 @@ namespace rest {
                   const std::string& _user_name
                 , const std::string& _password
                 , const std::string& _auth_type) {
+
+                std::string password = _password;
+                std::transform(
+                    password.begin(),
+                    password.end(),
+                    password.begin(),
+                    ::tolower );
+
+                if("native" != _auth_type) {
+                    THROW(SYS_INVALID_INPUT_PARAM, "Only native authentication is supported");
+                }
 
                 auto conn = connection_handle();
 
@@ -142,7 +155,8 @@ namespace rest {
 
                 std::string context = irods::escaped_kvp_string(kvp);
 
-                int err = clientLogin(conn(), context.c_str(), _auth_type.c_str());
+                //int err = clientLogin(conn(), context.c_str(), _auth_type.c_str());
+                int err = clientLoginWithPassword(conn(), const_cast<char*>(_password.c_str()));
                 if(err < 0) {
                     THROW(err,
                         boost::format("[%s] failed to login with type [%s]")
@@ -165,6 +179,18 @@ namespace rest {
                 }
                 return conn_hdl;
             } // get_connection
+
+            connection_handle get_connection() {
+                auto conn_hdl = connection_handle();
+                int err = clientLogin(conn_hdl(), "", irods::AUTH_NATIVE_SCHEME.c_str());
+                if(err < 0) {
+                    THROW(err,
+                        boost::format("[%s] failed to login")
+                        % conn_hdl()->clientUser.userName);
+                }
+                return conn_hdl;
+            } // get_connection
+
 
             std::string decode_token(
                 const std::string& _header) {

@@ -45,38 +45,60 @@ class list : public api_base {
 
             nlohmann::json objects = nlohmann::json::array();
 
-            fsp start_path{_logical_path};
-            for(auto & p : fcli::recursive_collection_iterator(*conn(), start_path)) {
-                // skip earlier entries for paging
-                if(offset > 0 && offset_counter < offset) {
-                    ++offset_counter;
-                    continue;
-                }
+            fsp start_path{logical_path};
 
-                try {
-                    auto object_status = fcli::status(*conn(), p.path());
+            if(fcli::is_data_object(*conn(), start_path)) {
+                auto object_status = fcli::status(*conn(), start_path);
 
-                    nlohmann::json obj_info = nlohmann::json::object();
-                    obj_info["type"] = type_to_string[object_status.type()];
-                    obj_info["logical_path"] = p.path().string();
+                nlohmann::json obj_info = nlohmann::json::object();
+                obj_info["type"] = type_to_string[object_status.type()];
+                obj_info["logical_path"] = start_path.string();
 
-                    if(stat) { aggregate_stat_information(*conn(), obj_info, p.path()); }
-                    if(permissions) { aggregate_permissions_information(obj_info, object_status.permissions()); }
-                    if(metadata) { aggregate_metadata_information(*conn(), obj_info, p.path()); }
+                if(stat) { aggregate_stat_information(*conn(), obj_info, start_path); }
+                if(permissions) { aggregate_permissions_information(obj_info, object_status.permissions()); }
+                if(metadata) { aggregate_metadata_information(*conn(), obj_info, start_path); }
 
-                    objects += obj_info;
-                }
-                catch(const exception& _e) {
-                    return std::forward_as_tuple(
-                        Pistache::Http::Code::Bad_Request,
-                        _e.what());
-                }
+                objects += obj_info;
 
-                ++limit_counter;
-                if(limit > 0 && limit_counter >= limit) {
-                    break;
-                }
-            } // for path
+            }
+            else if(fcli::is_collection(*conn(), start_path)) {
+                for(auto & p : fcli::recursive_collection_iterator(*conn(), start_path)) {
+                    // skip earlier entries for paging
+                    if(offset > 0 && offset_counter < offset) {
+                        ++offset_counter;
+                        continue;
+                    }
+
+                    try {
+                        auto object_status = fcli::status(*conn(), p.path());
+
+                        nlohmann::json obj_info = nlohmann::json::object();
+                        obj_info["type"] = type_to_string[object_status.type()];
+                        obj_info["logical_path"] = p.path().string();
+
+                        if(stat) { aggregate_stat_information(*conn(), obj_info, p.path()); }
+                        if(permissions) { aggregate_permissions_information(obj_info, object_status.permissions()); }
+                        if(metadata) { aggregate_metadata_information(*conn(), obj_info, p.path()); }
+
+                        objects += obj_info;
+                    }
+                    catch(const exception& _e) {
+                        return std::forward_as_tuple(
+                            Pistache::Http::Code::Bad_Request,
+                            _e.what());
+                    }
+
+                    ++limit_counter;
+                    if(limit > 0 && limit_counter >= limit) {
+                        break;
+                    }
+                } // for path
+            }
+            else {
+                return std::forward_as_tuple(
+                    Pistache::Http::Code::Bad_Request,
+                    "logical path is not accessible");
+            }
 
             nlohmann::json results = nlohmann::json::object();
             results["_embedded"] = objects;

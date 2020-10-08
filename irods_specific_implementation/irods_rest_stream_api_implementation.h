@@ -14,6 +14,11 @@
 
 namespace irods {
 namespace rest {
+
+namespace ix = irods::experimental;
+namespace fs = ix::filesystem;
+namespace io = ix::io;
+
 class stream : public api_base {
     public:
     std::tuple<Pistache::Http::Code &&, std::string> operator()(
@@ -26,25 +31,35 @@ class stream : public api_base {
         auto conn = get_connection(_auth_header);
 
         try {
-            uintmax_t offset = std::stoi(_offset);
-            uintmax_t limit  = std::stoi(_limit);
+            auto path   = fs::path{decode_url(_path)};
+            auto offset = static_cast<uint64_t>(std::stoul(_offset));
+            auto limit  = static_cast<uint64_t>(std::stoul(_limit));
 
             char read_buff[limit+1];
             memset(&read_buff, 0, limit+1);
-            irods::experimental::io::client::basic_transport<char> xport(*conn());
-            irods::experimental::io::dstream ds{xport, _path, std::ios_base::in | std::ios_base::out};
-            if(offset > 0) {
-                ds.seekg(offset);
-            }
 
-            if(ds.is_open()) {
-                if(_body.empty()) {
+            io::client::basic_transport<char> xport(*conn());
+
+            if(_body.empty()) {
+                io::idstream ds{xport, path};
+                if(ds.is_open()) {
+                    if(offset > 0) {
+                        ds.seekg(offset);
+                    }
+
                     ds.read(read_buff, limit);
                     return std::forward_as_tuple(
                                Pistache::Http::Code::Ok,
                                std::string{read_buff});
                 }
-                else {
+            }
+            else {
+                io::odstream ds{xport, path};
+                if(ds.is_open()) {
+                    if(offset > 0) {
+                        ds.seekp(offset);
+                    }
+
                     auto write_size = std::min(_body.size(), limit);
                     ds.write(_body.c_str(), write_size);
                     return std::forward_as_tuple(
@@ -52,9 +67,7 @@ class stream : public api_base {
                 }
             }
 
-            std::string msg{"Failed to open object ["};
-            msg += _path;
-            msg += "]";
+            auto msg = std::string{"Failed to open object ["} + path.string() + "]";
             return std::forward_as_tuple(
                        Pistache::Http::Code::Bad_Request,
                        msg);
