@@ -63,7 +63,7 @@ paths:
       - query
       summary: Administration interface for changes to zone configuration
       description: |
-        Interface for zone administration including modificaiton of users, resources, and
+        Interface for zone administration including modification of users, resources, and
         zone federation.
       operationId: catalogQuery
       produces:
