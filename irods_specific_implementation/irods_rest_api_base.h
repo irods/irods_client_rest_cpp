@@ -1,6 +1,5 @@
 #include "rodsClient.h"
 #include "rcConnect.h"
-#include "connection_pool.hpp"
 #include "boost/format.hpp"
 #include "json.hpp"
 #include "pistache/http_defs.h"
@@ -19,112 +18,94 @@
 #include <algorithm>
 #include <iostream>
 
-namespace irods {
-namespace rest {
+#include "indexed_connection_pool_with_expiry.hpp"
+
+namespace irods::rest {
+
+    namespace configuration_keywords {
+        const std::string timeout{"maximum_idle_timeout_in_seconds"};
+        const std::string threads{"threads"};
+        const std::string port{"port"};
+    };
+
     class configuration {
         using json = nlohmann::json;
 
         public:
-        configuration(const std::string& instance_name) :
-            instance_name_{instance_name},
-            configuration_{load(DEFAULT_CONFIGURATION_FILE)}
-        {
-        }
+            configuration(const std::string& instance_name) :
+                instance_name_{instance_name},
+                configuration_{load(DEFAULT_CONFIGURATION_FILE)}
+            {
+            }
 
-        configuration(
-            const std::string& instance_name,
-            const std::string& file_name) :
-            instance_name_{instance_name},
-            configuration_{load(file_name)}
-        {
-        }
+            configuration(
+                const std::string& instance_name,
+                const std::string& file_name) :
+                instance_name_{instance_name},
+                configuration_{load(file_name)}
+            {
+            }
 
-        auto operator[](const std::string& key) {
-            return configuration_[instance_name_][key];
-        }
-
-        private:
-        const std::string DEFAULT_CONFIGURATION_FILE{"/etc/irods/irods_client_rest_cpp.json"};
-
-        json load(const std::string& file_name)
-        {
-            std::ifstream ifs(file_name);
-            return json::parse(ifs);
-        } // load
-
-        const std::string instance_name_;
-        const json        configuration_;
-    }; // class configuration
-
-    class connection_handle {
-        public:
-            connection_handle() {
-                rodsEnv env;
-                _getRodsEnv(env);
-                conn_ = _rcConnect(
-                            env.rodsHost,
-                            env.rodsPort,
-                            env.rodsUserName,
-                            env.rodsZone,
-                            env.rodsUserName,
-                            env.rodsZone,
-                            &err_,
-                            0,
-                            NO_RECONN);
-            } // ctor
-
-            connection_handle(
-                const std::string& _user_name) {
-                rodsEnv env;
-                _getRodsEnv(env);
-                conn_ = _rcConnect(
-                            env.rodsHost,
-                            env.rodsPort,
-                            env.rodsUserName,
-                            env.rodsZone,
-                            _user_name.c_str(),
-                            env.rodsZone,
-                            &err_,
-                            0,
-                            NO_RECONN);
-            } // ctor
-
-            connection_handle(rcComm_t* _c) : conn_{_c} {}
-
-            virtual ~connection_handle() { rcDisconnect(conn_); }
-            rcComm_t* operator()() {
-                return conn_;
+            auto operator[](const std::string& key) -> json
+            {
+                try {
+                    return configuration_[instance_name_][key];
+                }
+                catch(...) {
+                    return json{};
+                }
             }
 
         private:
-            rErrMsg_t  err_;
-            rcComm_t*  conn_;
-    }; // class connection_handle
+            const std::string DEFAULT_CONFIGURATION_FILE{"/etc/irods/irods_client_rest_cpp.json"};
 
-    namespace keyword {
-        const std::string user_name{"user_name"};
-        const std::string issue_claim{"irods-rest"};
-        const std::string subject_claim{"irods-rest"};
-        const std::string audience_claim{"irods-rest"};
-    }
+            json load(const std::string& file_name)
+            {
+                std::ifstream ifs(file_name);
+                return json::parse(ifs);
+            } // load
+
+            const std::string instance_name_;
+            const json        configuration_;
+
+    }; // class configuration
+
 
     class api_base {
-        public:
-            api_base() { load_client_api_plugins(); } // ctor
-            virtual ~api_base() {   } // dtor
 
-            auto add_headers(Pistache::Http::ResponseWriter& _response) -> void
+        public:
+            api_base() : connection_pool_{}
             {
-                // necessary for CORS, does the * need to be config?
-                _response.headers().add<Pistache::Http::Header::AccessControlAllowOrigin>("*");
-                _response.headers().add<Pistache::Http::Header::AccessControlAllowMethods>("PUT,GET,POST,DELETE,OPTIONS");
-            } // add_headers
+                load_client_api_plugins();
+
+            } // ctor
+
+            api_base(const std::string& _sn) : connection_pool_{}
+            {
+                // sets the client name for the ips command
+                setenv(SP_OPTION, _sn.c_str(), 1);
+
+                auto cfg = configuration{_sn};
+                auto val = cfg[configuration_keywords::timeout];
+                auto it  = val.empty() ? default_idle_time_in_seconds : val.get<uint32_t>();
+
+                connection_pool_.set_idle_timeout(it);
+
+                load_client_api_plugins();
+
+            } // ctor
+
+            virtual ~api_base()
+            {
+            } // dtor
 
         protected:
-            connection_handle get_connection(
+
+            auto  authenticate(
                   const std::string& _user_name
                 , const std::string& _password
-                , const std::string& _auth_type) {
+                , const std::string& _auth_type) -> void
+            {
 
                 std::string password = _password;
                 std::transform(
@@ -137,26 +118,9 @@ namespace rest {
                     THROW(SYS_INVALID_INPUT_PARAM, "Only native authentication is supported");
                 }
 
-                auto conn = connection_handle();
+                auto conn = connection_handle(_user_name, _user_name);
 
-                // pass the user name via the connection, used by client login
-                rstrcpy(
-                    conn()->clientUser.userName,
-                    _user_name.c_str(),
-                    NAME_LEN);
-                rstrcpy(
-                    conn()->proxyUser.userName,
-                    _user_name.c_str(),
-                    NAME_LEN);
-
-                // set password in context string for auth
-                kvp_map_t kvp;
-                kvp[ irods::AUTH_PASSWORD_KEY] = _password;
-
-                std::string context = irods::escaped_kvp_string(kvp);
-
-                //int err = clientLogin(conn(), context.c_str(), _auth_type.c_str());
-                int err = clientLoginWithPassword(conn(), const_cast<char*>(_password.c_str()));
+                int err = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
                 if(err < 0) {
                     THROW(err,
                         boost::format("[%s] failed to login with type [%s]")
@@ -164,60 +128,36 @@ namespace rest {
                         % _auth_type);
                 }
 
+            } // authenticate
+
+            auto get_connection(const std::string& _header) -> connection_proxy
+            {
+                // remove Authorization: from the string, the key is the
+                // Authorization header which contains a JWT
+                std::string jwt = _header.substr(_header.find(":")+1);
+
+                // chomp the spaces
+                jwt.erase(
+                    std::remove_if(
+                        jwt.begin(),
+                        jwt.end(),
+                        [](unsigned char x){return std::isspace(x);}),
+                    jwt.end());
+
+                auto conn = connection_pool_.get(jwt);
+
+                auto* ptr = conn();
+
+                int err = clientLogin(ptr);
+                if(err < 0) {
+                    THROW(err,
+                        boost::format("[%s] failed to login")
+                        % conn()->clientUser.userName);
+                }
+
                 return conn;
 
             } // get_connection
-
-            connection_handle get_connection(
-                const std::string& _header) {
-                auto conn_hdl = connection_handle(decode_token(_header));
-                int err = clientLogin(conn_hdl());
-                if(err < 0) {
-                    THROW(err,
-                        boost::format("[%s] failed to login")
-                        % conn_hdl()->clientUser.userName);
-                }
-                return conn_hdl;
-            } // get_connection
-
-            connection_handle get_connection() {
-                auto conn_hdl = connection_handle();
-                int err = clientLogin(conn_hdl(), "", irods::AUTH_NATIVE_SCHEME.c_str());
-                if(err < 0) {
-                    THROW(err,
-                        boost::format("[%s] failed to login")
-                        % conn_hdl()->clientUser.userName);
-                }
-                return conn_hdl;
-            } // get_connection
-
-
-            std::string decode_token(
-                const std::string& _header) {
-                // use the zone key as our secret
-                std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
-
-                // remove Authorization: from the string
-                // TODO: should we verify use of 'Bearer:' ?
-                std::string token = _header.substr(_header.find(":")+1);
-
-                // chomp the spaces
-                token.erase(
-                    std::remove_if(
-                        token.begin(),
-                        token.end(),
-                        [](unsigned char x){return std::isspace(x);}),
-                    token.end());
-
-                // decode the token
-                auto decoded = jwt::decode(token);
-                auto verifier = jwt::verify()
-                                    .allow_algorithm(jwt::algorithm::hs256{zone_key})
-                                    .with_issuer(keyword::issue_claim);
-                verifier.verify(decoded);
-                auto payload = decoded.get_payload_claims();
-                return payload[keyword::user_name].as_string();
-            } // decode_token
 
             std::string decode_url(const std::string& _in) {
                 std::string out;
@@ -254,7 +194,8 @@ namespace rest {
             } // decode_url
 
         private:
+            indexed_connection_pool_with_expiry connection_pool_;
 
     }; // class api_base
-}; // namespace rest
-}; // namespace irods
+
+}; // namespace irods::rest
