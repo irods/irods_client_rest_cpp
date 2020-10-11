@@ -24,7 +24,7 @@ StreamPutApiImpl::StreamPutApiImpl(Pistache::Address addr)
     { }
 
 void StreamPutApiImpl::stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) {
-    MACRO_IRODS_STREAM_API_IMPLEMENTATION
+    MACRO_IRODS_STREAM_PUT_API_IMPLEMENTATION
 }
 
 }

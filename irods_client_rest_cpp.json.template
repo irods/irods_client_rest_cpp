@@ -2,42 +2,42 @@
     "irods_rest_cpp_access_server" : {
         "port" : 8080,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     },
     "irods_rest_cpp_auth_server" : {
         "port" : 8081,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     },
     "irods_rest_cpp_list_server" : {
         "port" : 8082,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     },
     "irods_rest_cpp_query_server" : {
         "port" : 8083,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     },
-    "irods_rest_cpp_streamget_server" : {
+    "irods_rest_cpp_stream_get_server" : {
         "port" : 8084,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     },
-    "irods_rest_cpp_streamput_server" : {
+    "irods_rest_cpp_stream_put_server" : {
         "port" : 8085,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     },
     "irods_rest_cpp_zone_report_server" : {
         "port" : 8086,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     },
     "irods_rest_cpp_admin_server" : {
-        "port" : 8086,
+        "port" : 8087,
         "threads" : 4,
-        "host_name" : "localhost"
+        "maximum_idle_timeout_in_seconds" : 10
     }
 
 }

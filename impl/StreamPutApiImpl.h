@@ -31,7 +31,7 @@
 
 #include <string>
 
-#include "irods_rest_stream_api_implementation.h"
+#include "irods_rest_stream_put_api_implementation.h"
 
 namespace io {
 namespace swagger {
@@ -47,7 +47,7 @@ public:
 
     void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
 
-    irods::rest::stream irods_stream_;
+    irods::rest::stream irods_stream_put_;
 };
 
 }

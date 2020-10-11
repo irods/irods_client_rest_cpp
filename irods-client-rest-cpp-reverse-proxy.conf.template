@@ -1,4 +1,4 @@
-iserver {
+server {
     listen 80;
 
     add_header 'Access-Control-Allow-Origin' '*' always;
@@ -56,4 +56,13 @@ iserver {
 
         proxy_pass http://localhost:8086;
     }
+
+    location /irods-rest/1.0.0/admin {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
+        proxy_pass http://localhost:8087;
+    }
+
 }

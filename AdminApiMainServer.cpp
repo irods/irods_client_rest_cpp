@@ -17,13 +17,26 @@
 
 using namespace io::swagger::server::api;
 
-int main() {
-    irods::rest::configuration cfg{"irods_rest_cpp_admin_server"};
-    int port = cfg["port"];
-    Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(port));
+namespace ir   = irods::rest;
+namespace irck = irods::rest::configuration_keywords;
 
-    AdminApiImpl server(addr);
-    server.init(cfg["threads"]);
+int main() {
+    auto cfg  = ir::configuration{ir::service_name};
+    auto port = cfg[irck::port];
+    if(port.empty()) {
+        std::cerr << "port is not configured for service name " << ir::service_name << std::endl;
+        return 3;
+    }
+
+    auto threads = cfg[irck::threads];
+    if(threads.empty()) {
+        threads = 4;
+    }
+
+    auto addr = Pistache::Address(Pistache::Ipv4::any(), Pistache::Port(port.get<int>()));
+
+    auto server = AdminApiImpl(addr);
+    server.init(threads);
     server.start();
 
     server.shutdown();
