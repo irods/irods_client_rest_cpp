@@ -58,7 +58,7 @@ The services rely on a configuration file in `/etc/irods/` which dictates which 
 Once the REST API is running install nginx and then copy `/etc/irods/irods-client-rest-cpp-reverse-proxy.conf.template` to `/etc/nginx/sites-available/irods-client-rest-cpp-reverse-proxy.conf` and then symbolically link it to `/etc/nginx/sites-enabled/irods-client-rest-cpp-reverse-proxy.conf`.   Nginx will then need to be restarted with `sudo service nginx restart`, or however your specific platform manages services.
 
 ## Interacting with the API endpoints
-The design of this API using JWTs to contain authorization and identity.  The Auth endpoint must be invoked first in order to authenticate and receive a JWT.  This token will then need to be included in the Authorization header of each subsequent request.  This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but posible next operations on that information.
+The design of this API using JWTs to contain authorization and identity.  The Auth endpoint must be invoked first in order to authenticate and receive a JWT.  This token will then need to be included in the Authorization header of each subsequent request.  This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
 
 ### /access
 This endpoint provides a service for the generation of an iRODS ticket to a given logical path, be that a collection or a data object.
@@ -110,14 +110,14 @@ curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/adm
 "Success" or an iRODS exception
 
 ### /auth
-This endpoint provides an authentication service for the iRODS zone, using one of the available iRODS authentication methodologies, such as: native, pam, krb or gsk.
+This endpoint provides an authentication service for the iRODS zone, currently only native iRODS authentication is supported.
 
 **Method** : POST
 
 **Parameters:**
 - user_name : the iRODS user which wishes to authenticate
 - password : The user's secret, depending on the method of authentication
-- auth_type : The iRODS method of authentication - native, pam, krb, gsk, etc.
+- auth_type : The iRODS method of authentication - native, pam, krb, gsi, etc.
 
 **Example CURL Command:**
 ```
@@ -130,7 +130,7 @@ An encrypted JWT which contains everything necessary to interact with the other 
 
 
 ### /list
-This endpoint provides a recursive listing of a collection, or stat, metadata, and access control information for a given data object
+This endpoint provides a recursive listing of a collection, or stat, metadata, and access control information for a given data object.
 
 **Method** : GET
 
@@ -184,7 +184,7 @@ A JSON structured response within the body containing the listing, or an iRODS e
 }
 ```
 
-### query
+### /query
 This endpoint provides access to the iRODS General Query language, which is a generic query service for the iRODS catalog.
 
 **Method** : GET
@@ -253,11 +253,11 @@ GET : The data requested in the body of the response
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/stream?path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&limit=1000"
+curl -X PUT -H "Authorization: ${TOKEN}" -d"This is some data" "http://localhost/irods-rest/1.0.0/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&limit=1000"
 ```
 or
 ```
-cat README.md | curl -d - -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&limit=1000"
+curl -X GET -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&limit=1000"
 ```
 
 ### /zone_report

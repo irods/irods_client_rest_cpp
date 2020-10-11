@@ -6,59 +6,69 @@
 #define MACRO_IRODS_ADMIN_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    irods_admin_.add_headers(response); \
     std::tie(code, message) = irods_admin_(headers.getRaw("Authorization").value(), action.get(), target.get(), arg2.get(), arg3.get(), arg4.get(), arg5.get(), arg6.get(), arg7.get()); \
     response.send(code, message);
 
-namespace irods {
-namespace rest {
-class admin : public api_base {
-    public:
-    std::tuple<Pistache::Http::Code &&, std::string> operator()(
-        const std::string& _auth_header,
-        const std::string& _action,
-        const std::string& _target,
-        const std::string& _arg2,
-        const std::string& _arg3,
-        const std::string& _arg4,
-        const std::string& _arg5,
-        const std::string& _arg6,
-        const std::string& _arg7)
-    {
+namespace irods::rest {
 
-        auto conn = get_connection(_auth_header);
+    // this is contractually tied directly to the api implementation
+    const std::string service_name{"irods_rest_cpp_admin_server"};
 
-        try {
-            auto gen_inp = generalAdminInp_t{
-                               _action == "remove" ? "rm" : _action.c_str(),
-                               _target.c_str(),
-                               _arg2.c_str(),
-                               _arg3.c_str(),
-                               _arg4.c_str(),
-                               _arg5.c_str(),
-                               _arg6.c_str(),
-                               _arg7.c_str(),
-                               nullptr,
-                               nullptr};
-            auto err = rcGeneralAdmin(conn(), &gen_inp);
-            if(err < 0) {
-                auto error_name = std::string{rodsErrorName(err, nullptr)};
-                return std::forward_as_tuple(
-                        Pistache::Http::Code::Bad_Request,
-                        error_name);
+    class admin : public api_base {
+        public:
+
+            admin() : api_base{service_name}
+            {
+                // ctor
             }
 
-            std::string results{"Success"};
-            return std::forward_as_tuple(
-                    Pistache::Http::Code::Ok,
-                    results);
-        }
-        catch(const irods::exception& _e) {
-            return std::forward_as_tuple(
-                    Pistache::Http::Code::Bad_Request,
-                    _e.what());
-        }
-    } // operator()
-}; // class admin
-}; // namespace rest
-}; // namespace irods
+            std::tuple<Pistache::Http::Code &&, std::string> operator()(
+                const std::string& _auth_header,
+                const std::string& _action,
+                const std::string& _target,
+                const std::string& _arg2,
+                const std::string& _arg3,
+                const std::string& _arg4,
+                const std::string& _arg5,
+                const std::string& _arg6,
+                const std::string& _arg7)
+            {
+
+                auto conn = get_connection(_auth_header);
+
+                try {
+                    auto gen_inp = generalAdminInp_t{
+                                       _action == "remove" ? "rm" : _action.c_str(),
+                                       _target.c_str(),
+                                       _arg2.c_str(),
+                                       _arg3.c_str(),
+                                       _arg4.c_str(),
+                                       _arg5.c_str(),
+                                       _arg6.c_str(),
+                                       _arg7.c_str(),
+                                       nullptr,
+                                       nullptr};
+                    auto err = rcGeneralAdmin(conn(), &gen_inp);
+                    if(err < 0) {
+                        auto error_name = std::string{rodsErrorName(err, nullptr)};
+                        return std::forward_as_tuple(
+                                Pistache::Http::Code::Bad_Request,
+                                error_name);
+                    }
+
+                    std::string results{"Success"};
+                    return std::forward_as_tuple(
+                            Pistache::Http::Code::Ok,
+                            results);
+                }
+                catch(const irods::exception& _e) {
+                    return std::forward_as_tuple(
+                            Pistache::Http::Code::Bad_Request,
+                            _e.what());
+                }
+
+            } // operator()
+
+    }; // class admin
+
+}; // namespace irods::rest
