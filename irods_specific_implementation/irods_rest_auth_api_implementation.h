@@ -51,13 +51,14 @@ namespace irods::rest {
                                token);
                 }
                 catch(const irods::exception& _e) {
-                    json msg{};
-                    msg["error_code"]    = rodsErrorName(_e.code(), nullptr);
-                    msg["error_message"] = boost::str(boost::format("[%s] failed to authenticate with type [%s]")
-                                           % _user_name % _auth_type);
-
+                    auto msg = make_error(
+                                     _e.code(),
+                                     fmt::format(
+                                           "[%s] failed to authenticate with type [%s]"
+                                         , _user_name
+                                         , _auth_type));
                     return std::forward_as_tuple(
-                               Pistache::Http::Code::Bad_Request, msg.dump());
+                               Pistache::Http::Code::Bad_Request, msg);
                 }
 
             } // operator()
