@@ -65,7 +65,7 @@ namespace irods::rest {
                     double dbl_query_limit = static_cast<double>(query_limit);
                     double dbl_total_row_count = static_cast<double>(total_row_count);
                     nlohmann::json links = nlohmann::json::object();
-                    std::string base_url{_base_url+"query?query_string=%s&query_limit=%s&row_offset=%s&query_type=%s"};
+                    std::string base_url{_base_url+"query?query_string={}&query_limit={}&row_offset={}&query_type={}"};
                     links["self"] = fmt::format(base_url
                                     , _query_string
                                     , _query_limit

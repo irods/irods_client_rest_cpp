@@ -53,7 +53,7 @@ namespace irods::rest {
 
                     nlohmann::json results = nlohmann::json::object();
                     results["url"] = fmt::format(
-                                         "%s/stream?path=%s&offset=0&limit=%d"
+                                         "{}/stream?path={}&offset=0&limit={}"
                                          , _base_url
                                          , logical_path
                                          , size);

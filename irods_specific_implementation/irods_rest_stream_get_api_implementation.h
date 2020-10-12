@@ -59,9 +59,9 @@ namespace irods::rest {
                     }
 
                     auto error = make_error(
-                                       SYS_INVALID_INPUT_PARAM
-                                     , fmt::format(
-                                           "Failed to open object [%s]"
+                                     SYS_INVALID_INPUT_PARAM,
+                                     fmt::format(
+                                           "Failed to open object [{}]"
                                          , path.string()));
                     return std::forward_as_tuple(
                                Pistache::Http::Code::Bad_Request,

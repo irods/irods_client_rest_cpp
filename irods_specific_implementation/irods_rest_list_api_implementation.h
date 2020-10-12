@@ -115,7 +115,7 @@ namespace irods::rest {
                     results["_embedded"] = objects;
 
                     nlohmann::json links = nlohmann::json::object();
-                    std::string base_url{_base_url+"/list?path=%s&stat=%s&permissions=%s&metadata=%s&offset=%s&limit=%s"};
+                    std::string base_url{_base_url+"/list?path={}&stat={}&permissions={}&metadata={}&offset={}&limit={}"};
                     links["self"] = fmt::format(base_url
                                     , _logical_path
                                     , _stat
