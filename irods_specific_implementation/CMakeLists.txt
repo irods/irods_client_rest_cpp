@@ -190,9 +190,18 @@ install(
 
 install(
   FILES
-  ${CMAKE_SOURCE_DIR}/irods_client_rest_cpp.json.template
-  ${CMAKE_SOURCE_DIR}/irods-client-rest-cpp-reverse-proxy.conf.template
+  ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.json.template
+  ${CMAKE_SOURCE_DIR}/packaging/irods-client-rest-cpp-reverse-proxy.conf.template
   DESTINATION etc/irods
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+  )
+
+install(
+  FILES
+  ${CMAKE_SOURCE_DIR}/packaging/irods_rest.py
+  ${CMAKE_SOURCE_DIR}/packaging/test_irods_client_rest_cpp.py
+  DESTINATION var/lib/irods/scripts/irods/test
   COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )

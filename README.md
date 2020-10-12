@@ -263,8 +263,10 @@ curl -X GET -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/stre
 ### /zone_report
 Requests a JSON formatted iRODS Zone report, containing all configuration information for every server in the grid.
 
+**Method** : POST
+
 **Parameters**
-None
+- None
 
 **Example CURL Command:**
 ```

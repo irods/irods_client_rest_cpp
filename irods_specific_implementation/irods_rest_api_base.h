@@ -57,10 +57,25 @@ namespace irods::rest {
             {
             }
 
-            auto operator[](const std::string& key) -> json
+            auto contains(const std::string& _key) -> bool
+            {
+                    return configuration_.at(instance_name_).contains(_key);
+            }
+
+            auto at(const std::string& _key) -> json
             {
                 try {
-                    return configuration_[instance_name_][key];
+                    return configuration_.at(instance_name_).at(_key);
+                }
+                catch(...) {
+                    return json{};
+                }
+            }
+
+            auto operator[](const std::string& _key) -> json
+            {
+                try {
+                    return configuration_.at(instance_name_).at(_key);
                 }
                 catch(...) {
                     return json{};
@@ -97,8 +112,10 @@ namespace irods::rest {
                 setenv(SP_OPTION, _sn.c_str(), 1);
 
                 auto cfg = configuration{_sn};
-                auto val = cfg[configuration_keywords::timeout];
-                auto it  = val.empty() ? default_idle_time_in_seconds : val.get<uint32_t>();
+                auto it  = default_idle_time_in_seconds;
+                if(cfg.contains(configuration_keywords::timeout)) {
+                    it = cfg.at(configuration_keywords::timeout).get<uint32_t>();
+                }
 
                 connection_pool_.set_idle_timeout(it);
 
@@ -117,8 +134,6 @@ namespace irods::rest {
                 , const std::string& _password
                 , const std::string& _auth_type) -> void
             {
-
-std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                 std::string password = _password;
                 std::transform(
                     password.begin(),
@@ -126,18 +141,14 @@ std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                     password.begin(),
                     ::tolower );
 
-std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                 if("native" != _auth_type) {
                     THROW(SYS_INVALID_INPUT_PARAM, "Only native authentication is supported");
                 }
 
-std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                 auto conn = connection_handle(_user_name, _user_name);
-std::cout << __FILE__ << ":" << __LINE__ << std::endl;
 
                 int err = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
                 if(err < 0) {
-std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                     THROW(err,
                         fmt::format("[{}] failed to login with type [{}]"
                         , _user_name

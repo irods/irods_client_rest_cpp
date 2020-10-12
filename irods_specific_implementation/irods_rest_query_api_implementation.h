@@ -2,6 +2,9 @@
 #include "irods_rest_api_base.h"
 
 #include "irods_query.hpp"
+#include "irods_logger.hpp"
+
+using logger = irods::experimental::log;
 
 // this is contractually tied directly to the swagger api definition, and the below implementation
 #define MACRO_IRODS_QUERY_API_IMPLEMENTATION \
@@ -67,13 +70,13 @@ namespace irods::rest {
                     nlohmann::json links = nlohmann::json::object();
                     std::string base_url{_base_url+"query?query_string={}&query_limit={}&row_offset={}&query_type={}"};
                     links["self"] = fmt::format(base_url
-                                    , _query_string
+                                    , query_string
                                     , _query_limit
                                     , _row_offset
                                     , _query_type);
 
                     links["first"] = fmt::format(base_url
-                                    , _query_string
+                                    , query_string
                                     , _query_limit
                                     , "0"
                                     , _query_type);
@@ -85,7 +88,7 @@ namespace irods::rest {
                     double last_page_number{dbl_total_row_count - final_page_delta};
 
                     links["last"] = fmt::format(base_url
-                                    , _query_string
+                                    , query_string
                                     , _query_limit
                                     , std::to_string(static_cast<int>(last_page_number))
                                     , _query_type);
@@ -95,14 +98,14 @@ namespace irods::rest {
                     next_page_number = next_page_number >= dbl_total_row_count ? last_page_number : next_page_number;
 
                     links["next"] = fmt::format(base_url
-                                    , _query_string
+                                    , query_string
                                     , _query_limit
                                     , std::to_string(static_cast<int>(next_page_number))
                                     , _query_type);
 
                     auto prev_count = dbl_row_offset - dbl_query_limit;
                     links["prev"] = fmt::format(base_url
-                                    , _query_string
+                                    , query_string
                                     , _query_limit
                                     , std::to_string(static_cast<int>(std::max(0.0, prev_count)))
                                     , _query_type);
