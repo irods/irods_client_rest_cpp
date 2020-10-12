@@ -27,7 +27,7 @@ namespace irods::rest {
 
         auto make_error(int32_t _code, const std::string& _msg) -> std::string
         {
-            return fmt::format("{\"error_code\" : %d, \"error_message\" : %s}", _code, _msg);
+            return fmt::format("{{\"error_code\" : {}, \"error_message\" : \"{}\"}}", _code, _msg);
 
         } // make_error
 
@@ -118,6 +118,7 @@ namespace irods::rest {
                 , const std::string& _auth_type) -> void
             {
 
+std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                 std::string password = _password;
                 std::transform(
                     password.begin(),
@@ -125,16 +126,20 @@ namespace irods::rest {
                     password.begin(),
                     ::tolower );
 
+std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                 if("native" != _auth_type) {
                     THROW(SYS_INVALID_INPUT_PARAM, "Only native authentication is supported");
                 }
 
+std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                 auto conn = connection_handle(_user_name, _user_name);
+std::cout << __FILE__ << ":" << __LINE__ << std::endl;
 
                 int err = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
                 if(err < 0) {
+std::cout << __FILE__ << ":" << __LINE__ << std::endl;
                     THROW(err,
-                        fmt::format("[%s] failed to login with type [%s]"
+                        fmt::format("[{}] failed to login with type [{}]"
                         , _user_name
                         , _auth_type));
                 }
@@ -162,7 +167,7 @@ namespace irods::rest {
                 int err = clientLogin(ptr);
                 if(err < 0) {
                     THROW(err,
-                        fmt::format("[%s] failed to login"
+                        fmt::format("[{}] failed to login"
                         , conn()->clientUser.userName));
                 }
 
