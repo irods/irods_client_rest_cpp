@@ -218,7 +218,7 @@ namespace irods::rest {
                     nlohmann::json md = nlohmann::json::object();
                     md["attribute"] = avu.attribute;
                     md["value"] = avu.value;
-                    md["unit"] = avu.units;
+                    md["units"] = avu.units;
                     meta_arr += md;
                 }
 
