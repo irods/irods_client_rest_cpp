@@ -52,12 +52,11 @@ namespace irods::rest {
                     headers += std::string{"X-API-KEY: "}+ticket;
 
                     nlohmann::json results = nlohmann::json::object();
-                    results["url"] = boost::str(
-                                     boost::format(
-                                     "%s/stream?path=%s&offset=0&limit=%d")
-                                     % _base_url
-                                     % logical_path
-                                     % size);
+                    results["url"] = fmt::format(
+                                         "%s/stream?path=%s&offset=0&limit=%d"
+                                         , _base_url
+                                         , logical_path
+                                         , size);
                     results["headers"] = headers;
 
                     // create the ticket in the catalog
@@ -81,14 +80,16 @@ namespace irods::rest {
                             results.dump());
                 }
                 catch(const irods::exception& _e) {
+                    auto error = make_error(_e.code(), _e.what());
                     return std::forward_as_tuple(
                             Pistache::Http::Code::Bad_Request,
-                            _e.what());
+                            error);
                 }
                 catch(const std::exception& _e) {
+                    auto error = make_error(SYS_INTERNAL_ERR, _e.what());
                     return std::forward_as_tuple(
                             Pistache::Http::Code::Bad_Request,
-                            _e.what());
+                            error);
                 }
             } // operator()
 

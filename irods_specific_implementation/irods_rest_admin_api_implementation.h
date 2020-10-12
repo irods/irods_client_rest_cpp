@@ -50,21 +50,21 @@ namespace irods::rest {
                                        nullptr};
                     auto err = rcGeneralAdmin(conn(), &gen_inp);
                     if(err < 0) {
-                        auto error_name = std::string{rodsErrorName(err, nullptr)};
+                        auto error = make_error(err, "rsGeneralAdmin failed.");
                         return std::forward_as_tuple(
                                 Pistache::Http::Code::Bad_Request,
-                                error_name);
+                                error);
                     }
 
-                    std::string results{"Success"};
                     return std::forward_as_tuple(
                             Pistache::Http::Code::Ok,
-                            results);
+                            SUCCESS);
                 }
                 catch(const irods::exception& _e) {
+                    auto error = make_error(_e.code(), _e.what());
                     return std::forward_as_tuple(
                             Pistache::Http::Code::Bad_Request,
-                            _e.what());
+                            error);
                 }
 
             } // operator()

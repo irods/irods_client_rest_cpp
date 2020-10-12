@@ -90,9 +90,10 @@ namespace irods::rest {
                                 objects += obj_info;
                             }
                             catch(const exception& _e) {
+                                auto error = make_error(_e.code(), _e.what());
                                 return std::forward_as_tuple(
                                     Pistache::Http::Code::Bad_Request,
-                                    _e.what());
+                                    error);
                             }
 
                             ++limit_counter;
@@ -102,9 +103,12 @@ namespace irods::rest {
                         } // for path
                     }
                     else {
+                        auto error = make_error(
+                                          SYS_INVALID_INPUT_PARAM,
+                                         "logical path is not accessible");
                         return std::forward_as_tuple(
                             Pistache::Http::Code::Bad_Request,
-                            "logical path is not accessible");
+                            error);
                     }
 
                     nlohmann::json results = nlohmann::json::object();
@@ -112,41 +116,41 @@ namespace irods::rest {
 
                     nlohmann::json links = nlohmann::json::object();
                     std::string base_url{_base_url+"/list?path=%s&stat=%s&permissions=%s&metadata=%s&offset=%s&limit=%s"};
-                    links["self"] = boost::str(boost::format(base_url)
-                                    % _logical_path
-                                    % _stat
-                                    % _permissions
-                                    % _metadata
-                                    % _offset
-                                    % _limit);
-                    links["first"] = boost::str(boost::format(base_url)
-                                    % _logical_path
-                                    % _stat
-                                    % _permissions
-                                    % _metadata
-                                    % "0"
-                                    % _limit);
-                    links["last"] = boost::str(boost::format(base_url)
-                                    % _logical_path
-                                    % _stat
-                                    % _permissions
-                                    % _metadata
-                                    % "UNSUPPORTED"
-                                    % _limit);
-                    links["next"] = boost::str(boost::format(base_url)
-                                    % _logical_path
-                                    % _stat
-                                    % _permissions
-                                    % _metadata
-                                    % std::to_string(offset+limit)
-                                    % _limit);
-                    links["prev"] = boost::str(boost::format(base_url)
-                                    % _logical_path
-                                    % _stat
-                                    % _permissions
-                                    % _metadata
-                                    % std::to_string(std::max((intmax_t)0, offset-limit))
-                                    % _limit);
+                    links["self"] = fmt::format(base_url
+                                    , _logical_path
+                                    , _stat
+                                    , _permissions
+                                    , _metadata
+                                    , _offset
+                                    , _limit);
+                    links["first"] = fmt::format(base_url
+                                    , _logical_path
+                                    , _stat
+                                    , _permissions
+                                    , _metadata
+                                    , "0"
+                                    , _limit);
+                    links["last"] = fmt::format(base_url
+                                    , _logical_path
+                                    , _stat
+                                    , _permissions
+                                    , _metadata
+                                    , "UNSUPPORTED"
+                                    , _limit);
+                    links["next"] = fmt::format(base_url
+                                    , _logical_path
+                                    , _stat
+                                    , _permissions
+                                    , _metadata
+                                    , std::to_string(offset+limit)
+                                    , _limit);
+                    links["prev"] = fmt::format(base_url
+                                    , _logical_path
+                                    , _stat
+                                    , _permissions
+                                    , _metadata
+                                    , std::to_string(std::max((intmax_t)0, offset-limit))
+                                    , _limit);
                     results["_links"] = links;
 
                     return std::forward_as_tuple(
@@ -154,9 +158,10 @@ namespace irods::rest {
                             results.dump());
                 }
                 catch(const irods::exception& _e) {
+                    auto error = make_error(_e.code(), _e.what());
                     return std::forward_as_tuple(
                             Pistache::Http::Code::Bad_Request,
-                            _e.what());
+                            error);
                 }
             } // operator()
 
