@@ -6,7 +6,6 @@ try:
 except ImportError:
         from StringIO import StringIO as BytesIO
 
-
 def base_url():
     return "http://localhost/irods-rest/1.0.0/"
 
@@ -14,7 +13,7 @@ def authenticate(_user_name, _password, _auth_type):
     buffer = StringIO()
     c = pycurl.Curl()
     c.setopt(c.CUSTOMREQUEST, 'POST')
-    url = base_url()+'auth?userName='+_user_name+'&password='+_password+'&authType='+_auth_type
+    url = base_url()+'auth?user_name='+_user_name+'&password='+_password+'&auth_type='+_auth_type
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -103,19 +102,19 @@ def get(_token, _physical_path, _logical_path):
             c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
             c.setopt(c.CUSTOMREQUEST, 'GET')
 
-            c.setopt(c.URL, '{0}stream?path={1}&offset={2}&limit={3}'.format(base_url(), _logical_path, offset, read_size))
+            url = '{0}stream?path={1}&offset={2}&limit={3}'.format(base_url(), _logical_path, offset, read_size)
+            c.setopt(c.URL, url)
 
             body_buffer = StringIO()
             c.setopt(c.WRITEDATA, body_buffer)
 
             c.perform()
-
-
             c.close()
 
             body = body_buffer.getvalue()
 
             if len(body) == 0:
+                print("Length of body is zero")
                 break
 
             f.write(body)
@@ -190,8 +189,6 @@ def query(_token, _string, _limit, _offset, _type):
 
     return body
 
-
-
 def get_arguments():
     full_args = sys.argv
     arg_list  = full_args[1:]
@@ -224,81 +221,45 @@ def get_flag(_args, _key):
     except:
         return False
 
-args  = get_arguments()
-token = authenticate(get_value(args, 'user_name'), get_value(args, 'password'), 'STANDARD')
-cmd = args['--command']
-if('query' == cmd):
-    qstr   = get_value(args, 'query')
-    qtype  = get_value(args, 'type')
-    limit  = get_value(args, 'limit')
-    offset = get_value(args, 'offset')
-    print query(token, qstr, limit, offset, qtype)
-elif('admin' == cmd):
-    action = get_value(args, 'action')
-    target = get_value(args, 'target')
-    arg2   = get_value(args, 'arg2')
-    arg3   = get_value(args, 'arg3')
-    arg4   = get_value(args, 'arg4')
-    arg5   = get_value(args, 'arg5')
-    arg6   = get_value(args, 'arg6')
-    arg7   = get_value(args, 'arg7')
-    print admin(token, action, target, arg2, arg3, arg4, arg5, arg6, arg7)
-elif('get' == cmd):
-    print get(token, get_value(args,'physical_path'), get_value(args,'logical_path'))
-elif('put' == cmd):
-    print put(token, get_value(args,'physical_path'), get_value(args,'logical_path'))
-elif('list' == cmd):
-    path   = get_value(args, 'logical_path')
-    limit  = get_value(args, 'limit')
-    offset = get_value(args, 'offset')
-    stat   = get_flag(args, 'stat')
-    mdata  = get_flag(args, 'metadata')
-    perms  = get_flag(args, 'permissions')
-    print list(token, path, stat, perms, mdata, offset, limit)
-elif('access' == cmd):
-    path = get_value(args, 'logical_path')
-    print access(token, path)
-elif('zone_report' == cmd):
-    print zone_report(token)
-else:
-    print('Command ['+cmd+'] is not supported.')
+def main():
+    args  = get_arguments()
+    token = authenticate(get_value(args, 'user_name'), get_value(args, 'password'), 'native')
+    cmd = args['--command']
+    if('query' == cmd):
+        qstr   = get_value(args, 'query')
+        qtype  = get_value(args, 'type')
+        limit  = get_value(args, 'limit')
+        offset = get_value(args, 'offset')
+        print query(token, qstr, limit, offset, qtype)
+    elif('admin' == cmd):
+        action = get_value(args, 'action')
+        target = get_value(args, 'target')
+        arg2   = get_value(args, 'arg2')
+        arg3   = get_value(args, 'arg3')
+        arg4   = get_value(args, 'arg4')
+        arg5   = get_value(args, 'arg5')
+        arg6   = get_value(args, 'arg6')
+        arg7   = get_value(args, 'arg7')
+        print admin(token, action, target, arg2, arg3, arg4, arg5, arg6, arg7)
+    elif('get' == cmd):
+        print get(token, get_value(args,'physical_path'), get_value(args,'logical_path'))
+    elif('put' == cmd):
+        print put(token, get_value(args,'physical_path'), get_value(args,'logical_path'))
+    elif('list' == cmd):
+        path   = get_value(args, 'logical_path')
+        limit  = get_value(args, 'limit')
+        offset = get_value(args, 'offset')
+        stat   = get_flag(args, 'stat')
+        mdata  = get_flag(args, 'metadata')
+        perms  = get_flag(args, 'permissions')
+        print list(token, path, stat, perms, mdata, offset, limit)
+    elif('access' == cmd):
+        path = get_value(args, 'logical_path')
+        print access(token, path)
+    elif('zone_report' == cmd):
+        print zone_report(token)
+    else:
+        print('Command ['+cmd+'] is not supported.')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == '__main__':
+        main()
