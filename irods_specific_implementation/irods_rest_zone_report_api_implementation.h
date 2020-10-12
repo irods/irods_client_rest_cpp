@@ -46,8 +46,10 @@ namespace irods::rest {
                            report);
             }
             catch(const irods::exception& _e) {
+                auto error = make_error(_e.code(), _e.what());
                 return std::forward_as_tuple(
-                           Pistache::Http::Code::Bad_Request, _e.what());
+                           Pistache::Http::Code::Bad_Request,
+                           error);
             }
 
         } // operator()

@@ -58,15 +58,20 @@ namespace irods::rest {
                                    std::string{read_buff});
                     }
 
-                    auto msg = std::string{"Failed to open object ["} + path.string() + "]";
+                    auto error = make_error(
+                                       SYS_INVALID_INPUT_PARAM
+                                     , fmt::format(
+                                           "Failed to open object [%s]"
+                                         , path.string()));
                     return std::forward_as_tuple(
                                Pistache::Http::Code::Bad_Request,
-                               msg);
+                               error);
                 }
                 catch(const irods::exception& _e) {
+                    auto error = make_error(_e.code(), _e.what());
                     return std::forward_as_tuple(
                                Pistache::Http::Code::Bad_Request,
-                               _e.what());
+                               error);
                 }
 
             } // operator()

@@ -66,17 +66,17 @@ namespace irods::rest {
                     double dbl_total_row_count = static_cast<double>(total_row_count);
                     nlohmann::json links = nlohmann::json::object();
                     std::string base_url{_base_url+"query?query_string=%s&query_limit=%s&row_offset=%s&query_type=%s"};
-                    links["self"] = boost::str(boost::format(base_url)
-                                    % _query_string
-                                    % _query_limit
-                                    % _row_offset
-                                    % _query_type);
+                    links["self"] = fmt::format(base_url
+                                    , _query_string
+                                    , _query_limit
+                                    , _row_offset
+                                    , _query_type);
 
-                    links["first"] = boost::str(boost::format(base_url)
-                                    % _query_string
-                                    % _query_limit
-                                    % "0"
-                                    % _query_type);
+                    links["first"] = fmt::format(base_url
+                                    , _query_string
+                                    , _query_limit
+                                    , "0"
+                                    , _query_type);
 
                     double total_pages = dbl_total_row_count / dbl_query_limit;
                     double fraction_remaining_pages = (total_pages - std::trunc(total_pages));
@@ -84,28 +84,28 @@ namespace irods::rest {
                     double final_page_delta{remaining_rows == 0.0 ? dbl_query_limit : remaining_rows};
                     double last_page_number{dbl_total_row_count - final_page_delta};
 
-                    links["last"] = boost::str(boost::format(base_url)
-                                    % _query_string
-                                    % _query_limit
-                                    % std::to_string(static_cast<int>(last_page_number))
-                                    % _query_type);
+                    links["last"] = fmt::format(base_url
+                                    , _query_string
+                                    , _query_limit
+                                    , std::to_string(static_cast<int>(last_page_number))
+                                    , _query_type);
 
                     double current_page_number = dbl_row_offset / dbl_query_limit;
                     double next_page_number{std::trunc(current_page_number)+1 * dbl_query_limit};
                     next_page_number = next_page_number >= dbl_total_row_count ? last_page_number : next_page_number;
 
-                    links["next"] = boost::str(boost::format(base_url)
-                                    % _query_string
-                                    % _query_limit
-                                    % std::to_string(static_cast<int>(next_page_number))
-                                    % _query_type);
+                    links["next"] = fmt::format(base_url
+                                    , _query_string
+                                    , _query_limit
+                                    , std::to_string(static_cast<int>(next_page_number))
+                                    , _query_type);
 
                     auto prev_count = dbl_row_offset - dbl_query_limit;
-                    links["prev"] = boost::str(boost::format(base_url)
-                                    % _query_string
-                                    % _query_limit
-                                    % std::to_string(static_cast<int>(std::max(0.0, prev_count)))
-                                    % _query_type);
+                    links["prev"] = fmt::format(base_url
+                                    , _query_string
+                                    , _query_limit
+                                    , std::to_string(static_cast<int>(std::max(0.0, prev_count)))
+                                    , _query_type);
                     results["_links"] = links;
 
                     return std::forward_as_tuple(
@@ -113,9 +113,10 @@ namespace irods::rest {
                             results.dump());
                 }
                 catch(const irods::exception& _e) {
+                    auto error = make_error(_e.code(), _e.what());
                     return std::forward_as_tuple(
                             Pistache::Http::Code::Bad_Request,
-                            _e.what());
+                            error);
                 }
             } // operator()
 

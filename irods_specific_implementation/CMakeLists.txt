@@ -153,7 +153,8 @@ foreach(API_NAME ${API_SERVER_NAMES})
     include_directories(${IRODS_INCLUDE_DIRS}
                         ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
                         ${IRODS_EXTERNALS_FULLPATH_JSON}/include
-                        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
+                        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+                        ${IRODS_EXTERNALS_FULLPATH_FMT}/include)
 
     include_directories(model)
     include_directories(api)
@@ -167,6 +168,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
         irods_client
         irods_plugin_dependencies
         irods_common
+        ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     )
 
     install(
