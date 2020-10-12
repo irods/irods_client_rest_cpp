@@ -1,6 +1,6 @@
 #include "rodsClient.h"
 #include "rcConnect.h"
-#include "boost/format.hpp"
+#include "fmt/format.h"
 #include "json.hpp"
 #include "pistache/http_defs.h"
 
@@ -22,11 +22,22 @@
 
 namespace irods::rest {
 
-    namespace configuration_keywords {
-        const std::string timeout{"maximum_idle_timeout_in_seconds"};
-        const std::string threads{"threads"};
-        const std::string port{"port"};
-    };
+    namespace {
+        const std::string SUCCESS{"{\"code\" : 0, \"message\" : \"Success\"}"};
+
+        auto make_error(int32_t _code, const std::string& _msg) -> std::string
+        {
+            return fmt::format("{\"error_code\" : %d, \"error_message\" : %s}", _code, _msg);
+
+        } // make_error
+
+        namespace configuration_keywords {
+            const std::string timeout{"maximum_idle_timeout_in_seconds"};
+            const std::string threads{"threads"};
+            const std::string port{"port"};
+        };
+
+    } // namespace
 
     class configuration {
         using json = nlohmann::json;
@@ -123,9 +134,9 @@ namespace irods::rest {
                 int err = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
                 if(err < 0) {
                     THROW(err,
-                        boost::format("[%s] failed to login with type [%s]")
-                        % _user_name
-                        % _auth_type);
+                        fmt::format("[%s] failed to login with type [%s]"
+                        , _user_name
+                        , _auth_type));
                 }
 
             } // authenticate
@@ -151,8 +162,8 @@ namespace irods::rest {
                 int err = clientLogin(ptr);
                 if(err < 0) {
                     THROW(err,
-                        boost::format("[%s] failed to login")
-                        % conn()->clientUser.userName);
+                        fmt::format("[%s] failed to login"
+                        , conn()->clientUser.userName));
                 }
 
                 return conn;
