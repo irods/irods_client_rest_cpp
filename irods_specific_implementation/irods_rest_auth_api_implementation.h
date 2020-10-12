@@ -54,7 +54,7 @@ namespace irods::rest {
                     auto msg = make_error(
                                      _e.code(),
                                      fmt::format(
-                                           "[%s] failed to authenticate with type [%s]"
+                                           "[{}] failed to authenticate with type [{}]"
                                          , _user_name
                                          , _auth_type));
                     return std::forward_as_tuple(
