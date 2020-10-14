@@ -51,13 +51,12 @@ void QueryApi::setupRoutes() {
 void QueryApi::catalog_query_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
 
     try {
-    // Getting the query params
-    auto queryString = request.query().get("query_string");
-    auto queryLimit = request.query().get("query_limit");
-    auto rowOffset = request.query().get("row_offset");
-    auto queryType = request.query().get("query_type");
-    
-      this->catalog_query(request.headers(), request.body(), queryString, queryType, queryLimit, rowOffset, response);
+        auto queryString = request.query().get("query_string");
+        auto queryLimit  = request.query().get("query_limit");
+        auto rowOffset   = request.query().get("row_offset");
+        auto queryType   = request.query().get("query_type");
+
+        this->catalog_query(request.headers(), request.body(), queryString, queryType, queryLimit, rowOffset, response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());
