@@ -4,8 +4,23 @@
         "threads" : 4,
         "maximum_idle_timeout_in_seconds" : 10
     },
+    "irods_rest_cpp_admin_server" : {
+        "port" : 8087,
+        "threads" : 4,
+        "maximum_idle_timeout_in_seconds" : 10
+    },
     "irods_rest_cpp_auth_server" : {
         "port" : 8081,
+        "threads" : 4,
+        "maximum_idle_timeout_in_seconds" : 10
+    },
+    "irods_rest_cpp_get_configuration_server" : {
+        "port" : 8088,
+        "threads" : 4,
+        "maximum_idle_timeout_in_seconds" : 10
+    },
+    "irods_rest_cpp_put_configuration_server" : {
+        "port" : 8089,
         "threads" : 4,
         "maximum_idle_timeout_in_seconds" : 10
     },
@@ -33,11 +48,5 @@
         "port" : 8086,
         "threads" : 4,
         "maximum_idle_timeout_in_seconds" : 10
-    },
-    "irods_rest_cpp_admin_server" : {
-        "port" : 8087,
-        "threads" : 4,
-        "maximum_idle_timeout_in_seconds" : 10
     }
-
 }
