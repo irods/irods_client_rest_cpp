@@ -50,6 +50,42 @@ def access(_token, _logical_path):
 
     return body
 
+def get_configuration(_token):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
+    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(c.CUSTOMREQUEST, 'GET')
+
+    url = '{0}get_configuration'.format(base_url())
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body
+
+def put_configuration(_token, _cfg):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
+    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(c.CUSTOMREQUEST, 'PUT')
+
+    url = '{0}put_configuration?cfg={1}'.format(base_url(), _cfg)
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body
+
 def list(_token, _path, _stat, _permissions, _metadata, _offset, _limit):
     buffer = StringIO()
     c = pycurl.Curl()
@@ -249,6 +285,11 @@ def main():
         arg6   = get_value(args, 'arg6')
         arg7   = get_value(args, 'arg7')
         print admin(token, action, target, arg2, arg3, arg4, arg5, arg6, arg7)
+    elif('get_configuration' == cmd):
+        print get_configuration(token)
+    elif('put_configuration' == cmd):
+        cfg    = get_value(args, 'configuration')
+        print put_configuration(token, cfg)
     elif('get' == cmd):
         print get(token, get_value(args,'physical_path'), get_value(args,'logical_path'))
     elif('put' == cmd):

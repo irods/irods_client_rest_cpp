@@ -8,6 +8,7 @@
 #include "irods_kvp_string_parser.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_exception.hpp"
 
 #include "jwt.h"
 #include "json.hpp"
