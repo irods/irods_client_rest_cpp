@@ -96,6 +96,8 @@ set(
     Access
     Admin
     Auth
+    GetConfiguration
+    PutConfiguration
     List
     Query
     StreamGet
@@ -153,7 +155,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
 
     link_libraries(c++abi)
     include_directories(${IRODS_INCLUDE_DIRS}
-                        /opt/irods-externals/pistache0.0.2-0/include
+                        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/include
                         ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
                         ${IRODS_EXTERNALS_FULLPATH_JSON}/include
                         ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
@@ -173,6 +175,8 @@ foreach(API_NAME ${API_SERVER_NAMES})
         irods_plugin_dependencies
         irods_common
         ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+        ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+        ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     )
 
     install(

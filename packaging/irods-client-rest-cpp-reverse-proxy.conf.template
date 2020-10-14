@@ -12,11 +12,35 @@ server {
         proxy_pass http://localhost:8080;
     }
 
+    location /irods-rest/1.0.0/admin {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
+        proxy_pass http://localhost:8087;
+    }
+
     location /irods-rest/1.0.0/auth {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
         proxy_pass http://localhost:8081;
+    }
+
+    location /irods-rest/1.0.0/get_configuration {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
+        proxy_pass http://localhost:8088;
+    }
+
+    location /irods-rest/1.0.0/put_configuration {
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+
+        proxy_pass http://localhost:8089;
     }
 
     location /irods-rest/1.0.0/list {
@@ -55,14 +79,6 @@ server {
         }
 
         proxy_pass http://localhost:8086;
-    }
-
-    location /irods-rest/1.0.0/admin {
-        if ($request_method = 'OPTIONS') {
-            return 204;
-        }
-
-        proxy_pass http://localhost:8087;
     }
 
 }
