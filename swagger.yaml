@@ -1,16 +1,18 @@
----
-swagger: "2.0"
+openapi: 3.0.0
+
 info:
-  description: This is the iRODS REST API
-  version: 1.0.0
   title: iRODS REST API
+  description: This is the iRODS REST API
+  version: 0.1.0
   contact:
     email: info@irods.org
   license:
     name: BSD 3-Clause
     url: https://opensource.org/licenses/BSD-3-Clause
-host: virtserver.swaggerhub.com
-basePath: /irods-rest/1.0.0
+
+servers:
+  - url: /v1
+
 security:
   - BearerAuth:
       - read
@@ -19,33 +21,33 @@ security:
       - read
       - write
   - ApiKeyAuth: []
+
 tags:
-- name: auth
-  description: authentication endpoint
-- name: query
-  description: general query endpoint
-- name: rodsadmin
-  description: Secured Admin-only calls
-- name: rodsuser
-  description: Operations available to regular users
-schemes:
-- https
+  - name: auth
+    description: Authentication endpoint
+  - name: rodsadmin
+    description: Secured Admin-only calls
+  - name: rodsuser
+    description: Operations available to regular users
+
 paths:
   /access:
     post:
       tags:
-        - access
+        - auth
+        - rodsuser
       summary:
         obtain an access token and url for a given object
       operationId: access
-      description: |
+      description:
         obtain an access token and url for a given object
       parameters:
         - in: query
           name: path
           description: irods absolute logical path of the object
           required: true
-          type: string
+          schema:
+            type: string
       security: []
       responses:
         200:
@@ -57,107 +59,116 @@ paths:
                 description: access token and url to use in subsequent operations
         '401':
           description: token acquisition failed
+
   /admin:
     get:
       tags:
-      - query
+        - rodsadmin
       summary: Administration interface for changes to zone configuration
       description: |
         Interface for zone administration including modification of users, resources, and
         zone federation.
-      operationId: catalogQuery
-      produces:
-      - application/json
+      operationId: admin
       parameters:
-      - name: action
-        in: admin
-        description: dictates the action taken: add, modify, or remove
-        required: true
-        type: string
-      - name: target
-        in: admin
-        description: the subject of the action: user, zone, resource, childtoresc, childfromresc, token, group, rebalance, unusedAVUs, specificQuery
-        required: true
-        type: string
-      - name: arg2
-        in: admin
-        description: generic argument, could be user name, resource name, etc.
-        required: true
-        type: string
-      - name: arg3
-        in: admin
-        description: generic argument
-        required: true
-        type: string
-      - name: arg4
-        in: admin
-        description: generic argument
-        required: true
-        type: string
-      - name: arg5
-        in: admin
-        description: generic argument
-        required: true
-        type: string
-      - name: arg6
-        in: admin
-        description: generic argument
-        required: true
-        type: string
-      - name: arg7
-        in: admin
-        description: generic argument
-        required: true
-        type: string
+        - in: query
+          name: action
+          description: dictates the action taken - add, modify, or remove
+          required: true
+          schema:
+            type: string
+        - name: target
+          in: query
+          description: the subject of the action - user, zone, resource, childtoresc, childfromresc, token, group, rebalance, unusedAVUs, specificQuery
+          required: true
+          schema:
+            type: string
+        - name: arg2
+          in: query
+          description: generic argument, could be user name, resource name, etc.
+          required: true
+          schema:
+            type: string
+        - name: arg3
+          in: query
+          description: generic argument
+          required: true
+          schema:
+            type: string
+        - name: arg4
+          in: query
+          description: generic argument
+          required: true
+          schema:
+            type: string
+        - name: arg5
+          in: query
+          description: generic argument
+          required: true
+          schema:
+            type: string
+        - name: arg6
+          in: query
+          description: generic argument
+          required: true
+          schema:
+            type: string
+        - name: arg7
+          in: query
+          description: generic argument
+          required: true
+          schema:
+            type: string
 
       responses:
         200:
-          description: search results matching criteria
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/query_results'
+          description: OK
         400:
           description: bad input parameter
 
   /list:
     get:
       tags:
-        - list
+        - rodsuser
       summary: Recursively list the contents of a logical collection
-      operationId: list
       description: |
         Recursively list the contents of a logical collection
+      operationId: list
       parameters:
-        - in: list
-          name: path
+        - name: path
+          in: query
           description: irods absolute logical path of the collection
           required: true
-          type: string
-        - in: list
-          name: stat
+          schema:
+            type: string
+        - name: stat
+          in: query
           description: flag to include status information
-          type: boolean
-        - in: list
-          name: permissions
+          schema:
+            type: boolean
+        - name: permissions
+          in: query
           description: flag to include permission information
-          type: boolean
-        - in: list
-          name: metadata
+          schema:
+            type: boolean
+        - name: metadata
+          in: query
           description: flag to include metadata information
-          type: boolean
-        - in: list
-          name: offset
+          schema:
+            type: boolean
+        - name: offset
+          in: query
           description: number of records to skip for pagination
-          type: integer
-          format: int32
-          minimum: 0
-        - in: list
-          name: limit
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: limit
+          in: query
           description: maximum number of records to return
-          type: integer
-          format: int32
-          minimum: 1
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
       security:
         - BasicAuth: [read]
         - ApiKeyAuth: [read]
@@ -165,12 +176,11 @@ paths:
 
       responses:
         '200':
-          description: bytestream of a requested data thinger
+          description: listing of logical collection
           content:
-            application/octet-stream:
+            application/json:
               schema:
                 type: string
-                format: binary
         '400':
           description: bad input parameter
         '404':
@@ -179,29 +189,32 @@ paths:
   /stream:
     get:
       tags:
-        - stream_get
-      summary: streams bytes to/from a data thinger
-      operationId: stream
+        - rodsuser
+      summary: Obtains an HTTP stream of file bytes
       description: |
         Obtains an HTTP stream of file bytes
+      operationId: stream
       parameters:
-        - in: query
-          name: path
-          description: irods absolute logical path to the file
+        - name: path
+          in: query
+          description: absolute logical path of the data object
           required: true
-          type: string
-        - in: query
-          name: offset
+          schema:
+            type: string
+        - name: offset
+          in: query
           description: number of bytes to skip for pagination
-          type: integer
-          format: int32
-          minimum: 0
-        - in: query
-          name: limit
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: limit
+          in: query
           description: maximum number of bytes to return
-          type: integer
-          format: int32
-          minimum: 1
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
       security:
         - BasicAuth: [read]
         - ApiKeyAuth: [read]
@@ -209,7 +222,7 @@ paths:
 
       responses:
         '200':
-          description: bytestream of a requested data thinger
+          description: bytestream of the (partial) data object
           content:
             application/octet-stream:
               schema:
@@ -222,29 +235,32 @@ paths:
 
     put:
       tags:
-        - stream_put
-      summary: streams bytes to/from a data thinger
-      operationId: stream
+        - rodsuser
+      summary: Sends an HTTP stream of file bytes
       description: |
         Sends an HTTP stream of file bytes
+      operationId: stream_put
       parameters:
         - in: query
           name: path
-          description: irods absolute logical path to the file
+          description: absolute logical path of the data object
           required: true
-          type: string
+          schema:
+            type: string
         - in: query
           name: offset
           description: number of bytes to skip for pagination
-          type: integer
-          format: int32
-          minimum: 0
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
         - in: query
           name: limit
           description: maximum number of bytes to return
-          type: integer
-          format: int32
-          minimum: 1
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
       security:
         - BasicAuth: [read]
         - ApiKeyAuth: [read]
@@ -252,12 +268,7 @@ paths:
 
       responses:
         '200':
-          description: bytestream of a requested data thinger
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
+          description: OK
         '400':
           description: bad input parameter
         '404':
@@ -266,83 +277,76 @@ paths:
   /query:
     get:
       tags:
-      - query
+        - rodsuser
       summary: searches iRODS Catalog using the General Query Language
       description: |
         By passing in the appropriate options, you can search for
         anything within the iRODS Catalog
       operationId: catalogQuery
-      produces:
-      - application/json
       parameters:
       - name: query_string
         in: query
-        description: pass a query string using the general query language or a query type
+        description: an iRODS general query string or iRODS specific query string or iRODS specific query alias
         required: true
-        type: string
+        schema:
+          type: string
       - name: query_limit
         in: query
         description: maximum number of records to return
         required: false
-        type: integer
-        maximum: 50
-        minimum: 0
-        format: string
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 0
+          format: string
       - name: row_offset
         in: query
         description: number of records to skip for pagination
         required: false
-        type: integer
-        minimum: 0
-        format: string
+        schema:
+          type: integer
+          minimum: 0
+          format: string
       - name: query_type
         in: query
-        description: string description of the query type "general" or "specific"
+        description: which type of query to perform
         required: true
-        type: string
+        schema:
+          type: string
+          enum: ['general', 'specific']
 
       responses:
         200:
           description: search results matching criteria
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/query_results'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/query_results'
+
         400:
           description: bad input parameter
 
   /zone_report:
     get:
       tags:
-      - zone_report
+        - rodsadmin
       summary: produces a json description of an iRODS Zone
       description: |
         Produces an iRODS Zone Report, a json description of the entire
         zone, including all configuration.  This API is for administrators
         only.
       operationId: zone_report
-      produces:
-      - application/json
 
       responses:
         200:
+          description: json description of an iRODS Zone
           content:
-            text/plain:
+            application/json:
               schema:
                 type: string
                 description: json representation of irods zone
         400:
           description: bad input parameter
-
-definitions:
-  query_results:
-    type: object
-    required:
-    - results
-    properties:
-      results:
-        type: string
-        example: { "results" : [ [], [] ] }
 
 components:
   securitySchemes:
@@ -360,3 +364,13 @@ components:
         type: http
         scheme: bearer
         bearerFormat: JWT
+
+  schemas:
+    query_results:
+      type: object
+      properties:
+        results:
+          type: string
+          example: { "results" : [ [], [] ] }
+      required:
+        - results
