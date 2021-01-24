@@ -149,12 +149,15 @@ foreach(API_NAME ${API_SERVER_NAMES})
         ${API_SERVER_SOURCES}
     )
 
+    set(IRODS_EXTERNALS_FULLPATH_PISTACHE /opt/irods-externals/pistache0.0.2-0)
+
     link_libraries(c++abi)
     include_directories(${IRODS_INCLUDE_DIRS}
                         ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
                         ${IRODS_EXTERNALS_FULLPATH_JSON}/include
                         ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-                        ${IRODS_EXTERNALS_FULLPATH_FMT}/include)
+                        ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+                        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/include)
 
     include_directories(model)
     include_directories(api)
@@ -162,7 +165,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
 
     target_link_libraries(
         ${EXECUTABLE_NAME}
-        /usr/local/lib/libpistache.a
+        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/lib/libpistache.a
         pthread
         crypto
         irods_client
