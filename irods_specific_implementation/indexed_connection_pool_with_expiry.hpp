@@ -2,6 +2,7 @@
 #define IRODS_INDEXED_CONNECTION_POOL_HPP
 
 #include "rcConnect.h"
+#include "irods_random.hpp"
 #include "irods_server_properties.hpp"
 
 #include "jwt.h"
@@ -15,6 +16,7 @@ namespace irods {
     namespace {
         namespace keyword {
             const std::string user_name{"user_name"};
+            const std::string password{"password"};
             const std::string issue_claim{"issue_claim"};
             const std::string subject_claim{"subject_claim"};
             const std::string audience_claim{"audience_claim"};
@@ -89,10 +91,27 @@ namespace irods {
 
     struct connection_context
     {
-        bool                      in_use;
+	    bool                      in_use;
+	    bool                      evict_immediately;
         time_type                 access_time;
         connection_handle_pointer connection;
+
+        connection_context()
+            : in_use{false}
+            , evict_immediately{false}
+        , access_time{}
+        , connection{}
+        {
+            // ctor
+        }
     }; // connection_context
+
+    namespace {
+	    auto now_in_seconds() -> time_type
+	    {
+		    return std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
+	    } // now_in_seconds
+    }
 
     class connection_proxy {
         connection_context& ctx_;
@@ -105,6 +124,7 @@ namespace irods {
 
             ~connection_proxy()
             {
+                ctx_.access_time = now_in_seconds();
                 ctx_.in_use = false;
             }
 
@@ -128,11 +148,6 @@ namespace irods {
         sleep_type           sleep_time_;
         connection_pool_type pool_;
 
-        auto now_in_seconds() -> time_type
-        {
-            return std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
-        } // now_in_seconds
-
         auto manage_lifetimes() -> void
         {
             while(!exit_flag_) {
@@ -143,17 +158,22 @@ namespace irods {
                 while(!done) {
                     std::scoped_lock lk(pool_mutex_);
 
-                    if(!itr->second.in_use &&
-                       exp > itr->second.access_time) {
-                        // release the connection
-                        pool_.erase(itr);
+                    if(!itr->second.in_use) {
+                        // either the connection is old, or it is not to be kept
+                        if(exp > itr->second.access_time || itr->second.evict_immediately) {
+                            // release the connection
+                            pool_.erase(itr);
 
-                        // reset the iterator and start over
-                        itr = pool_.begin();
+                            // reset the iterator and start over
+                            itr = pool_.begin();
+
+                            done = pool_.end() == itr;
+
+                            continue;
+                        }
                     }
-                    else {
-                        ++itr;
-                    }
+
+                    ++itr;
 
                     done = pool_.end() == itr;
 
@@ -185,13 +205,40 @@ namespace irods {
 
         } // get_user_name_from_key
 
-        auto make_connection(const std::string& _key) -> std::shared_ptr<connection_handle>
+        auto make_connection(const std::string& _jwt) -> std::shared_ptr<connection_handle>
         {
-            return std::make_shared<connection_handle>(get_user_name_from_key(_key));
+            auto user_name = get_user_name_from_key(_jwt);
+
+            auto conn = std::make_shared<connection_handle>(user_name);
+
+            auto err = clientLogin(conn->get());
+            if(err < 0) {
+                THROW(err,
+                    fmt::format("[{}] failed to login"
+                    , user_name));
+            }
+
+	        return conn;
 
         } // make_connection
 
+        auto get_random_hint() -> std::string
+        {
+            char bytes[32];
+            irods::getRandomBytes(bytes, sizeof(bytes));
+
+            std::string hint;
+            for(auto b : bytes) {
+                hint += 'a' + (b % 26);
+            }
+
+            return hint;
+
+        } // get_random_hint
+
         public:
+
+             inline static const std::string do_not_cache_hint{"DO_NOT_CACHE_HINT"};
 
              indexed_connection_pool_with_expiry()
              : life_time_manager_(&indexed_connection_pool_with_expiry::manage_lifetimes, this)
@@ -221,21 +268,35 @@ namespace irods {
                  sleep_time_ = std::chrono::seconds(_it/4);
              }
 
-             auto get(const std::string& _key) -> connection_proxy
+             auto get(const std::string& _jwt, const std::string& _hint) -> connection_proxy
              {
+                 auto do_not_cache_flag = (do_not_cache_hint == _hint);
+
+                 auto key = _jwt;
+                 key += do_not_cache_flag
+                        ? std::string{"___"} + get_random_hint()
+                        : _hint;
+
                  std::scoped_lock lk(pool_mutex_);
 
-                 auto& ctx = pool_[_key];
+                 auto& ctx = pool_[key];
+
+                 if(ctx.in_use) {
+                     THROW(
+                         SYS_USER_NOT_ALLOWED_TO_CONN,
+                         "connection already in use for token");
+                 }
 
                  ctx.in_use = true;
+                 ctx.evict_immediately = do_not_cache_flag;
 
                  if(!ctx.connection.get()) {
-                     ctx.connection = make_connection(_key);
+                     ctx.connection = make_connection(_jwt);
                  }
 
                  ctx.access_time = now_in_seconds();
 
-                 pool_[_key] = ctx;
+                 pool_[key] = ctx;
 
                  return connection_proxy{ctx};
 
