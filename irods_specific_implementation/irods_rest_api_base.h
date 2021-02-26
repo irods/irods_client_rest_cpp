@@ -22,6 +22,8 @@
 
 namespace irods::rest {
 
+    using icp = indexed_connection_pool_with_expiry;
+
     namespace {
         const std::string SUCCESS{"{\"code\" : 0, \"message\" : \"Success\"}"};
 
@@ -85,10 +87,15 @@ namespace irods::rest {
         private:
             const std::string DEFAULT_CONFIGURATION_FILE{"/etc/irods/irods_client_rest_cpp.json"};
 
-            json load(const std::string& file_name)
+            auto load(const std::string& file_name) -> json
             {
                 std::ifstream ifs(file_name);
-                return json::parse(ifs);
+
+                if(ifs.is_open()) {
+                    return json::parse(ifs);
+                }
+
+                return {};
             } // load
 
             const std::string instance_name_;
@@ -157,7 +164,8 @@ namespace irods::rest {
 
             } // authenticate
 
-            auto get_connection(const std::string& _header) -> connection_proxy
+            auto get_connection(const std::string& _header,
+                                const std::string& _hint = icp::do_not_cache_hint) -> connection_proxy
             {
                 // remove Authorization: from the string, the key is the
                 // Authorization header which contains a JWT
@@ -171,7 +179,7 @@ namespace irods::rest {
                         [](unsigned char x){return std::isspace(x);}),
                     jwt.end());
 
-                auto conn = connection_pool_.get(jwt);
+                auto conn = connection_pool_.get(jwt, _hint);
 
                 auto* ptr = conn();
 
@@ -221,7 +229,7 @@ namespace irods::rest {
             } // decode_url
 
         private:
-            indexed_connection_pool_with_expiry connection_pool_;
+            icp connection_pool_;
 
     }; // class api_base
 
