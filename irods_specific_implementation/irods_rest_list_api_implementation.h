@@ -151,6 +151,7 @@ namespace irods::rest {
                                     , _metadata
                                     , std::to_string(std::max((intmax_t)0, offset-limit))
                                     , _limit);
+
                     results["_links"] = links;
 
                     return std::forward_as_tuple(

@@ -30,9 +30,9 @@ namespace irods::rest {
                 const std::string& _query_type,
                 const std::string& _base_url) {
 
-                auto conn = get_connection(_auth_header);
-
                 try {
+                    auto conn = get_connection(_auth_header, _query_string);
+
                     std::string query_string{decode_url(_query_string)};
 
                     uintmax_t row_offset  = std::stoi(_row_offset);

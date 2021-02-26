@@ -153,6 +153,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
 
     link_libraries(c++abi)
     include_directories(${IRODS_INCLUDE_DIRS}
+                        /opt/irods-externals/pistache0.0.2-0/include
                         ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
                         ${IRODS_EXTERNALS_FULLPATH_JSON}/include
                         ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
