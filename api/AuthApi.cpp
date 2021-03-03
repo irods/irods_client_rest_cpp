@@ -50,13 +50,8 @@ void AuthApi::setupRoutes() {
 
 void AuthApi::obtain_token_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
 
-    // Getting the query params
-    auto user_name = request.query().get("user_name");
-    auto password  = request.query().get("password");
-    auto auth_type = request.query().get("auth_type");
-
     try {
-      this->obtain_token(request.headers(), request.body(), user_name, password, auth_type, response);
+      this->obtain_token(request.headers(), response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());
