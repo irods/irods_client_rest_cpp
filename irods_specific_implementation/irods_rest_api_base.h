@@ -141,20 +141,20 @@ namespace irods::rest {
                 , const std::string& _password
                 , const std::string& _auth_type) -> void
             {
-                std::string password = _password;
+                std::string auth_type = _auth_type;
                 std::transform(
-                    password.begin(),
-                    password.end(),
-                    password.begin(),
+                    auth_type.begin(),
+                    auth_type.end(),
+                    auth_type.begin(),
                     ::tolower );
 
-                if("native" != _auth_type) {
+                if("native" != auth_type) {
                     THROW(SYS_INVALID_INPUT_PARAM, "Only native authentication is supported");
                 }
 
                 auto conn = connection_handle(_user_name, _user_name);
+                auto err  = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
 
-                int err = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
                 if(err < 0) {
                     THROW(err,
                         fmt::format("[{}] failed to login with type [{}]"

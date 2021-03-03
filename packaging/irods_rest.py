@@ -1,6 +1,8 @@
 import os, pycurl, getopt, sys, urllib
 from functools import partial
 from StringIO import StringIO
+import base64
+
 try:
         from io import BytesIO
 except ImportError:
@@ -11,9 +13,15 @@ def base_url():
 
 def authenticate(_user_name, _password, _auth_type):
     buffer = StringIO()
+
+    creds = _user_name + ':' + _password
+    buff  = creds.encode('ascii')
+    token = base64.b64encode(buff , None)
+
     c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Authorization: Native '+token])
     c.setopt(c.CUSTOMREQUEST, 'POST')
-    url = base_url()+'auth?user_name='+_user_name+'&password='+_password+'&auth_type='+_auth_type
+    url = base_url()+'auth'
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
