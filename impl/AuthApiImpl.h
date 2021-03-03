@@ -45,7 +45,7 @@ public:
     AuthApiImpl(Pistache::Address addr);
     ~AuthApiImpl() { };
 
-    void obtain_token(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &user_name, const Pistache::Optional<std::string> &password, const Pistache::Optional<std::string> &auth_type, Pistache::Http::ResponseWriter &response);
+    void obtain_token(const Pistache::Http::Header::Collection& headers, Pistache::Http::ResponseWriter &response);
     irods::rest::auth irods_auth_;
 };
 
