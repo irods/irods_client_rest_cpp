@@ -91,8 +91,8 @@ namespace irods {
 
     struct connection_context
     {
-	    bool                      in_use;
-	    bool                      evict_immediately;
+        bool                      in_use;
+        bool                      evict_immediately;
         time_type                 access_time;
         connection_handle_pointer connection;
 
@@ -107,10 +107,10 @@ namespace irods {
     }; // connection_context
 
     namespace {
-	    auto now_in_seconds() -> time_type
-	    {
-		    return std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
-	    } // now_in_seconds
+        auto now_in_seconds() -> time_type
+        {
+            return std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
+        } // now_in_seconds
     }
 
     class connection_proxy {
@@ -218,7 +218,7 @@ namespace irods {
                     , user_name));
             }
 
-	        return conn;
+            return conn;
 
         } // make_connection
 
