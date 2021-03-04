@@ -148,8 +148,13 @@ namespace irods::rest {
                     auth_type.begin(),
                     ::tolower );
 
+                // translate standard rest auth type
+                if("basic" == auth_type) {
+                    auth_type = "native";
+                }
+
                 if("native" != auth_type) {
-                    THROW(SYS_INVALID_INPUT_PARAM, "Only native authentication is supported");
+                    THROW(SYS_INVALID_INPUT_PARAM, "Only basic (irods native) authentication is supported");
                 }
 
                 auto conn = connection_handle(_user_name, _user_name);
