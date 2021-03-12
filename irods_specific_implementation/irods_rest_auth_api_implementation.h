@@ -72,8 +72,6 @@ namespace irods::rest {
 
             } // for i
 
-            out = out.substr(0, out.size()-1);
-
             return out;
 
         } // base64_decode
