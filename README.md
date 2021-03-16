@@ -115,13 +115,12 @@ This endpoint provides an authentication service for the iRODS zone, currently o
 **Method** : POST
 
 **Parameters:**
-- user_name : the iRODS user which wishes to authenticate
-- password : The user's secret, depending on the method of authentication
-- auth_type : The iRODS method of authentication - native, pam, krb, gsi, etc.
+- Authorization Header of the form `Authorization: Basic ${SECRETS}` where ${SECRETS} is a base 64 encoded string of user_name:password
 
 **Example CURL Command:**
 ```
-export TOKEN=$(curl -X POST "http://localhost:80/irods-rest/1.0.0/auth?user_name=rods&password=rods&auth_type=native")
+export SECRETS=$(echo -n rods:rods | base64)
+export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhost:80/irods-rest/1.0.0/auth)
 ```
 
 **Returns:**
