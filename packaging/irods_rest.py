@@ -2,6 +2,28 @@ import os, pycurl, getopt, sys, urllib
 from functools import partial
 from StringIO import StringIO
 import base64
+import tempfile
+
+class old_pycurl_mock_StringIO(file):
+    def __init__(self,*a,**kw):
+        if not a:
+            self.__name = tempfile.mktemp()
+            a = (self.__name,'w+b')
+        super(old_pycurl_mock_StringIO,self).__init__(*a,**kw)
+    def __del__(self):
+        self.close()
+        os.unlink(self.__name)
+    def getvalue(self):
+        self.seek(0)
+        return self.read()
+
+class old_pycurl_mock_BytesIO(old_pycurl_mock_StringIO):
+    def __init__(self,bytestr=''):
+        super(old_pycurl_mock_BytesIO,self).__init__()
+        if bytestr:
+            self.write(bytestr)
+            self.flush()
+            self.seek(0)
 
 try:
         from io import BytesIO
@@ -10,6 +32,10 @@ except ImportError:
 
 def base_url():
     return "http://localhost/irods-rest/1.0.0/"
+
+if [int(x) for x in pycurl.version_info()[1].split('.')][:2] <= [7,29]:
+    StringIO = old_pycurl_mock_StringIO
+    BytesIO = old_pycurl_mock_BytesIO
 
 def authenticate(_user_name, _password, _auth_type):
     buffer = StringIO()
