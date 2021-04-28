@@ -1,0 +1,31 @@
+ARG  os_version
+FROM ${os_version}
+
+ARG irods_rest_client_repo
+ARG irods_rest_client_commitish
+
+SHELL ["/bin/bash","-c"]
+
+WORKDIR /root
+RUN apt update
+RUN apt install -y git sudo wget
+RUN apt install -y g++ make libssl-dev 
+
+COPY PKGFILE_install_dependencies /tmp
+
+RUN mkdir /irods_packages_in
+VOLUME /irods_packages_in
+COPY irods_rest_pkg/irods*deb /irods_packages_in/
+
+RUN dpkg -i /irods_packages_in/irods-externals-{clang*6.0-0,cmake3.11.4,pistache}*.deb
+
+# Install prereqs for iRODS packages:
+
+RUN /tmp/PKGFILE_install_dependencies /irods_packages_in build-only
+
+RUN git clone "${irods_rest_client_repo}" src_repo
+RUN cd src_repo && git checkout "${irods_rest_client_commitish}" 
+RUN mkdir build_rest && cd build_rest && /opt/irods-externals/cmake3.11.4*/bin/cmake ../src_repo
+RUN cd build_rest && make -j7 package
+
+CMD cp build_rest/*.deb /irods_rest_pkg

@@ -1,0 +1,5 @@
+FROM ubuntu:18.04
+
+CMD   rm -f /irods_rest_pkg/*.rpm && \
+      cp /externals_packages/*.rpm /irods_packages/*.rpm \
+          /irods_rest_pkg 
