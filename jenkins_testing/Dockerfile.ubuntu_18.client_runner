@@ -1,0 +1,31 @@
+ARG  os_version
+FROM ${os_version}
+
+SHELL ["/bin/bash","-c"]
+
+WORKDIR /root
+
+COPY PKGFILE_install_dependencies /tmp
+
+RUN  mkdir /irods_packages_in
+COPY irods_rest_pkg/irods*deb /irods_packages_in/
+
+# _-_-_ TODO - Calculate or parameterize which build of pistache & other externals to install
+
+RUN rm -f $(find /irods_packages_in -type f -size 0)
+RUN dpkg -i /irods_packages_in/irods-externals-*.deb
+
+RUN /tmp/PKGFILE_install_dependencies /irods_packages_in 
+RUN dpkg -i /irods_packages_in/irods*client_rest_cpp*.deb
+RUN apt install -y postgresql
+RUN apt install -y nginx
+RUN apt install -y curl
+RUN apt install -y python-pycurl
+RUN apt install -y rsyslog
+
+COPY ub_config_and_test_rest_clients.sh configure_and_start_iRODS.sh configure_and_start_NGINX.sh /tmp/
+RUN chmod +x    /tmp/ub_config_and_test_rest_clients.sh \
+                /tmp/ub_config_and_test_rest_clients.sh \
+                /tmp/configure_and_start_iRODS.sh
+
+CMD /tmp/ub_config_and_test_rest_clients.sh
