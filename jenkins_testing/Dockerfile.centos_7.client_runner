@@ -1,0 +1,29 @@
+ARG os_version="centos:7"
+FROM ${os_version}
+
+SHELL ["/bin/bash","-c"]
+
+WORKDIR /root
+
+COPY PKGFILE_install_dependencies /tmp
+
+RUN  mkdir /irods_packages_in
+COPY irods_rest_pkg/irods*rpm /irods_packages_in/
+
+# _-_-_ TODO - Calculate or parameterize which build of pistache & other externals to install
+
+RUN rm -f $(find /irods_packages_in -type f -size 0)
+RUN rpm -ivh /irods_packages_in/irods-externals-*.rpm
+
+RUN /tmp/PKGFILE_install_dependencies /irods_packages_in 
+RUN rpm -ivh /irods_packages_in/irods*client_rest_cpp*.rpm
+RUN yum install -y postgresql-server
+RUN yum install -y nginx
+RUN yum install -y curl
+RUN yum install -y pycurl
+RUN yum install -y rsyslog
+
+COPY c7_config_and_test_rest_clients.sh /tmp/
+RUN chmod +x    /tmp/c7_config_and_test_rest_clients.sh
+
+CMD /tmp/c7_config_and_test_rest_clients.sh

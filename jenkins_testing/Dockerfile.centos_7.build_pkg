@@ -1,0 +1,33 @@
+ARG os_version="centos:7"
+FROM ${os_version}
+
+ARG irods_rest_client_repo
+ARG irods_rest_client_commitish
+#ENV IRODS_REST_CLIENT_REPO      "${irods_rest_client_repo}"
+#ENV IRODS_REST_CLIENT_COMMITISH "${irods_rest_client_commitish}"
+
+SHELL ["/bin/bash","-c"]
+
+WORKDIR /root
+RUN yum install -y git sudo wget
+RUN yum install -y gcc-c++ openssl-devel rpm-build
+
+COPY PKGFILE_install_dependencies /tmp
+
+RUN mkdir /irods_packages_in
+VOLUME /irods_packages_in
+COPY irods_rest_pkg/irods*rpm /irods_packages_in/
+
+RUN rpm -ivh /irods_packages_in/irods-externals-{clang*6.0-0,cmake3.11.4,pistache}*.rpm
+
+# Install prereqs for iRODS packages:
+
+RUN /tmp/PKGFILE_install_dependencies /irods_packages_in build-only
+
+RUN git clone "${irods_rest_client_repo}" src_repo
+RUN cd src_repo && git checkout "${irods_rest_client_commitish}"
+RUN mkdir build_rest && cd build_rest && /opt/irods-externals/cmake3.11.4*/bin/cmake ../src_repo
+
+RUN cd build_rest && make -j7 package
+
+CMD cp build_rest/*.rpm /irods_rest_pkg

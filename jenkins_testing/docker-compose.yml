@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  package_copier:
+    build:
+      context: .
+      dockerfile: Dockerfile.${os_platform}.copy_packages_in
+    volumes:
+      - ${irods_pkg_dir}:/irods_packages:ro
+      - ${externals_pkg_dir}:/externals_packages:ro
+      - ./irods_rest_pkg:/irods_rest_pkg:rw
+
+  package_builder:
+    volumes:
+      - ./irods_rest_pkg:/irods_rest_pkg:rw
+    build:
+      context: .
+      dockerfile: Dockerfile.${os_platform}.build_pkg
+      args:
+        irods_rest_client_commitish: ${irods_rest_client_commitish}
+        irods_rest_client_repo:      ${irods_rest_client_repo}
+        os_version: ${os_version}
+
+  client_runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.${os_platform}.client_runner
+      args:
+        os_version: ${os_version}
