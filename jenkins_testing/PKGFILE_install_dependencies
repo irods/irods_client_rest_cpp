@@ -1,0 +1,89 @@
+#!/bin/bash -e
+
+# -- collect package names from mounted directory
+#    get package dependencies via yum
+
+remove_duplicates ()
+{ 
+    awk '{lookup[$0]=1} END {for (x in lookup){print x}}'
+}
+
+# ------
+# centos
+# ------
+
+get_yum_prerequisites_list() 
+{
+    command rpm -qRp "$@" |\
+    command grep -v '[</>()]' |\
+    command grep -Ev '^irods-(dev|icommands|runtime|server|database)' |\
+    remove_duplicates
+}
+
+centos_setup() 
+{
+    yum -y install epel-release sudo wget
+    sudo rpm --import https://packages.irods.org/irods-signing-key.asc
+    wget -qO - https://packages.irods.org/renci-irods.yum.repo |\
+     sudo tee /etc/yum.repos.d/renci-irods.yum.repo
+}
+
+# ------
+# ubuntu
+# ------
+
+get_apt_prerequisites_list() 
+{
+    local pkgfile
+    for pkgfile in "$@" ; do
+        dpkg -I "$pkgfile" |\
+        command grep -i '^\s*depends:' |\
+        tr ',' '\n' |\
+        command grep -v '(.*)' | sed 's/^\s*depends://i' |\
+        command grep -Ev '^irods-(dev|icommands|runtime|server|database)' |\
+       	sed -e 's/^\s*//' -e 's/\s*$//'
+    done | remove_duplicates
+}
+
+ubuntu_setup()
+{
+  apt update
+  apt install -y sudo wget lsb-release apt-transport-https gnupg2
+  wget -qO - https://packages.irods.org/irods-signing-key.asc | sudo apt-key add -
+  echo "deb [arch=amd64] https://packages.irods.org/apt/ $(lsb_release -sc) main" |\
+    sudo tee /etc/apt/sources.list.d/renci-irods.list
+  apt update
+}
+
+#-- main script --
+
+case $(grep ^NAME= /etc/os-release|tr A-Z a-z) in
+  *ubuntu*) OS=ubuntu
+            PACKAGER=apt
+            INSTALL_FROM_FILES='dpkg -i'
+            PKG_EXT=deb
+            ;;
+  *centos*) OS=centos
+            PACKAGER=yum
+            INSTALL_FROM_FILES='rpm -ivh'
+            PKG_EXT=rpm
+            ;;
+esac
+
+
+
+
+if [ -n "$1" ] ; then
+    cd "$1"
+    ${OS}_setup # configure package repository for OS
+    if [ "$2" = "build-only" ] ; then 
+        pkgs=( irods-{dev,runtime}*.${PKG_EXT} )
+    else
+        pkgs=( irods-{dev,runtime,icommands,server,database-*postgres}*.${PKG_EXT} )
+    fi
+    OLDIFS="$IFS"; export IFS=$'\n'
+    prereqs=($( get_${PACKAGER}_prerequisites_list "${pkgs[@]}" ))
+    IFS="$OLDIFS"
+    $PACKAGER install -y "${prereqs[@]}"
+    $INSTALL_FROM_FILES "${pkgs[@]}"
+fi
