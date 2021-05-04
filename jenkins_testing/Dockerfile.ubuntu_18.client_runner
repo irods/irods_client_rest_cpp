@@ -23,9 +23,13 @@ RUN apt install -y curl
 RUN apt install -y python-pycurl
 RUN apt install -y rsyslog
 
-COPY ub_config_and_test_rest_clients.sh configure_and_start_iRODS.sh configure_and_start_NGINX.sh /tmp/
-RUN chmod +x    /tmp/ub_config_and_test_rest_clients.sh \
-                /tmp/ub_config_and_test_rest_clients.sh \
-                /tmp/configure_and_start_iRODS.sh
+COPY ub_config_and_test_rest_clients.sh \
+     configure_and_start_iRODS.sh \
+     configure_and_start_NGINX.sh \
+     /tmp/
+
+RUN chmod +x /tmp/ub_config_and_test_rest_clients.sh \
+             /tmp/configure_and_start_iRODS.sh \
+             /tmp/configure_and_start_NGINX.sh
 
 CMD /tmp/ub_config_and_test_rest_clients.sh
