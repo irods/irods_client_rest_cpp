@@ -11,7 +11,7 @@
 #define MACRO_IRODS_CONFIGURATION_GET_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_get_configuration_(request.headers().getRaw("Authorization").value()); \
+    std::tie(code, message) = irods_get_configuration_(request.headers().getRaw("X-API-KEY").value()); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -22,24 +22,26 @@ namespace irods::rest {
     const std::string service_name{"irods_rest_cpp_get_configuration_server"};
 
     class get_configuration : public api_base {
-        auto throw_if_user_is_not_rodsadmin(connection_proxy& _conn) -> void
+        auto throw_if_key_is_invalid(const std::string& _api_key) -> void
         {
-            auto* user_name = _conn()->clientUser.userName;
+            namespace ir   = irods::rest;
+            namespace irck = irods::rest::configuration_keywords;
 
-            auto sql = fmt::format(
-                           "SELECT USER_TYPE WHERE USER_NAME = '{}'",
-                           user_name);
+            auto cfg = ir::configuration{ir::service_name};
 
-            irods::experimental::query_builder qb;
-
-            for(const auto row : qb.build(*_conn(), sql)) {
-                if("rodsadmin" != row[0]) {
-                    auto msg = fmt::format("{} is not a rodsadmin user", user_name);
-                    THROW(CAT_INVALID_USER, msg);
-                }
+            if(!cfg.contains(irck::api_key)) {
+                THROW(SYS_INVALID_INPUT_PARAM,
+                      "GetConfiguration : API Key is not configured");
             }
 
-        } // throw_if_user_is_not_rodsadmin
+            const auto key = cfg.at(irck::api_key).get<std::string>();
+
+            if(_api_key != key) {
+                THROW(SYS_INVALID_INPUT_PARAM,
+                      std::string{fmt::format("GetConfiguration : Invalid API Key {} vs {}", _api_key, key)});
+            }
+
+        } // throw_if_key_is_invalid
 
         auto ends_with_dot_json(const bfs::directory_entry& _e) -> bool
         {
@@ -58,15 +60,14 @@ namespace irods::rest {
             // ctor
         }
 
-        auto operator()(const std::string& _auth_header) -> std::tuple<Pistache::Http::Code &&, std::string>
+        auto operator()(const std::string& _api_key) -> std::tuple<Pistache::Http::Code &&, std::string>
         {
 
             try {
-                auto conn = get_connection(_auth_header);
-                throw_if_user_is_not_rodsadmin(conn);
+                throw_if_key_is_invalid(_api_key);
 
                 auto dir = get_irods_config_directory();
-                auto cfg = json::array();
+                auto cfg = json::object();
 
                 for(auto&& e : bfs::recursive_directory_iterator(dir)) {
 
@@ -81,14 +82,12 @@ namespace irods::rest {
                     try {
                         auto p = e.path().string();
                         auto f = json::parse(std::ifstream(p));
-                        cfg.push_back(json{p, "parsing"});
-
                         auto n = e.path().filename().string();
-                        cfg.push_back(json{n, f});
+                        cfg[n] = f;
                     }
                     catch(const json::exception& _e) {
                         auto n = e.path().filename().string();
-                        cfg.push_back(json{n, _e.what()});
+                        cfg[n] = _e.what();
                     }
 
                 } // for e
