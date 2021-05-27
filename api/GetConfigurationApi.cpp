@@ -42,7 +42,7 @@ void GetConfigurationApi::shutdown() {
 void GetConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/get_configuration", Routes::bind(&GetConfigurationApi::obtain_token_handler, this));
+    Routes::Get(router, base + "/configuration", Routes::bind(&GetConfigurationApi::obtain_token_handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&GetConfigurationApi::get_configuration_api_default_handler, this));

@@ -54,10 +54,10 @@ def get_configuration(_token):
     buffer = StringIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
-    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(pycurl.HTTPHEADER,['X-API-KEY: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    url = '{0}get_configuration'.format(base_url())
+    url = '{0}configuration'.format(base_url())
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -75,7 +75,7 @@ def put_configuration(_token, _cfg):
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'PUT')
 
-    url = '{0}put_configuration?cfg={1}'.format(base_url(), _cfg)
+    url = '{0}configuration?cfg={1}'.format(base_url(), _cfg)
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)

@@ -50,7 +50,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                 admin.assert_icommand(['irm', '-f', file_name])
 
     def test_get_configuration(self):
-        token  = irods_rest.authenticate('rods', 'rods', 'native')
+        token  = 'default_api_key'
         result = irods_rest.get_configuration(token)
         assert(result.find('advanced_settings') != -1)
 

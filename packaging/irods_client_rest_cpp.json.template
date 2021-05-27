@@ -18,7 +18,7 @@
         "port" : 8088,
         "threads" : 4,
         "maximum_idle_timeout_in_seconds" : 10,
-        "default_api_key"
+        "api_key" : "default_api_key"
     },
     "irods_rest_cpp_put_configuration_server" : {
         "port" : 8089,

@@ -128,6 +128,72 @@ export TOKEN=$(curl -X POST "http://localhost:80/irods-rest/1.0.0/auth?user_name
 
 An encrypted JWT which contains everything necessary to interact with the other endpoints.  This token is expected in the Authorization header for the other services.
 
+### /configuration
+This endpoint will return a JSON structure holding the configuration for an iRODS server or write the url encoded JSON to the specified files in `/etc/irods`
+
+**Method** : GET
+
+**Parameters**
+- None
+
+**Example CURL Command:**
+```
+curl -X GET -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/configuration" | jq
+```
+
+**Returns**
+A json array of objects whose key is the file name and whose contents is the configuration file.
+```
+{
+    "host_access_control_config.json": {
+        <SNIP>
+    },
+    "hosts_config.json": {
+        <SNIP>
+    },
+    "irods_client_rest_cpp.json": {
+        <SNIP>
+    },
+    "server_config.json": {
+        <SNIP>
+    },
+    "server_config.json": {
+        <SNIP>
+    }
+}
+```
+
+**Method** : PUT
+
+**Parameters**
+- cfg : a url encoded json string of the format
+```JSON
+[
+    {
+        "file_name":"test_rest_cfg_put_1.json",
+        "contents" : {
+            "key0":"value0",
+            "key1" : "value1"
+        }
+    },
+    {
+        "file_name":"test_rest_cfg_put_2.json",
+        "contents" : {
+            "key2" : "value2",
+            "key3" : "value3"
+        }
+    }
+]
+```
+
+**Example CURL Command:**
+```
+export CONTENTS="%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
+curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/configuration?cfg=${CONTENTS}"
+```
+
+**Returns**
+Nothing on success
 
 ### /list
 This endpoint provides a recursive listing of a collection, or stat, metadata, and access control information for a given data object.
