@@ -138,7 +138,7 @@ This endpoint will return a JSON structure holding the configuration for an iROD
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/configuration" | jq
+curl -X GET -H "X-API-KEY: ${API_KEY}" "http://localhost/irods-rest/1.0.0/configuration" | jq
 ```
 
 **Returns**
