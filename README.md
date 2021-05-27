@@ -188,7 +188,7 @@ A json array of objects whose key is the file name and whose contents is the con
 **Example CURL Command:**
 ```
 export CONTENTS="%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
-curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/put_configuration?cfg=${CONTENTS}"
+curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/configuration?cfg=${CONTENTS}"
 ```
 
 **Returns**
