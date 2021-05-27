@@ -42,7 +42,7 @@ void PutConfigurationApi::shutdown() {
 void PutConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Put(router, base + "/put_configuration", Routes::bind(&PutConfigurationApi::request_response_handler, this));
+    Routes::Put(router, base + "/configuration", Routes::bind(&PutConfigurationApi::request_response_handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&PutConfigurationApi::default_handler, this));
