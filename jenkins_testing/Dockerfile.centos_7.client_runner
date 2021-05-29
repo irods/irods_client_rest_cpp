@@ -13,6 +13,11 @@ COPY irods_rest_pkg/irods*rpm /irods_packages_in/
 # _-_-_ TODO - Calculate or parameterize which build of pistache & other externals to install
 
 RUN rm -f $(find /irods_packages_in -type f -size 0)
+RUN . /tmp/PKGFILE_install_dependencies && \
+    PREREQ=$( get_yum_prerequisites_list /irods_packages_in/irods-externals-*.rpm ) && { \
+        [ -z "$PREREQ" ] || yum install -y $PREREQ  ;\
+    }
+
 RUN rpm -ivh /irods_packages_in/irods-externals-*.rpm
 
 RUN /tmp/PKGFILE_install_dependencies /irods_packages_in 

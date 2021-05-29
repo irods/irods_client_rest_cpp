@@ -13,6 +13,14 @@ COPY irods_rest_pkg/irods*deb /irods_packages_in/
 # _-_-_ TODO - Calculate or parameterize which build of pistache & other externals to install
 
 RUN rm -f $(find /irods_packages_in -type f -size 0)
+
+RUN apt update && \
+    . /tmp/PKGFILE_install_dependencies && \
+    PREREQ=$( get_apt_prerequisites_list /irods_packages_in/irods-externals-*.deb ) && { \
+        [ -z "$PREREQ" ] || apt install -y $PREREQ  ;\
+    }
+
+
 RUN dpkg -i /irods_packages_in/irods-externals-*.deb
 
 RUN /tmp/PKGFILE_install_dependencies /irods_packages_in 
