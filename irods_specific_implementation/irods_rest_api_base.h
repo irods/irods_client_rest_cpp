@@ -38,6 +38,7 @@ namespace irods::rest {
             const std::string timeout{"maximum_idle_timeout_in_seconds"};
             const std::string threads{"threads"};
             const std::string port{"port"};
+            const std::string api_key{"api_key"};
         };
 
     } // namespace

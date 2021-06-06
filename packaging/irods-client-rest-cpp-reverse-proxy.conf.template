@@ -27,20 +27,18 @@ server {
         proxy_pass http://localhost:8081;
     }
 
-    location /irods-rest/1.0.0/get_configuration {
+    location /irods-rest/1.0.0/configuration {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
 
-        proxy_pass http://localhost:8088;
-    }
-
-    location /irods-rest/1.0.0/put_configuration {
-        if ($request_method = 'OPTIONS') {
-            return 204;
+        if ($request_method = GET ) {
+            proxy_pass http://localhost:8088;
         }
 
-        proxy_pass http://localhost:8089;
+        if ($request_method = PUT ) {
+            proxy_pass http://localhost:8089;
+        }
     }
 
     location /irods-rest/1.0.0/list {
