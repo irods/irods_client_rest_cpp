@@ -8,7 +8,7 @@
 #define MACRO_IRODS_LIST_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_list_(headers.getRaw("Authorization").value(), path.get(), stat.get(), permissions.get(), metadata.get(), offset.get(), limit.get(), base); \
+    std::tie(code, message) = irods_list_(headers.getRaw("authorization").value(), path.get(), stat.get(), permissions.get(), metadata.get(), offset.get(), limit.get(), base); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -24,7 +24,7 @@ namespace irods::rest {
         public:
             list() : api_base{service_name}
             {
-                // ctor
+                logger_->trace("Endpoint [{}] initialized.", service_name);
             }
 
             std::tuple<Pistache::Http::Code &&, std::string> operator()(

@@ -1,11 +1,10 @@
-
 #include "irods_rest_api_base.h"
 
 // this is contractually tied directly to the swagger api definition, and the below implementation
 #define MACRO_IRODS_AUTH_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_auth_(headers.getRaw("Authorization").value()); \
+    std::tie(code, message) = irods_auth_(headers.getRaw("authorization").value()); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -17,14 +16,13 @@ namespace irods::rest {
     {
         using json = nlohmann::json;
 
-        void throw_for_invalid_header(const std::string _h) {
-            THROW(SYS_INVALID_INPUT_PARAM,
-                  fmt::format("invalid Authorization Header {}", _h));
+        void throw_for_invalid_header(const std::string _h)
+        {
+            THROW(SYS_INVALID_INPUT_PARAM, fmt::format("invalid Authorization Header {}", _h));
         }
 
         auto base64_decode(const std::string& _in)
         {
-
             static constexpr unsigned char table[] = {
                 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
                 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
@@ -73,7 +71,6 @@ namespace irods::rest {
             } // for i
 
             return out;
-
         } // base64_decode
 
         auto parse_header(const std::string _header) -> std::tuple<std::string, std::string>
@@ -86,7 +83,7 @@ namespace irods::rest {
             auto type  = _header.substr(0, p0);
             auto token = _header.substr(p0+1);
 
-             return std::make_tuple(type, token);
+            return std::make_tuple(type, token);
         } // parse_header
 
         auto decode(const std::string _header) -> std::tuple<std::string, std::string, std::string>
@@ -100,54 +97,43 @@ namespace irods::rest {
             return std::make_tuple(user_name, password, auth_type);
         } // decode
 
-        public:
-            auth() : api_base{service_name}
-            {
-                // ctor
+    public:
+        auth() : api_base{service_name}
+        {
+            logger_->trace("Endpoint [{}] initialized.", service_name);
+        }
+
+        std::tuple<Pistache::Http::Code&&, std::string> operator()(const std::string& _header)
+        {
+            std::string user_name{}, password{}, auth_type{};
+
+            try {
+                std::tie(user_name, password, auth_type) = decode(_header);
+
+                authenticate(user_name, password, auth_type);
+
+                // use the zone key as our secret
+                std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
+
+                auto token = jwt::create()
+                                 .set_type("JWS")
+                                 .set_issuer(keyword::issue_claim)
+                                 .set_subject(keyword::subject_claim)
+                                 .set_audience(keyword::audience_claim)
+                                 .set_not_before(std::chrono::system_clock::now())
+                                 .set_issued_at(std::chrono::system_clock::now())
+                                 // TODO: consider how to handle token revocation, token refresh
+                                 //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
+                                 .set_payload_claim(keyword::user_name, jwt::claim(user_name))
+                                 .sign(jwt::algorithm::hs256{zone_key});
+
+                return std::forward_as_tuple(Pistache::Http::Code::Ok, token);
+            }
+            catch (const irods::exception& _e) {
+                const auto msg = fmt::format("[{}] failed to authenticate with type [{}]", user_name, auth_type);
+                return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, make_error(_e.code(), msg));
             }
 
-            std::tuple<Pistache::Http::Code &&, std::string> operator()(
-                const std::string& _header )
-            {
-                std::string user_name{}, password{}, auth_type{};
-
-                try {
-                    std::tie(user_name, password, auth_type) = decode(_header);
-
-                    authenticate(user_name, password, auth_type);
-
-                    // use the zone key as our secret
-                    std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
-
-                    auto token = jwt::create()
-                                     .set_type("JWS")
-                                     .set_issuer(keyword::issue_claim)
-                                     .set_subject(keyword::subject_claim)
-                                     .set_audience(keyword::audience_claim)
-                                     .set_not_before(std::chrono::system_clock::now())
-                                     .set_issued_at(std::chrono::system_clock::now())
-                                     // TODO: consider how to handle token revocation, token refresh
-                                     //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
-                                     .set_payload_claim(keyword::user_name, jwt::claim(user_name))
-                                     .sign(jwt::algorithm::hs256{zone_key});
-
-                    return std::forward_as_tuple(
-                               Pistache::Http::Code::Ok,
-                               token);
-                }
-                catch(const irods::exception& _e) {
-                    auto msg = make_error(
-                                     _e.code(),
-                                     fmt::format(
-                                           "[{}] failed to authenticate with type [{}]"
-                                         , user_name
-                                         , auth_type));
-                    return std::forward_as_tuple(
-                               Pistache::Http::Code::Bad_Request, msg);
-                }
-
-            } // operator()
-
+        } // operator()
     }; // class auth
-
-}; // namespace irods::rest
+} // namespace irods::rest

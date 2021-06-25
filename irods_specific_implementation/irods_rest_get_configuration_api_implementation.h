@@ -11,7 +11,7 @@
 #define MACRO_IRODS_CONFIGURATION_GET_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_get_configuration_(request.headers().getRaw("Authorization").value()); \
+    std::tie(code, message) = irods_get_configuration_(request.headers().getRaw("authorization").value()); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -51,11 +51,10 @@ namespace irods::rest {
             return  x == s;
         }
 
-        public:
-
+    public:
         get_configuration() : api_base{service_name}
         {
-            // ctor
+            logger_->trace("Endpoint [{}] initialized.", service_name);
         }
 
         auto operator()(const std::string& _auth_header) -> std::tuple<Pistache::Http::Code &&, std::string>
