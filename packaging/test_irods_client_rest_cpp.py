@@ -45,6 +45,12 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                 token  = irods_rest.authenticate('rods', 'rods', 'native')
                 result = irods_rest.access(token, logical_path)
                 assert(result.find('error') == -1)
+
+                # Verify that the use count option works as expected.
+                use_count = 50
+                result = json.loads(irods_rest.access(token, logical_path, use_count))
+                ticket_id = result['headers']['irods-ticket']
+                self.admin.assert_icommand(['iticket', 'ls', ticket_id], 'STDOUT', ['uses limit: ' + use_count])
             finally:
                 os.remove(file_name)
                 admin.assert_icommand(['irm', '-f', file_name])
