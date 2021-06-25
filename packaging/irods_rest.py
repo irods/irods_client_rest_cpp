@@ -26,9 +26,9 @@ class old_pycurl_mock_BytesIO(old_pycurl_mock_StringIO):
             self.seek(0)
 
 try:
-        from io import BytesIO
+    from io import BytesIO
 except ImportError:
-        from StringIO import StringIO as BytesIO
+    from StringIO import StringIO as BytesIO
 
 def base_url():
     return "http://localhost/irods-rest/1.0.0/"
@@ -58,7 +58,7 @@ def authenticate(_user_name, _password, _auth_type):
 
     return body
 
-def access(_token, _logical_path):
+def access(_token, _logical_path, _use_count=None, _seconds_until_expiration=None):
     buffer = StringIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
@@ -66,6 +66,9 @@ def access(_token, _logical_path):
     c.setopt(c.CUSTOMREQUEST, 'POST')
 
     url = '{0}access?path={1}'.format(base_url(), _logical_path)
+
+    if _use_count               : url += '&use_count={0}'.format(_use_count)
+    if _seconds_until_expiration: url += '&seconds_until_expiration={0}'.format(_seconds_until_expiration)
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -130,7 +133,7 @@ def list(_token, _path, _stat, _permissions, _metadata, _offset, _limit):
 
     return body
 
-def put(_token, _physical_path, _logical_path):
+def put(_token, _physical_path, _logical_path, _ticket_id=None):
     body = ""
     offset = 0
     file_size = 0
@@ -140,6 +143,10 @@ def put(_token, _physical_path, _logical_path):
             c = pycurl.Curl()
             c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
             c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+
+            if _ticket_id:
+                c.setopt(pycurl.HTTPHEADER,['irods-ticket: '+_ticket_id])
+
             c.setopt(c.CUSTOMREQUEST, 'PUT')
 
             c.setopt(c.POSTFIELDSIZE, len(data))
@@ -162,7 +169,7 @@ def put(_token, _physical_path, _logical_path):
             body = body_buffer.getvalue()
     return body
 
-def get(_token, _physical_path, _logical_path):
+def get(_token, _physical_path, _logical_path, _ticket_id=None):
     offset = 0
     read_size = 1024 * 1024 * 4
     with open(_physical_path, 'w') as f:
@@ -170,6 +177,10 @@ def get(_token, _physical_path, _logical_path):
             c = pycurl.Curl()
             c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
             c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+
+            if _ticket_id:
+                c.setopt(pycurl.HTTPHEADER,['irods-ticket: '+_ticket_id])
+
             c.setopt(c.CUSTOMREQUEST, 'GET')
 
             url = '{0}stream?path={1}&offset={2}&limit={3}'.format(base_url(), _logical_path, offset, read_size)

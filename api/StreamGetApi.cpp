@@ -53,10 +53,10 @@ void StreamGetApi::stream_handler(const Pistache::Rest::Request &request, Pistac
     // Getting the query params
     auto path = request.query().get("path");
     auto offset = request.query().get("offset");
-    auto limit = request.query().get("limit");
+    auto count = request.query().get("count");
 
     try {
-      this->stream(request.headers(), request.body(), path, offset, limit, response);
+      this->stream(request.headers(), request.body(), path.get(), count.get(), offset, response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());

@@ -1,147 +1,165 @@
-
 #include "irods_rest_api_base.h"
 #include "filesystem.hpp"
 #include "rodsClient.h"
 #include "irods_random.hpp"
+#include "rodsErrorTable.h"
+
+#include "pistache/http_headers.h"
+#include "pistache/optional.h"
+
+#include "fmt/format.h"
 
 #include <chrono>
-#include <ctime>
+#include <string_view>
 
 // this is contractually tied directly to the swagger api definition, and the below implementation
 #define MACRO_IRODS_ACCESS_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_access_(headers.getRaw("Authorization").value(), path.get(), base); \
+    std::tie(code, message) = irods_access_(headers, path.get(), base, use_count, seconds_until_expiration); \
     response.send(code, message);
 
-namespace irods::rest {
-    namespace sc = std::chrono;
-    using sclk = sc::system_clock;
-
-    namespace fs   = irods::experimental::filesystem;
-    namespace fcli = irods::experimental::filesystem::client;
-    using     fsp  = fs::path;
-
+namespace irods::rest
+{
     // this is contractually tied directly to the api implementation
     const std::string service_name{"irods_rest_cpp_access_server"};
 
-    class access : public api_base {
-        public:
+    class access : public api_base
+    {
+    public:
+        access()
+            : api_base{service_name}
+        {
+            logger_->trace("Endpoint [{}] initialized.", service_name);
+        }
 
-            access() : api_base{service_name}
-            {
-                // ctor
+        std::tuple<Pistache::Http::Code, std::string>
+        operator()(const Pistache::Http::Header::Collection& _headers,
+                   const std::string& _logical_path,
+                   const std::string& _base_url,
+                   const Pistache::Optional<std::string>& _use_count,
+                   const Pistache::Optional<std::string>& _seconds_until_expiration)
+        {
+            logger_->trace("Handling /access request ...");
+
+            namespace fs = irods::experimental::filesystem;
+
+            logger_->trace("Generating new ticket ...");
+
+            auto conn = get_connection(_headers.getRaw("authorization").value());
+
+            try {
+                // TODO: can we ensure this is a canonical path?
+                const std::string logical_path{decode_url(_logical_path)};
+                logger_->debug("logical_path = [{}]", logical_path);
+
+                const fs::path fs_path = logical_path;
+                const auto size = fs::client::data_object_size(*conn(), fs_path);
+                const auto ticket_id = make_ticket_id();
+
+                // TODO These calls could benefit from an atomic_apply_ticket_operations API plugin.
+                // Each one of these calls results in at least one network call.
+                create_ticket(conn, ticket_id, logical_path);
+                set_ticket_use_count(conn, ticket_id, _use_count);
+                set_ticket_expiration_timestamp(conn, ticket_id, _seconds_until_expiration);
+
+                using json = nlohmann::json;
+
+                const auto results = json::object({
+                    {"headers", json::object({
+                        {"irods-ticket", json::array({ticket_id})}
+                    })},
+                    {"url", fmt::format("{}/stream?path={}&offset=0&count={}", _base_url, logical_path, size)}
+                });
+
+                logger_->debug("Result = [{}]", results.dump());
+
+                return std::make_tuple(Pistache::Http::Code::Ok, results.dump());
+            }
+            catch (const fs::filesystem_error& e) {
+                return make_error_response(e.code().value(), e.what());
+            }
+            catch (const irods::exception& e) {
+                return make_error_response(e.code(), e.what());
+            }
+            catch (const std::exception& e) {
+                return make_error_response(SYS_INTERNAL_ERR, e.what());
+            }
+        } // operator()
+
+    private:
+        std::string make_ticket_id() const
+        {
+            constexpr int ticket_len = 15;
+
+            // random_bytes must be (unsigned char[]) to guarantee that following
+            // modulo result is positive (i.e. in [0, 61])
+            unsigned char random_bytes[ticket_len];
+            irods::getRandomBytes(random_bytes, ticket_len);
+
+            const char character_set[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G',
+            'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+            'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+            'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+            'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
+            '7', '8', '9'};
+
+            std::string new_ticket;
+            for (int i = 0; i < ticket_len; ++i) {
+                const int ix = random_bytes[i] % sizeof(character_set);
+                new_ticket += character_set[ix];
             }
 
-            std::tuple<Pistache::Http::Code &&, std::string> operator()(
-                const std::string& _auth_header,
-                const std::string& _logical_path,
-                const std::string& _base_url) {
+            return new_ticket;
+        } // make_ticket_id
 
-                auto conn = get_connection(_auth_header);
-                try {
-                    // TODO: can we ensure this is a canonical path?
-                    std::string logical_path{decode_url(_logical_path)};
+        void create_ticket(connection_proxy& _conn,
+                           const std::string_view _ticket_id,
+                           const std::string_view _logical_path) const
+        {
+            rx_ticket(*_conn(), "create", _ticket_id, "read", _logical_path);
+        } // create_ticket
 
-                    fsp fs_path{logical_path};
-                    auto size = fcli::data_object_size(*conn(), fs_path);
+        void set_ticket_use_count(connection_proxy& _conn,
+                                  const std::string_view& _ticket_id,
+                                  const Pistache::Optional<std::string>& _use_count) const
+        {
+            const auto use_count = _use_count.getOrElse("0");
+            logger_->debug("use_count = [{}]", use_count);
+            rx_ticket(*_conn(), "mod", _ticket_id, "uses", use_count);
+        } // set_ticket_use_count
 
-                    // generate a ticket and create the JSON to return to the client
-                    std::string ticket{make_ticket()};
-                    nlohmann::json headers = nlohmann::json::array();
-                    headers += std::string{"X-API-KEY: "}+ticket;
+        void set_ticket_expiration_timestamp(connection_proxy& _conn,
+                                             const std::string_view& _ticket_id,
+                                             const Pistache::Optional<std::string>& _seconds_until_expiration) const
+        {
+            using std::chrono::seconds;
+            using std::chrono::duration_cast;
 
-                    nlohmann::json results = nlohmann::json::object();
-                    results["url"] = fmt::format(
-                                         "{}/stream?path={}&offset=0&limit={}"
-                                         , _base_url
-                                         , logical_path
-                                         , size);
-                    results["headers"] = headers;
+            const auto secs_until_expiration = seconds(std::stoi(_seconds_until_expiration.getOrElse("30")));
+            const auto tp = std::chrono::system_clock::now() + secs_until_expiration;
+            logger_->debug("seconds_until_expiration = [{}]", secs_until_expiration.count());
 
-                    // create the ticket in the catalog
-                    std::string create{"create"}, read{"read"};
-                    rx_ticket(*conn(), create, ticket, read, logical_path);
+            const auto end_time = fmt::format("{}", duration_cast<seconds>(tp.time_since_epoch()).count());
+            rx_ticket(*_conn(), "mod", _ticket_id, "expire", end_time);
+        } // set_ticket_expiration_timestamp
 
-                    // modify it to a single use
-                    std::string mod{"mod"}, uses{"uses"}, one{"1"};
-                    rx_ticket(*conn(), mod, ticket, uses, one);
+        void rx_ticket(RcComm& _conn,
+                       std::string_view _operation,
+                       std::string_view _ticket_id,
+                       std::string_view _type,
+                       std::string_view _value) const
+        {
+            ticketAdminInp_t ticket_inp{};
+            ticket_inp.arg1 = const_cast<char*>(_operation.data());
+            ticket_inp.arg2 = const_cast<char*>(_ticket_id.data());
+            ticket_inp.arg3 = const_cast<char*>(_type.data());
+            ticket_inp.arg4 = const_cast<char*>(_value.data());
 
-                    // set the time limit on usage to 30 seconds
-                    auto end_time_p{sclk::now()+sc::seconds(30)};
-                    auto end_time_t{sclk::to_time_t(end_time_p)};
-                    std::stringstream end_ss{}; end_ss << end_time_t;
-
-                    std::string expire{"expire"}, end_time{end_ss.str()};
-                    rx_ticket(*conn(), mod, ticket, expire, end_time);
-
-                    return std::forward_as_tuple(
-                            Pistache::Http::Code::Ok,
-                            results.dump());
-                }
-                catch(const irods::exception& _e) {
-                    auto error = make_error(_e.code(), _e.what());
-                    return std::forward_as_tuple(
-                            Pistache::Http::Code::Bad_Request,
-                            error);
-                }
-                catch(const std::exception& _e) {
-                    auto error = make_error(SYS_INTERNAL_ERR, _e.what());
-                    return std::forward_as_tuple(
-                            Pistache::Http::Code::Bad_Request,
-                            error);
-                }
-            } // operator()
-
-        private:
-
-            std::string make_ticket() {
-                const int ticket_len = 15;
-                // random_bytes must be (unsigned char[]) to guarantee that following
-                // modulo result is positive (i.e. in [0, 61])
-                unsigned char random_bytes[ticket_len];
-                irods::getRandomBytes( random_bytes, ticket_len );
-
-                const char character_set[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G',
-                'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-                'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-                'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-                'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
-                '7', '8', '9'};
-
-                std::string new_ticket{};
-                for ( int i = 0; i < ticket_len; ++i ) {
-                    const int ix = random_bytes[i] % sizeof(character_set);
-                    new_ticket += character_set[ix];
-                }
-                return new_ticket;
-            } // make_ticket
-
-            // cannot use const due to lack of const on ticket args
-            void rx_ticket(
-                rcComm_t&     _conn,
-                std::string&  _operation,
-                std::string&  _ticket,
-                std::string&  _type,
-                std::string&  _value) {
-
-                ticketAdminInp_t ticket_inp{};
-                ticket_inp.arg1 = &_operation[0];
-                ticket_inp.arg2 = &_ticket[0];
-                ticket_inp.arg3 = &_type[0];
-                ticket_inp.arg4 = &_value[0];
-                ticket_inp.arg5 = nullptr;
-                ticket_inp.arg6 = nullptr;
-
-                auto err = rcTicketAdmin(&_conn, &ticket_inp);
-                if(err < 0) {
-                    THROW( err,
-                           std::string{"Failed to call ticket admin for ticket "}
-                            + _ticket);
-                }
-
-            } // rx_ticket
-
+            if (const auto ec = rcTicketAdmin(&_conn, &ticket_inp); ec < 0) {
+                THROW(ec, fmt::format("Failed to call rcTicketAdmin for ticket [{}]", _ticket_id));
+            }
+        } // rx_ticket
     }; // class access
+} // namespace irods::rest
 
-}; // namespace irods::rest
