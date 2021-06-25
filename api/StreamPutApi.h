@@ -18,7 +18,6 @@
 #ifndef StreamPutApi_H_
 #define StreamPutApi_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
@@ -54,7 +53,6 @@ private:
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
 
-
     /// <summary>
     /// streams bytes to/from a data thinger
     /// </summary>
@@ -62,10 +60,16 @@ private:
     /// Sends an HTTP stream of file bytes 
     /// </remarks>
     /// <param name="path">irods absolute logical path to the file</param>
-    /// <param name="offset">number of bytes to skip for pagination (optional)</param>
-    /// <param name="limit">maximum number of bytes to return (optional)</param>
-    virtual void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) = 0;
-
+    /// <param name="offset">number of bytes to skip (optional)</param>
+    /// <param name="count">maximum number of bytes to write (optional)</param>
+    /// <param name="truncate">truncate the data object on open (optional)</param>
+    virtual void stream(const Pistache::Http::Header::Collection &headers,
+                        const std::string &body,
+                        const std::string &path,
+                        const Pistache::Optional<std::string> &offset,
+                        const Pistache::Optional<std::string> &count,
+                        const Pistache::Optional<std::string> &truncate,
+                        Pistache::Http::ResponseWriter &response) = 0;
 };
 
 }

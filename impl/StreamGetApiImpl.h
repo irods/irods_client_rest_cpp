@@ -45,9 +45,14 @@ public:
     StreamGetApiImpl(Pistache::Address addr);
     ~StreamGetApiImpl() { };
 
-    void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
-    irods::rest::stream irods_stream_get_;
+    void stream(const Pistache::Http::Header::Collection& headers,
+                const std::string& body,
+                const std::string& path,
+                const std::string& count,
+                const Pistache::Optional<std::string>& offset,
+                Pistache::Http::ResponseWriter& response);
 
+    irods::rest::stream irods_stream_get_;
 };
 
 }

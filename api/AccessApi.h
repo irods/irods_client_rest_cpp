@@ -61,8 +61,13 @@ private:
     /// <remarks>
     /// obtain an access token and url for a given object 
     /// </remarks>
-    /// <param name="path">irods absolute logical path of the object</param>
-    virtual void access(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, Pistache::Http::ResponseWriter &response) = 0;
+    /// <param name="logical_path">irods absolute logical path of the object</param>
+    virtual void access(const Pistache::Http::Header::Collection& headers,
+                        const std::string& body,
+                        const Pistache::Optional<std::string>& logical_path,
+                        const Pistache::Optional<std::string>& use_count,
+                        const Pistache::Optional<std::string>& seconds_until_expiration,
+                        Pistache::Http::ResponseWriter& response) = 0;
 
 };
 

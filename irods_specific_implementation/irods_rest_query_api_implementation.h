@@ -7,7 +7,7 @@
 #define MACRO_IRODS_QUERY_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_query_(headers.getRaw("Authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get(), base); \
+    std::tie(code, message) = irods_query_(headers.getRaw("authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get(), base); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -19,7 +19,7 @@ namespace irods::rest {
         public:
             query() : api_base{service_name}
             {
-                // ctor
+                logger_->trace("Endpoint [{}] initialized.", service_name);
             }
 
             std::tuple<Pistache::Http::Code &&, std::string> operator()(

@@ -62,9 +62,14 @@ private:
     /// Obtains an HTTP stream of file bytes 
     /// </remarks>
     /// <param name="path">irods absolute logical path to the file</param>
-    /// <param name="offset">number of bytes to skip for pagination (optional)</param>
-    /// <param name="limit">maximum number of bytes to return (optional)</param>
-    virtual void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) = 0;
+    /// <param name="count">maximum number of bytes to read</param>
+    /// <param name="offset">number of bytes to skip (optional)</param>
+    virtual void stream(const Pistache::Http::Header::Collection &headers,
+                        const std::string &body,
+                        const std::string &path,
+                        const std::string &count,
+                        const Pistache::Optional<std::string> &offset,
+                        Pistache::Http::ResponseWriter &response) = 0;
 
 };
 

@@ -19,7 +19,6 @@
 #ifndef STREAM_PUT_API_IMPL_H_
 #define STREAM_PUT_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
@@ -45,7 +44,13 @@ public:
     StreamPutApiImpl(Pistache::Address addr);
     ~StreamPutApiImpl() { };
 
-    void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
+    void stream(const Pistache::Http::Header::Collection& headers,
+                const std::string& body,
+                const std::string& path,
+                const Pistache::Optional<std::string>& offset,
+                const Pistache::Optional<std::string>& count,
+                const Pistache::Optional<std::string>& truncate,
+                Pistache::Http::ResponseWriter& response);
 
     irods::rest::stream irods_stream_put_;
 };

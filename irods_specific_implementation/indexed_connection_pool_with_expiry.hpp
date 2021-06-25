@@ -6,6 +6,7 @@
 #include "irods_server_properties.hpp"
 
 #include "jwt.h"
+#include "fmt/format.h"
 
 #include <map>
 #include <string>
@@ -213,9 +214,7 @@ namespace irods {
 
             auto err = clientLogin(conn->get());
             if(err < 0) {
-                THROW(err,
-                    fmt::format("[{}] failed to login"
-                    , user_name));
+                THROW(err, fmt::format("[{}] failed to login", user_name));
             }
 
             return conn;

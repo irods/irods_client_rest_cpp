@@ -9,7 +9,7 @@
 
 // this is contractually tied directly to the pistache implementation, and the below implementation
 #define MACRO_IRODS_CONFIGURATION_PUT_API_IMPLEMENTATION \
-    auto [code, message] = irods_put_configuration_(request.headers().getRaw("Authorization").value(), cfg.get()); \
+    auto [code, message] = irods_put_configuration_(request.headers().getRaw("authorization").value(), cfg.get()); \
     response.send(code, message);
 
 namespace irods::rest {
@@ -39,16 +39,15 @@ namespace irods::rest {
 
         } // throw_if_user_is_not_rodsadmin
 
-        public:
-
+    public:
         put_configuration() : api_base{service_name}
         {
-            // ctor
+            logger_->trace("Endpoint [{}] initialized.", service_name);
         }
 
         auto operator()(
-              const std::string& _auth_header
-            , const std::string& _configuration) -> std::tuple<Pistache::Http::Code &&, std::string>
+            const std::string& _auth_header,
+            const std::string& _configuration) -> std::tuple<Pistache::Http::Code &&, std::string>
         {
             try {
                 auto conn = get_connection(_auth_header);

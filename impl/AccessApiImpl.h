@@ -45,7 +45,12 @@ public:
     AccessApiImpl(Pistache::Address addr);
     ~AccessApiImpl() { };
 
-    void access(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, Pistache::Http::ResponseWriter &response);
+    void access(const Pistache::Http::Header::Collection& headers,
+                const std::string& body,
+                const Pistache::Optional<std::string>& path,
+                const Pistache::Optional<std::string>& use_count,
+                const Pistache::Optional<std::string>& seconds_until_expiration,
+                Pistache::Http::ResponseWriter& response);
     irods::rest::access irods_access_;
 };
 

@@ -52,9 +52,11 @@ void AccessApi::access_handler(const Pistache::Rest::Request &request, Pistache:
 
     // Getting the query params
     auto path = request.query().get("path");
+    auto use_count = request.query().get("use_count");
+    auto seconds_until_expiration = request.query().get("seconds_until_expiration");
 
     try {
-      this->access(request.headers(), request.body(), path, response);
+      this->access(request.headers(), request.body(), path, use_count, seconds_until_expiration, response);
     } catch (std::runtime_error & e) {
       //send a 400 error
       response.send(Pistache::Http::Code::Bad_Request, e.what());
