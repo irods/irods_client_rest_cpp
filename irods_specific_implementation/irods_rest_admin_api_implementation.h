@@ -6,8 +6,9 @@
 // this is contractually tied directly to the swagger api definition, and the below implementation
 #define MACRO_IRODS_ADMIN_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_admin_(headers.getRaw("authorization").value(), action.get(), target.get(), arg2.get(), arg3.get(), arg4.get(), arg5.get(), arg6.get(), arg7.get()); \
+    std::string message;  \
+    std::tie(code, message) = irods_admin_(headers.getRaw("authorization").value(), action.get(), \
+        target.get(), arg2.get(), arg3.get(), arg4.get(), arg5.get(), arg6.get(), arg7.get()); \
     response.send(code, message);
 
 namespace irods::rest
@@ -18,12 +19,13 @@ namespace irods::rest
     class admin : public api_base
     {
     public:
-        admin() : api_base{service_name}
+        admin()
+            : api_base{service_name}
         {
             logger_->trace("Endpoint [{}] initialized.", service_name);
         }
 
-        std::tuple<Pistache::Http::Code&&, std::string>
+        std::tuple<Pistache::Http::Code, std::string>
         operator()(const std::string& _auth_header,
                    const std::string& _action,
                    const std::string& _target,
@@ -34,12 +36,21 @@ namespace irods::rest
                    const std::string& _arg6,
                    const std::string& _arg7)
         {
+            logger_->trace("Handling /admin request ...");
+
+            logger_->debug("_auth_header=[{}], _action=[{}], _target=[{}], "
+                           "_arg2=[{}], _arg3=[{}], _arg4=[{}], _arg5=[{}], _arg6=[{}]",
+                           _auth_header, _action, _target, _arg2, _arg3, _arg4, _arg5, _arg6);
+
             auto conn = get_connection(_auth_header);
 
             try {
                 const auto resc_name = decode_url(_arg2);
                 const auto vault_path = decode_url(_arg4);
                 const auto zone_name = decode_url(_arg6);
+
+                logger_->debug("decoded arguments - _arg2=[{}], _arg4=[{}], _arg6=[{}]",
+                               resc_name, vault_path, zone_name);
 
                 generalAdminInp_t input{};
                 input.arg0 = (_action == "remove") ? "rm" : _action.c_str();
@@ -52,20 +63,18 @@ namespace irods::rest
                 input.arg7 = _arg7.c_str();
 
                 if (const auto ec = rcGeneralAdmin(conn(), &input); ec < 0) {
-                    auto error = make_error(ec, "rsGeneralAdmin failed.");
-                    return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, error);
+                    return make_error_response(ec, "Error on rcGeneralAdmin.");
                 }
 
-                return std::forward_as_tuple(Pistache::Http::Code::Ok, SUCCESS);
+                return std::make_tuple(Pistache::Http::Code::Ok, SUCCESS);
             }
             catch (const irods::exception& e) {
-                auto error = make_error(e.code(), e.what());
-                return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, error);
+                return make_error_response(e.code(), e.what());
             }
             catch (const std::exception& e) {
-                auto error = make_error(SYS_INVALID_INPUT_PARAM, e.what());
-                return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, error);
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
     }; // class admin
 } // namespace irods::rest
+
