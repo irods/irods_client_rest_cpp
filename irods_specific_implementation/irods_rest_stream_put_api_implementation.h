@@ -37,7 +37,7 @@ namespace irods::rest
             logger_->trace("Endpoint [{}] initialized.", service_name);
         }
 
-        std::tuple<Pistache::Http::Code &&, std::string>
+        std::tuple<Pistache::Http::Code, std::string>
         operator()(const Pistache::Http::Header::Collection& _headers,
                    const std::string& _body,
                    const std::string& _path,
@@ -45,7 +45,7 @@ namespace irods::rest
                    const Pistache::Optional<std::string>& _count,
                    const Pistache::Optional<std::string>& _truncate)
         {
-            logger_->trace("Handling PUT request ...");
+            logger_->trace("Handling /stream request for write ...");
 
             auto conn = get_connection(_headers.getRaw("authorization").value());
 
@@ -70,10 +70,13 @@ namespace irods::rest
                     ds.write(_body.c_str(), count);
                 }
 
-                return std::forward_as_tuple(Pistache::Http::Code::Ok, SUCCESS);
+                return std::make_tuple(Pistache::Http::Code::Ok, SUCCESS);
             }
             catch (const irods::exception& e) {
                 return make_error_response(e.code(), e.what());
+            }
+            catch (const std::exception& e) {
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
 

@@ -1,18 +1,18 @@
-#include "pistache/http_headers.h"
+#include "indexed_connection_pool_with_expiry.hpp"
+
 #include "rodsClient.h"
 #include "rcConnect.h"
-#include "fmt/format.h"
-#include "json.hpp"
-#include "pistache/http_defs.h"
-
 #include "irods_native_auth_object.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_exception.hpp"
 
-#include "jwt.h"
+#include "fmt/format.h"
 #include "json.hpp"
+#include "jwt.h"
+#include "pistache/http_defs.h"
+#include "pistache/http_headers.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/syslog_sink.h"
 
@@ -25,8 +25,6 @@
 #include <string>
 #include <string_view>
 
-#include "indexed_connection_pool_with_expiry.hpp"
-
 namespace irods::rest
 {
     using icp = indexed_connection_pool_with_expiry;
@@ -35,7 +33,7 @@ namespace irods::rest
     {
         const std::string SUCCESS{"{\"code\" : 0, \"message\" : \"Success\"}"};
 
-        auto make_error(int32_t _code, const std::string_view _msg) -> std::string
+        std::string make_error(int32_t _code, const std::string_view _msg)
         {
             return fmt::format("{{\"error_code\": {}, \"error_message\": \"{}\"}}", _code, _msg);
         } // make_error
@@ -253,9 +251,9 @@ namespace irods::rest
 
         auto make_error_response(int _error_code, const std::string_view _error_msg) const
         {
-            logger_->error(_error_msg);
-            const auto error = make_error(SYS_INVALID_INPUT_PARAM, _error_msg);
-            return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, error);
+            logger_->error("error_cod={} ::: {}", _error_code, _error_msg);
+            const auto error = make_error(_error_code, _error_msg);
+            return std::make_tuple(Pistache::Http::Code::Bad_Request, error);
         }
 
         std::shared_ptr<spdlog::logger> logger_;

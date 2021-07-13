@@ -2,6 +2,7 @@
 #include "filesystem.hpp"
 #include "rodsClient.h"
 #include "irods_random.hpp"
+#include "rodsErrorTable.h"
 
 #include "pistache/http_headers.h"
 #include "pistache/optional.h"
@@ -32,13 +33,15 @@ namespace irods::rest
             logger_->trace("Endpoint [{}] initialized.", service_name);
         }
 
-        std::tuple<Pistache::Http::Code&&, std::string>
+        std::tuple<Pistache::Http::Code, std::string>
         operator()(const Pistache::Http::Header::Collection& _headers,
                    const std::string& _logical_path,
                    const std::string& _base_url,
                    const Pistache::Optional<std::string>& _use_count,
                    const Pistache::Optional<std::string>& _seconds_until_expiration)
         {
+            logger_->trace("Handling /access request ...");
+
             namespace fs = irods::experimental::filesystem;
 
             logger_->trace("Generating new ticket ...");
@@ -71,22 +74,16 @@ namespace irods::rest
 
                 logger_->debug("Result = [{}]", results.dump());
 
-                return std::forward_as_tuple(Pistache::Http::Code::Ok, results.dump());
+                return std::make_tuple(Pistache::Http::Code::Ok, results.dump());
             }
             catch (const fs::filesystem_error& e) {
-                logger_->error(e.what());
-                auto error = make_error(e.code().value(), e.what());
-                return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, error);
+                return make_error_response(e.code().value(), e.what());
             }
             catch (const irods::exception& e) {
-                logger_->error(e.what());
-                auto error = make_error(e.code(), e.what());
-                return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, error);
+                return make_error_response(e.code(), e.what());
             }
             catch (const std::exception& e) {
-                logger_->error(e.what());
-                auto error = make_error(SYS_INTERNAL_ERR, e.what());
-                return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, error);
+                return make_error_response(SYS_INTERNAL_ERR, e.what());
             }
         } // operator()
 
@@ -158,12 +155,9 @@ namespace irods::rest
             ticket_inp.arg2 = const_cast<char*>(_ticket_id.data());
             ticket_inp.arg3 = const_cast<char*>(_type.data());
             ticket_inp.arg4 = const_cast<char*>(_value.data());
-            ticket_inp.arg5 = nullptr;
-            ticket_inp.arg6 = nullptr;
 
-            const auto err = rcTicketAdmin(&_conn, &ticket_inp);
-            if (err < 0) {
-                THROW(err, fmt::format("Failed to call rcTicketAdmin for ticket [{}]", _ticket_id));
+            if (const auto ec = rcTicketAdmin(&_conn, &ticket_inp); ec < 0) {
+                THROW(ec, fmt::format("Failed to call rcTicketAdmin for ticket [{}]", _ticket_id));
             }
         } // rx_ticket
     }; // class access

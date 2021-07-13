@@ -37,14 +37,14 @@ namespace irods::rest
             logger_->trace("Endpoint [{}] initialized.", service_name);
         }
 
-        std::tuple<Pistache::Http::Code &&, std::string>
+        std::tuple<Pistache::Http::Code, std::string>
         operator()(const Pistache::Http::Header::Collection& _headers,
                    const std::string& _body,
                    const std::string& _path,
                    const std::string& _count,
                    const Pistache::Optional<std::string>& _offset)
         {
-            logger_->trace("Handling GET request ...");
+            logger_->trace("Handling /stream request for read ...");
 
             auto conn = get_connection(_headers.getRaw("authorization").value());
 
@@ -90,7 +90,7 @@ namespace irods::rest
 
                 ds.read(buffer.data(), buffer.size());
 
-                return std::forward_as_tuple(Pistache::Http::Code::Ok, std::string(buffer.data(), ds.gcount()));
+                return std::make_tuple(Pistache::Http::Code::Ok, std::string(buffer.data(), ds.gcount()));
             }
             catch (const irods::exception& e) {
                 return make_error_response(e.code(), e.what());
