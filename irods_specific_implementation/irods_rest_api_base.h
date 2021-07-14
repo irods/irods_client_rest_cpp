@@ -251,7 +251,7 @@ namespace irods::rest
 
         auto make_error_response(int _error_code, const std::string_view _error_msg) const
         {
-            logger_->error("error_cod={} ::: {}", _error_code, _error_msg);
+            logger_->error("error_code={} ::: {}", _error_code, _error_msg);
             const auto error = make_error(_error_code, _error_msg);
             return std::make_tuple(Pistache::Http::Code::Bad_Request, error);
         }
