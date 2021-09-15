@@ -73,6 +73,9 @@ namespace irods::rest
 
         auto parse_header(const std::string _header) -> std::tuple<std::string, std::string>
         {
+            trace("Parsing header ...");
+            debug("_header = [{}]", _header);
+
             const auto p0 = _header.find_first_of(" ");
             if (std::string::npos == p0) {
                 throw_for_invalid_header(_header);
@@ -86,11 +89,16 @@ namespace irods::rest
 
         auto decode(const std::string _header) -> std::tuple<std::string, std::string, std::string>
         {
+            trace("Decoding header for auth-type, token, username, and password ...");
+            debug("_header = [{}]", _header);
+
             const auto [auth_type, token] = parse_header(_header);
 
             auto creds = base64_decode(token);
             auto user_name = creds.substr(0, creds.find_first_of(":"));
             auto password = creds.substr(creds.find_first_of(":") + 1);
+
+            debug("user_name = [{}]", user_name);
 
             return std::make_tuple(user_name, password, auth_type);
         } // decode
@@ -98,11 +106,13 @@ namespace irods::rest
     public:
         auth() : api_base{service_name}
         {
-            logger_->trace("Endpoint [{}] initialized.", service_name);
+            trace("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string> operator()(const std::string& _header)
         {
+            trace("Handling request ...");
+
             std::string user_name, password, auth_type;
 
             try {
@@ -111,8 +121,10 @@ namespace irods::rest
                 authenticate(user_name, password, auth_type);
 
                 // use the zone key as our secret
-                std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
+                const auto zone_key = irods::get_server_property<std::string>(irods::CFG_ZONE_KEY_KW);
+                debug("zone_key = [{}]", zone_key);
 
+                trace("Generating JWT for user [{}] ...", user_name);
                 auto token = jwt::create()
                     .set_type("JWS")
                     .set_issuer(keyword::issue_claim)

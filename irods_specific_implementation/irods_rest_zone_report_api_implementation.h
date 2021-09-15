@@ -21,22 +21,28 @@ namespace irods::rest
         zone_report()
             : api_base{service_name}
         {
-            logger_->trace("Endpoint [{}] initialized.", service_name);
+            trace("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
         operator()(const std::string& _auth_header)
         {
+            trace("Handling request ...");
+
             try {
                 auto conn = get_connection(_auth_header);
 
                 BytesBuf* bbuf = nullptr;
                 at_scope_exit free_bbuf{[&bbuf] { std::free(bbuf); }};
 
+                trace("Invoking rcZoneReport() ...");
+
                 if (const auto ec = rcZoneReport(conn(), &bbuf); ec < 0) {
+                    error("Received error [{}] from rcZoneReport.", ec);
                     return make_error_response(ec, rodsErrorName(ec, nullptr));
                 }
 
+                trace("No error on call to rcZoneReport().");
 
                 return std::make_tuple(Pistache::Http::Code::Ok,
                                        std::string(static_cast<char*>(bbuf->buf), bbuf->len));
