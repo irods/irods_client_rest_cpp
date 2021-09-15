@@ -113,7 +113,7 @@ namespace irods::rest
     {
     public:
         api_base(const std::string& _service_name)
-            : logger_{spdlog::syslog_logger_mt(_service_name, "", LOG_PID, LOG_LOCAL0)}
+            : logger_{spdlog::syslog_logger_mt(_service_name, "", LOG_PID, LOG_LOCAL0, true /* enable formatting */)}
             , connection_pool_{}
         {
             // sets the client name for the ips command
@@ -138,11 +138,48 @@ namespace irods::rest
         } // dtor
 
     protected:
-        auto authenticate(
-              const std::string& _user_name
-            , const std::string& _password
-            , const std::string& _auth_type) -> void
+        template <typename ...Args>
+        void trace(const std::string_view _fmt, Args&&... _args) const
         {
+            logger_->trace(_fmt, std::forward<Args>(_args)...);
+        } // trace
+
+        template <typename ...Args>
+        void debug(const std::string_view _fmt, Args&&... _args) const
+        {
+            logger_->debug(_fmt, std::forward<Args>(_args)...);
+        } // debug
+
+        template <typename ...Args>
+        void info(const std::string_view _fmt, Args&&... _args) const
+        {
+            logger_->info(_fmt, std::forward<Args>(_args)...);
+        } // info
+
+        template <typename ...Args>
+        void warn(const std::string_view _fmt, Args&&... _args) const
+        {
+            logger_->warn(_fmt, std::forward<Args>(_args)...);
+        } // warn
+
+        template <typename ...Args>
+        void error(const std::string_view _fmt, Args&&... _args) const
+        {
+            logger_->error(_fmt, std::forward<Args>(_args)...);
+        } // error
+
+        template <typename ...Args>
+        void critical(const std::string_view _fmt, Args&&... _args) const
+        {
+            logger_->critical(_fmt, std::forward<Args>(_args)...);
+        } // critical
+
+        auto authenticate(const std::string& _user_name,
+                          const std::string& _password,
+                          const std::string& _auth_type) -> void
+        {
+            trace("Performing authentication for user [{}] ...", _user_name);
+
             std::string auth_type = _auth_type;
             std::transform(auth_type.begin(), auth_type.end(), auth_type.begin(), ::tolower);
 
@@ -166,6 +203,9 @@ namespace irods::rest
         auto get_connection(const std::string& _header,
                             const std::string& _hint = icp::do_not_cache_hint) -> connection_proxy
         {
+            trace("Getting connection to iRODS server ...");
+            trace("Extracting JWT from authorization header ...");
+
             // remove Authorization: from the string, the key is the
             // Authorization header which contains a JWT
             std::string jwt = _header.substr(_header.find(":") + 1);
@@ -178,18 +218,23 @@ namespace irods::rest
                     [](unsigned char x) { return std::isspace(x); }),
                 jwt.end());
 
+            trace("Getting iRODS connection from pool ...");
             auto conn = connection_pool_.get(jwt, _hint);
             auto* ptr = conn();
 
+            trace("Invoking clientLogin() ...");
             if (const int ec = clientLogin(ptr); ec < 0) {
                 THROW(ec, fmt::format("[{}] failed to login" , conn()->clientUser.userName));
             }
 
+            trace("Returning connection ...");
             return conn;
         } // get_connection
 
         std::string decode_url(const std::string& _in) const
         {
+            trace("Decoding input [{}] ...", _in);
+
             std::string out;
             out.reserve(_in.size());
 
@@ -224,6 +269,8 @@ namespace irods::rest
         int set_session_ticket_if_available(const Pistache::Http::Header::Collection& _headers,
                                             connection_proxy& _conn)
         {
+            trace("Setting session ticket if available ...");
+
             if (const auto h = _headers.tryGetRaw("irods-ticket"); !h.isEmpty()) {
                 ticketAdminInp_t input{};
                 input.arg1 = const_cast<char*>("session");
@@ -233,7 +280,11 @@ namespace irods::rest
                 input.arg5 = const_cast<char*>("");
                 input.arg6 = const_cast<char*>("");
 
+                trace("Invoking rcTicketAdmin() ...");
                 return rcTicketAdmin(_conn(), &input);
+            }
+            else {
+                trace("No session ticket information available.");
             }
 
             return 0;
@@ -267,7 +318,6 @@ namespace irods::rest
 
         auto make_error_response(int _error_code, const std::string_view _error_msg) const
         {
-            logger_->error("error_code={} ::: {}", _error_code, _error_msg);
             const auto error = make_error(_error_code, _error_msg);
             return std::make_tuple(Pistache::Http::Code::Bad_Request, error);
         }
@@ -278,6 +328,9 @@ namespace irods::rest
         void configure_logger(const configuration& _cfg) noexcept
         {
             try {
+                logger_->set_pattern(R"_({"timestamp": "%Y-%m-%dT%T.%e%z", "service": "%n", )_"
+                                     R"_("pid": %P, "thread": %t, "severity": "%l", "message": "%v"})_");
+
                 if (_cfg.contains(configuration_keywords::log_level)) {
                     const auto lvl = _cfg.at(configuration_keywords::log_level).get<std::string>();
                     auto lvl_enum = spdlog::level::info;
