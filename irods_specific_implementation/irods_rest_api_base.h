@@ -6,6 +6,7 @@
 #include "irods_kvp_string_parser.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
+#include "user_administration.hpp"
 #include "irods_exception.hpp"
 
 #include "fmt/format.h"
@@ -31,9 +32,9 @@ namespace irods::rest
 
     namespace
     {
-        const std::string SUCCESS{"{\"code\" : 0, \"message\" : \"Success\"}"};
+        const std::string SUCCESS{"{\"code\": 0, \"message\": \"Success\"}"};
 
-        std::string make_error(int32_t _code, const std::string_view _msg)
+        std::string make_error(std::int32_t _code, const std::string_view _msg)
         {
             return fmt::format("{{\"error_code\": {}, \"error_message\": \"{}\"}}", _code, _msg);
         } // make_error
@@ -44,7 +45,7 @@ namespace irods::rest
             const std::string threads{"threads"};
             const std::string port{"port"};
             const std::string log_level{"log_level"};
-        };
+        }
     } // namespace
 
     class configuration
@@ -143,29 +144,22 @@ namespace irods::rest
             , const std::string& _auth_type) -> void
         {
             std::string auth_type = _auth_type;
-            std::transform(
-                auth_type.begin(),
-                auth_type.end(),
-                auth_type.begin(),
-                ::tolower );
+            std::transform(auth_type.begin(), auth_type.end(), auth_type.begin(), ::tolower);
 
             // translate standard rest auth type
-            if("basic" == auth_type) {
+            if ("basic" == auth_type) {
                 auth_type = "native";
             }
 
-            if("native" != auth_type) {
+            if ("native" != auth_type) {
                 THROW(SYS_INVALID_INPUT_PARAM, "Only basic (irods native) authentication is supported");
             }
 
             auto conn = connection_handle(_user_name, _user_name);
-            auto err  = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
+            const auto ec = clientLoginWithPassword(conn.get(), const_cast<char*>(_password.c_str()));
 
-            if(err < 0) {
-                THROW(err,
-                    fmt::format("[{}] failed to login with type [{}]"
-                    , _user_name
-                    , _auth_type));
+            if (ec < 0) {
+                THROW(ec, fmt::format("[{}] failed to login with type [{}]" , _user_name , _auth_type));
             }
         } // authenticate
 
@@ -174,25 +168,21 @@ namespace irods::rest
         {
             // remove Authorization: from the string, the key is the
             // Authorization header which contains a JWT
-            std::string jwt = _header.substr(_header.find(":")+1);
+            std::string jwt = _header.substr(_header.find(":") + 1);
 
             // chomp the spaces
             jwt.erase(
                 std::remove_if(
                     jwt.begin(),
                     jwt.end(),
-                    [](unsigned char x){return std::isspace(x);}),
+                    [](unsigned char x) { return std::isspace(x); }),
                 jwt.end());
 
             auto conn = connection_pool_.get(jwt, _hint);
-
             auto* ptr = conn();
 
-            int err = clientLogin(ptr);
-            if(err < 0) {
-                THROW(err,
-                    fmt::format("[{}] failed to login"
-                    , conn()->clientUser.userName));
+            if (const int ec = clientLogin(ptr); ec < 0) {
+                THROW(ec, fmt::format("[{}] failed to login" , conn()->clientUser.userName));
             }
 
             return conn;
@@ -248,6 +238,32 @@ namespace irods::rest
 
             return 0;
         } // set_session_ticket_if_available
+
+        void throw_if_user_is_not_rodsadmin(connection_proxy& _conn)
+        {
+            namespace adm = irods::experimental::administration;
+
+            const auto& user = _conn()->clientUser;
+
+            try {
+                const auto type = adm::client::type(*_conn(), adm::user{user.userName, user.rodsZone});
+
+                if (type && adm::user_type::rodsadmin != *type) {
+                    if (std::strlen(user.rodsZone) > 0) {
+                        const auto* msg_fmt = "{}#{} is not a rodsadmin user";
+                        THROW(CAT_INVALID_USER, fmt::format(msg_fmt, user.userName, user.rodsZone));
+                    }
+
+                    THROW(CAT_INVALID_USER, fmt::format("{} is not a rodsadmin user", user.userName));
+                }
+            }
+            catch (const adm::user_management_error&) {
+                // TODO Log the error message once the class access specifier is fixed for
+                // the user_management_error class.
+                const auto* msg_fmt = "Encountered error while checking if user [{}] is a rodsadmin.";
+                THROW(SYS_INTERNAL_ERR, fmt::format(msg_fmt, user.userName));
+            }
+        } // throw_if_user_is_not_rodsadmin
 
         auto make_error_response(int _error_code, const std::string_view _error_msg) const
         {
