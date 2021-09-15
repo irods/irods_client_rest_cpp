@@ -45,7 +45,10 @@ public:
     ZoneReportApiImpl(Pistache::Address addr);
     ~ZoneReportApiImpl() { };
 
-    void obtain_token(const Pistache::Http::Header::Collection& headers, const std::string body, Pistache::Http::ResponseWriter &response);
+    void obtain_token(const Pistache::Http::Header::Collection& headers,
+                      const std::string& body,
+                      Pistache::Http::ResponseWriter& response);
+
     irods::rest::zone_report irods_zone_report_;
 };
 
