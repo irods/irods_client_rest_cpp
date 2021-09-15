@@ -45,7 +45,6 @@ make package
 to build the REST API package.
 
 ## Configuring the service
-
 The REST API provides an executable for each individual API endpoint.  These endpoints may be grouped behind a reverse proxy in order to provide a single port for access.
 
 The services rely on a configuration file in `/etc/irods/` which dictates which ports are used for each service.  Two template files are placed there by the package:
@@ -56,6 +55,28 @@ The services rely on a configuration file in `/etc/irods/` which dictates which 
 `/etc/irods/irods_client_rest_cpp.json.template` should be copied to `/etc/irods/irods_client_rest_cpp.json` and modified if different ports are desired.  The service can then be restarted with `service irods_client_rest_cpp restart`, or however your specific platform manages services.
 
 Once the REST API is running install nginx and then copy `/etc/irods/irods-client-rest-cpp-reverse-proxy.conf.template` to `/etc/nginx/sites-available/irods-client-rest-cpp-reverse-proxy.conf` and then symbolically link it to `/etc/nginx/sites-enabled/irods-client-rest-cpp-reverse-proxy.conf`.   Nginx will then need to be restarted with `sudo service nginx restart`, or however your specific platform manages services.
+
+## Enabling logging via Rsyslog and Logrotate
+_This section assumes you've installed the C++ REST API package._
+
+_If you are doing a non-package install, you'll need to copy the configuration files from the repository to the appropriate directories and restart rsyslog. The files of interest and their destinations are shown below._
+
+The REST API uses rsyslog and logrotate for log file management. To enable, run the following commands:
+```bash
+$ sudo cp /etc/irods/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf
+$ sudo cp /etc/irods/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
+$ sudo systemctl restart rsyslog
+```
+
+The log file will be located at `/var/log/irods/irods_client_rest_cpp.log`.
+
+The log level for each endpoint can be adjusted by modifying the `"log_level"` option in `/etc/irods/irods_client_rest_cpp.json`. The following values are supported:
+- trace
+- debug
+- info
+- warn
+- error
+- critical
 
 ## Interacting with the API endpoints
 The design of this API using JWTs to contain authorization and identity.  The Auth endpoint must be invoked first in order to authenticate and receive a JWT.  This token will then need to be included in the Authorization header of each subsequent request.  This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
