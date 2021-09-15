@@ -31,7 +31,7 @@ namespace irods::rest
         access()
             : api_base{service_name}
         {
-            logger_->trace("Endpoint [{}] initialized.", service_name);
+            trace("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -41,18 +41,19 @@ namespace irods::rest
                    const Pistache::Optional<std::string>& _use_count,
                    const Pistache::Optional<std::string>& _seconds_until_expiration)
         {
-            logger_->trace("Handling /access request ...");
+            trace("Handling request ...");
+
+            info("Input arguments - path=[{}], use_count=[{}], seconds_until_expiration=[{}]",
+                 _logical_path, _use_count.getOrElse(""), _seconds_until_expiration.getOrElse(""));
 
             namespace fs = irods::experimental::filesystem;
-
-            logger_->trace("Generating new ticket ...");
 
             auto conn = get_connection(_headers.getRaw("authorization").value());
 
             try {
                 // TODO: can we ensure this is a canonical path?
                 const std::string logical_path{decode_url(_logical_path)};
-                logger_->debug("logical_path = [{}]", logical_path);
+                debug("Logical path = [{}]", logical_path);
 
                 const fs::path fs_path = logical_path;
                 const auto size = fs::client::data_object_size(*conn(), fs_path);
@@ -73,17 +74,20 @@ namespace irods::rest
                     {"url", fmt::format("{}/stream?path={}&offset=0&count={}", _base_url, logical_path, size)}
                 });
 
-                logger_->debug("Result = [{}]", results.dump());
+                debug("Result = [{}]", results.dump());
 
                 return std::make_tuple(Pistache::Http::Code::Ok, results.dump());
             }
             catch (const fs::filesystem_error& e) {
+                error("Caught exception - [error_code={}] {}", e.code().value(), e.what());
                 return make_error_response(e.code().value(), e.what());
             }
             catch (const irods::exception& e) {
+                error("Caught exception - [error_code={}] {}", e.code(), e.what());
                 return make_error_response(e.code(), e.what());
             }
             catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
                 return make_error_response(SYS_INTERNAL_ERR, e.what());
             }
         } // operator()
@@ -91,6 +95,8 @@ namespace irods::rest
     private:
         std::string make_ticket_id() const
         {
+            trace("Generating ticket identifier ...");
+
             constexpr int ticket_len = 15;
 
             // random_bytes must be (unsigned char[]) to guarantee that following
@@ -115,6 +121,8 @@ namespace irods::rest
                 new_ticket += character_set[ix];
             }
 
+            debug("Generated ticket identifier = [{}]", new_ticket);
+
             return new_ticket;
         } // make_ticket_id
 
@@ -122,6 +130,7 @@ namespace irods::rest
                            const std::string_view _ticket_id,
                            const std::string_view _logical_path) const
         {
+            trace("Creating ticket [{}] ...", _ticket_id);
             rx_ticket(*_conn(), "create", _ticket_id, "read", _logical_path);
         } // create_ticket
 
@@ -129,8 +138,10 @@ namespace irods::rest
                                   const std::string_view& _ticket_id,
                                   const Pistache::Optional<std::string>& _use_count) const
         {
+            trace("Setting use-count on ticket [{}] ...", _ticket_id);
+
             const auto use_count = _use_count.getOrElse("0");
-            logger_->debug("use_count = [{}]", use_count);
+            debug("use_count = [{}]", use_count);
             rx_ticket(*_conn(), "mod", _ticket_id, "uses", use_count);
         } // set_ticket_use_count
 
@@ -138,12 +149,14 @@ namespace irods::rest
                                              const std::string_view& _ticket_id,
                                              const Pistache::Optional<std::string>& _seconds_until_expiration) const
         {
+            trace("Setting expiration on ticket [{}] ...", _ticket_id);
+
             using std::chrono::seconds;
             using std::chrono::duration_cast;
 
             const auto secs_until_expiration = seconds(std::stoi(_seconds_until_expiration.getOrElse("30")));
             const auto tp = std::chrono::system_clock::now() + secs_until_expiration;
-            logger_->debug("seconds_until_expiration = [{}]", secs_until_expiration.count());
+            debug("seconds_until_expiration = [{}]", secs_until_expiration.count());
 
             const auto end_time = fmt::format("{}", duration_cast<seconds>(tp.time_since_epoch()).count());
             rx_ticket(*_conn(), "mod", _ticket_id, "expire", end_time);
@@ -155,6 +168,8 @@ namespace irods::rest
                        std::string_view _type,
                        std::string_view _value) const
         {
+            trace("Invoking rcTicketAdmin() for ticket [{}] ...", _ticket_id);
+
             ticketAdminInp_t ticket_inp{};
             ticket_inp.arg1 = const_cast<char*>(_operation.data());
             ticket_inp.arg2 = const_cast<char*>(_ticket_id.data());

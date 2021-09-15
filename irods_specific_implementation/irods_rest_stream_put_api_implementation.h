@@ -34,7 +34,7 @@ namespace irods::rest
         stream()
             : api_base{service_name}
         {
-            logger_->trace("Endpoint [{}] initialized.", service_name);
+            trace("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -45,11 +45,15 @@ namespace irods::rest
                    const Pistache::Optional<std::string>& _count,
                    const Pistache::Optional<std::string>& _truncate)
         {
-            logger_->trace("Handling /stream request for write ...");
+            trace("Handling request ...");
+
+            info("Input arguments - path=[{}], count=[{}], offset=[{}], truncate=[{}]",
+                 _path, _count.getOrElse(""), _offset.getOrElse(""), _truncate.getOrElse(""));
 
             auto conn = get_connection(_headers.getRaw("authorization").value());
 
             if (const auto ec = set_session_ticket_if_available(_headers, conn); ec != 0) {
+                error("Encountered error [{}] while handling session ticket.", ec);
                 return make_error_response(ec, "Failed to initialize session with ticket");
             }
 
@@ -59,6 +63,7 @@ namespace irods::rest
                 const auto decoded_path = open_replica(_path, _truncate, xport, ds);
 
                 if (!ds.is_open()) {
+                    error("Failed to open data object [{}]", decoded_path.c_str());
                     const auto msg = fmt::format("Failed to open data object [{}]", decoded_path.c_str());
                     return make_error_response(SYS_INVALID_INPUT_PARAM, msg);
                 }
@@ -66,16 +71,18 @@ namespace irods::rest
                 apply_offset(_offset, ds);
 
                 if (const auto count = calculate_bytes_to_write(_body.size(), _count); count > 0) {
-                    logger_->trace("Writing [{}] bytes to replica.", count);
+                    trace("Writing [{}] bytes to replica.", count);
                     ds.write(_body.c_str(), count);
                 }
 
                 return std::make_tuple(Pistache::Http::Code::Ok, SUCCESS);
             }
             catch (const irods::exception& e) {
+                error("Caught exception - [error_code={}] {}", e.code(), e.what());
                 return make_error_response(e.code(), e.what());
             }
             catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
                 return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
@@ -86,17 +93,17 @@ namespace irods::rest
                                  io::client::native_transport& _xport,
                                  io::odstream& _stream) const
         {
-            auto p = decode_url(_path);
-            logger_->debug("logical_path = [{}]", p);
+            trace("Opening replica ...");
 
-            logger_->debug("Opening replica for data object [{}]", p);
+            auto p = decode_url(_path);
+            debug("Logical path = [{}]", p);
 
             // Truncates the replica unless the client instructs it not to.
             if (const auto v = _truncate.getOrElse("true"); v == "false") {
                 _stream.open(_xport, p, std::ios::in | std::ios::out);
             }
             else {
-                logger_->debug("Truncating replica.");
+                debug("Truncating replica.");
                 _stream.open(_xport, p);
             }
 
@@ -105,14 +112,17 @@ namespace irods::rest
 
         void apply_offset(const Pistache::Optional<std::string>& _offset, io::odstream& _stream) const
         {
+            trace("Applying offset ...");
+
             const std::int64_t offset = std::stoll(_offset.getOrElse("0"));
+            debug("offset = [{}]", offset);
 
             if (offset < 0) {
                 THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid offset [{}]", offset));
             }
 
             if (offset > 0) {
-                logger_->debug("count = [{}]", offset);
+                debug("offset (effective) = [{}]", offset);
                 _stream.seekp(offset);
             }
         } // apply_offset
@@ -120,8 +130,10 @@ namespace irods::rest
         std::int64_t calculate_bytes_to_write(std::int64_t _buffer_size,
                                               const Pistache::Optional<std::string>& _count) const
         {
+            trace("Calculating number of bytes to write ...");
+
             if (_count.isEmpty()) {
-                logger_->debug("Count not provided. Using size of buffer [{}]", _buffer_size);
+                debug("Count not provided. Using size of buffer [{}]", _buffer_size);
                 return _buffer_size;
             }
 
