@@ -39,12 +39,13 @@ namespace irods::rest
         get_configuration()
             : api_base{service_name}
         {
-            logger_->trace("Endpoint [{}] initialized.", service_name);
+            trace("Endpoint initialized.");
         }
 
         auto operator()(const std::string& _auth_header)
             -> std::tuple<Pistache::Http::Code, std::string>
         {
+            trace("Handling request ...");
 
             try {
                 auto conn = get_connection(_auth_header);
