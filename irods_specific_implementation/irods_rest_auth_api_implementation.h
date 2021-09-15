@@ -7,8 +7,8 @@
     std::tie(code, message) = irods_auth_(headers.getRaw("authorization").value()); \
     response.send(code, message);
 
-namespace irods::rest {
-
+namespace irods::rest
+{
     // this is contractually tied directly to the api implementation
     const std::string service_name{"irods_rest_cpp_auth_server"};
 
@@ -43,31 +43,29 @@ namespace irods::rest {
             };
 
             auto in_len = _in.size();
+
             if (in_len % 4 != 0) {
-                THROW(SYS_INVALID_INPUT_PARAM,
-                      "input is not a multiple of 4");
+                THROW(SYS_INVALID_INPUT_PARAM, "input is not a multiple of 4");
             }
 
             auto out_len = in_len / 4 * 3;
 
-            if (_in[in_len - 1] == '=') out_len--;
-            if (_in[in_len - 2] == '=') out_len--;
+            if (_in[in_len - 1] == '=') { --out_len; }
+            if (_in[in_len - 2] == '=') { --out_len; }
 
-            auto out = std::string{};
-
+            std::string out;
             out.resize(out_len);
 
-            for(size_t i = 0, j = 0; i < in_len;) {
-                auto a = _in[i] == '=' ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
-                auto b = _in[i] == '=' ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
-                auto c = _in[i] == '=' ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
-                auto d = _in[i] == '=' ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
+            for (size_t i = 0, j = 0; i < in_len;) {
+                auto a = (_in[i] == '=') ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
+                auto b = (_in[i] == '=') ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
+                auto c = (_in[i] == '=') ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
+                auto d = (_in[i] == '=') ? uint32_t{0} & i++ : table[static_cast<uint32_t>(_in[i++])];
                 auto t = (a << 3 * 6) + (b << 2 * 6) + (c << 1 * 6) + (d << 0 * 6);
 
-                if (j < out_len) out[j++] = (t >> 2 * 8) & 0xFF;
-                if (j < out_len) out[j++] = (t >> 1 * 8) & 0xFF;
-                if (j < out_len) out[j++] = (t >> 0 * 8) & 0xFF;
-
+                if (j < out_len) { out[j++] = (t >> 2 * 8) & 0xFF; }
+                if (j < out_len) { out[j++] = (t >> 1 * 8) & 0xFF; }
+                if (j < out_len) { out[j++] = (t >> 0 * 8) & 0xFF; }
             } // for i
 
             return out;
@@ -75,24 +73,24 @@ namespace irods::rest {
 
         auto parse_header(const std::string _header) -> std::tuple<std::string, std::string>
         {
-            auto p0 = _header.find_first_of(" ");
-            if(std::string::npos == p0) {
+            const auto p0 = _header.find_first_of(" ");
+            if (std::string::npos == p0) {
                 throw_for_invalid_header(_header);
             }
 
             auto type  = _header.substr(0, p0);
-            auto token = _header.substr(p0+1);
+            auto token = _header.substr(p0 + 1);
 
             return std::make_tuple(type, token);
         } // parse_header
 
         auto decode(const std::string _header) -> std::tuple<std::string, std::string, std::string>
         {
-            auto [auth_type, token] = parse_header(_header);
+            const auto [auth_type, token] = parse_header(_header);
 
-            auto creds     = base64_decode(token);
+            auto creds = base64_decode(token);
             auto user_name = creds.substr(0, creds.find_first_of(":"));
-            auto password  = creds.substr(creds.find_first_of(":")+1);
+            auto password = creds.substr(creds.find_first_of(":") + 1);
 
             return std::make_tuple(user_name, password, auth_type);
         } // decode
@@ -103,9 +101,9 @@ namespace irods::rest {
             logger_->trace("Endpoint [{}] initialized.", service_name);
         }
 
-        std::tuple<Pistache::Http::Code&&, std::string> operator()(const std::string& _header)
+        std::tuple<Pistache::Http::Code, std::string> operator()(const std::string& _header)
         {
-            std::string user_name{}, password{}, auth_type{};
+            std::string user_name, password, auth_type;
 
             try {
                 std::tie(user_name, password, auth_type) = decode(_header);
@@ -116,24 +114,24 @@ namespace irods::rest {
                 std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
 
                 auto token = jwt::create()
-                                 .set_type("JWS")
-                                 .set_issuer(keyword::issue_claim)
-                                 .set_subject(keyword::subject_claim)
-                                 .set_audience(keyword::audience_claim)
-                                 .set_not_before(std::chrono::system_clock::now())
-                                 .set_issued_at(std::chrono::system_clock::now())
-                                 // TODO: consider how to handle token revocation, token refresh
-                                 //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
-                                 .set_payload_claim(keyword::user_name, jwt::claim(user_name))
-                                 .sign(jwt::algorithm::hs256{zone_key});
+                    .set_type("JWS")
+                    .set_issuer(keyword::issue_claim)
+                    .set_subject(keyword::subject_claim)
+                    .set_audience(keyword::audience_claim)
+                    .set_not_before(std::chrono::system_clock::now())
+                    .set_issued_at(std::chrono::system_clock::now())
+                    // TODO: consider how to handle token revocation, token refresh
+                    //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
+                    .set_payload_claim(keyword::user_name, jwt::claim(user_name))
+                    .sign(jwt::algorithm::hs256{zone_key});
 
-                return std::forward_as_tuple(Pistache::Http::Code::Ok, token);
+                return std::make_tuple(Pistache::Http::Code::Ok, token);
             }
             catch (const irods::exception& _e) {
                 const auto msg = fmt::format("[{}] failed to authenticate with type [{}]", user_name, auth_type);
                 return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, make_error(_e.code(), msg));
             }
-
         } // operator()
     }; // class auth
 } // namespace irods::rest
+

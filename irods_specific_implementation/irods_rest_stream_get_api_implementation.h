@@ -106,7 +106,7 @@ namespace irods::rest
             logger_->debug("count (requested) = [{}]", _count);
 
             if (_count.empty()) {
-                THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid byte count [count parameter is required]"));
+                THROW(SYS_INVALID_INPUT_PARAM, "Byte count not specified [count parameter is required]");
             }
 
             try {

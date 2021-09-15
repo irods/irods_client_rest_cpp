@@ -1,4 +1,5 @@
 #include "irods_rest_api_base.h"
+
 #include "filesystem.hpp"
 #include "rodsClient.h"
 #include "irods_random.hpp"
@@ -97,14 +98,18 @@ namespace irods::rest
             unsigned char random_bytes[ticket_len];
             irods::getRandomBytes(random_bytes, ticket_len);
 
-            const char character_set[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G',
-            'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-            'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-            'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-            'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
-            '7', '8', '9'};
+            const char character_set[] = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+                'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+                '8', '9'
+            };
 
             std::string new_ticket;
+            new_ticket.reserve(ticket_len);
+
             for (int i = 0; i < ticket_len; ++i) {
                 const int ix = random_bytes[i] % sizeof(character_set);
                 new_ticket += character_set[ix];
@@ -157,7 +162,7 @@ namespace irods::rest
             ticket_inp.arg4 = const_cast<char*>(_value.data());
 
             if (const auto ec = rcTicketAdmin(&_conn, &ticket_inp); ec < 0) {
-                THROW(ec, fmt::format("Failed to call rcTicketAdmin for ticket [{}]", _ticket_id));
+                THROW(ec, fmt::format("Received error from rcTicketAdmin for ticket [{}]", _ticket_id));
             }
         } // rx_ticket
     }; // class access
