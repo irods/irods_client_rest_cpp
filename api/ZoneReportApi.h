@@ -35,7 +35,8 @@ namespace api {
 
 using namespace io::swagger::server::model;
 
-class  ZoneReportApi {
+class ZoneReportApi
+{
 public:
     ZoneReportApi(Pistache::Address addr);
     virtual ~ZoneReportApi() {};
@@ -48,8 +49,8 @@ public:
 private:
     void setupRoutes();
 
-    void obtain_token_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void zone_report_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void obtain_token_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+    void zone_report_api_default_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
@@ -61,8 +62,9 @@ private:
     /// <remarks>
     /// Fetch a JSON representation of an iRODS Zone
     /// </remarks>
-    virtual void obtain_token(const Pistache::Http::Header::Collection& headers, const std::string body, Pistache::Http::ResponseWriter &response) = 0;
-
+    virtual void obtain_token(const Pistache::Http::Header::Collection& headers,
+                              const std::string& body,
+                              Pistache::Http::ResponseWriter& response) = 0;
 };
 
 }
