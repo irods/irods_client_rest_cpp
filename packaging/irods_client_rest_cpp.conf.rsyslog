@@ -1,0 +1,5 @@
+$FileCreateMode 0644
+$Umask 0000
+$template irods_format,"%msg%\n"
+:programname,startswith,"irods_client_rest_cpp" /var/log/irods/irods_client_rest_cpp.log;irods_format
+& stop
