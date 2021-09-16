@@ -19,7 +19,7 @@ echo "DATABASE INITed"
 ## 
 sed -i.orig 's/\(listen\s*[^0-9]*\)80/\190/' /etc/nginx/nginx.conf
 cp -rp /etc/irods/irods_client_rest_cpp.json{.template,}
-cp -rp /etc/irods/irods-client-rest-cpp-reverse-proxy.conf.template  /etc/nginx/conf.d/irods-client-rest-cpp-reverse-proxy.conf
+cp -rp /etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/conf.d/irods_client_rest_cpp_reverse_proxy.conf
 
 ## # ---------- Configure and start iRODS
 
