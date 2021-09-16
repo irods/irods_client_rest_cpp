@@ -113,6 +113,10 @@ namespace irods::rest
                 error("Caught exception - [error_code={}] {}", e.code(), e.what());
                 return make_error_response(e.code(), e.client_display_what());
             }
+            catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
+            }
         } // operator()
     }; // class query
 } // namespace irods::rest
