@@ -5,7 +5,7 @@ copy_to_dst() { local bn=$(basename "$1");
                 cp "$1" "$2/$bn_strip" || return 1;
                 echo "$2/$bn_strip"
 }
-RevProxyConf=${TEMPLATE_LOC}/irods-client-rest-cpp-reverse-proxy.conf.template
+RevProxyConf=${TEMPLATE_LOC}/irods_client_rest_cpp_reverse_proxy.conf.template
 IrodsRestConf=${TEMPLATE_LOC}/irods_client_rest_cpp.json.template
 copy_to_dst $IrodsRestConf /etc/irods
 DESTFILE=$(copy_to_dst $RevProxyConf /etc/nginx/sites-available) &&\
