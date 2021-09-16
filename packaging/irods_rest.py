@@ -155,7 +155,7 @@ def put(_token, _physical_path, _logical_path, _ticket_id=None):
             c.setopt(c.UPLOAD, 1)
 
             file_size = file_size + len(data)
-            c.setopt(c.URL, '{0}stream?path={1}&offset={2}&limit={3}'.format(base_url(), _logical_path, offset, file_size))
+            c.setopt(c.URL, '{0}stream?path={1}&offset={2}&count={3}'.format(base_url(), _logical_path, offset, file_size))
 
             body_buffer = StringIO()
             c.setopt(c.WRITEDATA, body_buffer)
@@ -183,7 +183,7 @@ def get(_token, _physical_path, _logical_path, _ticket_id=None):
 
             c.setopt(c.CUSTOMREQUEST, 'GET')
 
-            url = '{0}stream?path={1}&offset={2}&limit={3}'.format(base_url(), _logical_path, offset, read_size)
+            url = '{0}stream?path={1}&offset={2}&count={3}'.format(base_url(), _logical_path, offset, read_size)
             c.setopt(c.URL, url)
 
             body_buffer = StringIO()
