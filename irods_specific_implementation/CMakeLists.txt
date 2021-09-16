@@ -211,7 +211,7 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.conf.rsyslog
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.logrotate
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.json.template
-  ${CMAKE_SOURCE_DIR}/packaging/irods-client-rest-cpp-reverse-proxy.conf.template
+  ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp_reverse_proxy.conf.template
   DESTINATION etc/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
   PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ

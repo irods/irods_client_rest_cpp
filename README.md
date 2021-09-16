@@ -50,11 +50,11 @@ The REST API provides an executable for each individual API endpoint.  These end
 The services rely on a configuration file in `/etc/irods/` which dictates which ports are used for each service.  Two template files are placed there by the package:
 ```
 /etc/irods/irods_client_rest_cpp.json.template
-/etc/irods/irods-client-rest-cpp-reverse-proxy.conf.template
+/etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template
 ```
 `/etc/irods/irods_client_rest_cpp.json.template` should be copied to `/etc/irods/irods_client_rest_cpp.json` and modified if different ports are desired.  The service can then be restarted with `service irods_client_rest_cpp restart`, or however your specific platform manages services.
 
-Once the REST API is running install nginx and then copy `/etc/irods/irods-client-rest-cpp-reverse-proxy.conf.template` to `/etc/nginx/sites-available/irods-client-rest-cpp-reverse-proxy.conf` and then symbolically link it to `/etc/nginx/sites-enabled/irods-client-rest-cpp-reverse-proxy.conf`.   Nginx will then need to be restarted with `sudo service nginx restart`, or however your specific platform manages services.
+Once the REST API is running install nginx and then copy `/etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template` to `/etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf` and then symbolically link it to `/etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf`. Nginx will then need to be restarted with `sudo systemctl restart nginx`, or however your specific platform manages services.
 
 ## Enabling logging via Rsyslog and Logrotate
 _This section assumes you've installed the C++ REST API package._
