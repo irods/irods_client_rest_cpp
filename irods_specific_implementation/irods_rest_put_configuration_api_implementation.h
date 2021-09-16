@@ -63,11 +63,13 @@ namespace irods::rest
 
                 return std::make_tuple(http_resp, err);
             }
-            catch(const irods::exception& _e) {
-                auto error = make_error(_e.code(), _e.client_display_what());
-                return std::forward_as_tuple(
-                           Pistache::Http::Code::Bad_Request,
-                           error);
+            catch (const irods::exception& e) {
+                error("Caught exception - [error_code={}] {}", e.code(), e.what());
+                return make_error_response(e.code(), e.client_display_what());
+            }
+            catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
     }; // class put_configuration

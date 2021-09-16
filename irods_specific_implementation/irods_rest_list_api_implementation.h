@@ -159,9 +159,17 @@ namespace irods::rest {
 
                 return std::make_tuple(Pistache::Http::Code::Ok, results.dump());
             }
+            catch (const fs::filesystem_error& e) {
+                error("Caught exception - [error_code={}] {}", e.code().value(), e.what());
+                return make_error_response(e.code().value(), e.what());
+            }
             catch (const irods::exception& e) {
                 error("Caught exception - [error_code={}] {}", e.code(), e.what());
                 return make_error_response(e.code(), e.what());
+            }
+            catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
 

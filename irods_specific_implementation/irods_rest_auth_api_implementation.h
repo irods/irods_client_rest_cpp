@@ -139,9 +139,13 @@ namespace irods::rest
 
                 return std::make_tuple(Pistache::Http::Code::Ok, token);
             }
-            catch (const irods::exception& _e) {
-                const auto msg = fmt::format("[{}] failed to authenticate with type [{}]", user_name, auth_type);
-                return std::forward_as_tuple(Pistache::Http::Code::Bad_Request, make_error(_e.code(), msg));
+            catch (const irods::exception& e) {
+                error("Caught exception - [error_code={}] {}", e.code(), e.what());
+                return make_error_response(e.code(), e.what());
+            }
+            catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
     }; // class auth
