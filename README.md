@@ -4,7 +4,7 @@
 
 This is a standard CMake project which may be built with either Ninja or Make.
 
-This code base is built with the iRODS toolchain, which uses Clang.  Since this project depends on Pistache, we also need to build Pistache with Clang in order to link against that project.
+This code base is built with the iRODS toolchain, which uses Clang. Since this project depends on Pistache, we also need to build Pistache with Clang in order to link against that project.
 
 First clone the iRODS externals repository.
 ```
@@ -45,14 +45,14 @@ make package
 to build the REST API package.
 
 ## Configuring the service
-The REST API provides an executable for each individual API endpoint.  These endpoints may be grouped behind a reverse proxy in order to provide a single port for access.
+The REST API provides an executable for each individual API endpoint. These endpoints may be grouped behind a reverse proxy in order to provide a single port for access.
 
-The services rely on a configuration file in `/etc/irods/` which dictates which ports are used for each service.  Two template files are placed there by the package:
+The services rely on a configuration file in `/etc/irods` which dictates which ports are used for each service. Two template files are placed there by the package:
 ```
 /etc/irods/irods_client_rest_cpp.json.template
 /etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template
 ```
-`/etc/irods/irods_client_rest_cpp.json.template` should be copied to `/etc/irods/irods_client_rest_cpp.json` and modified if different ports are desired.  The service can then be restarted with `service irods_client_rest_cpp restart`, or however your specific platform manages services.
+`/etc/irods/irods_client_rest_cpp.json.template` should be copied to `/etc/irods/irods_client_rest_cpp.json` and modified if different ports are desired. The service can then be restarted with `sudo systemctl restart irods_client_rest_cpp`, or however your specific platform manages services.
 
 Once the REST API is running install nginx and then copy `/etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template` to `/etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf` and then symbolically link it to `/etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf`. Nginx will then need to be restarted with `sudo systemctl restart nginx`, or however your specific platform manages services.
 
@@ -79,7 +79,7 @@ The log level for each endpoint can be adjusted by modifying the `"log_level"` o
 - critical
 
 ## Interacting with the API endpoints
-The design of this API using JWTs to contain authorization and identity.  The Auth endpoint must be invoked first in order to authenticate and receive a JWT.  This token will then need to be included in the Authorization header of each subsequent request.  This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
+The design of this API using JWTs to contain authorization and identity. The Auth endpoint must be invoked first in order to authenticate and receive a JWT. This token will then need to be included in the Authorization header of each subsequent request. This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
 
 ### /access
 This endpoint provides a service for the generation of a read-only iRODS ticket to a given logical path, be that a collection or a data object.
@@ -148,7 +148,7 @@ export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhos
 
 **Returns:**
 
-An encrypted JWT which contains everything necessary to interact with the other endpoints.  This token is expected in the Authorization header for the other services.
+An encrypted JWT which contains everything necessary to interact with the other endpoints. This token is expected in the Authorization header for the other services.
 
 ### /get_configuration
 This endpoint will return a JSON structure holding the configuration for an iRODS server
