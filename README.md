@@ -1,36 +1,34 @@
 # iRODS C++ REST Mid-Tier API
 
 ## Building this repository
-
 This is a standard CMake project which may be built with either Ninja or Make.
 
 This code base is built with the iRODS toolchain, which uses Clang. Since this project depends on Pistache, we also need to build Pistache with Clang in order to link against that project.
 
-First clone the iRODS externals repository.
+First clone the iRODS externals repository:
 ```
-git clone https://github.com/irods/externals
-git checkout 4-2-stable
+$ git clone https://github.com/irods/externals
 ```
 
-Install the latest iRODS CMake and Clang packages
+Install the latest iRODS CMake and Clang packages:
 ```
 irods-cmake
 irods-externals-clang-runtime
 irods-externals-clang
 ```
 
-Then within the externals repository, build Pistache with
+Then within the externals repository, build Pistache with:
 ```
-make pistache
-```
-
-Then install Pistache with
-```
-cd pistache<VERSION>-0_src/pistache/build/
-make install
+$ make pistache
 ```
 
-You will then need to install iRODS packages
+Then install Pistache with:
+```
+$ cd pistache<VERSION>-0_src/pistache/build/
+$ make install
+```
+
+You will then need to install iRODS packages:
 ```
 irods-dev
 irods-runtime
@@ -38,23 +36,42 @@ irods-externals-boost
 irods-externals-json
 ```
 
-Once this is done you can create a build directory for the REST API and run CMake, then run
+Once this is done you can create a build directory for the REST API and run CMake, then run the following to build the REST API package:
 ```
-make package
+$ make package
 ```
-to build the REST API package.
 
-## Configuring the service
+## Configuration files
 The REST API provides an executable for each individual API endpoint. These endpoints may be grouped behind a reverse proxy in order to provide a single port for access.
 
-The services rely on a configuration file in `/etc/irods` which dictates which ports are used for each service. Two template files are placed there by the package:
-```
+The service relies on a configuration file in `/etc/irods` which dictates which ports are used. Two template files are placed there by the package:
+```bash
 /etc/irods/irods_client_rest_cpp.json.template
 /etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template
 ```
-`/etc/irods/irods_client_rest_cpp.json.template` should be copied to `/etc/irods/irods_client_rest_cpp.json` and modified if different ports are desired. The service can then be restarted with `sudo systemctl restart irods_client_rest_cpp`, or however your specific platform manages services.
 
-Once the REST API is running install nginx and then copy `/etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template` to `/etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf` and then symbolically link it to `/etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf`. Nginx will then need to be restarted with `sudo systemctl restart nginx`, or however your specific platform manages services.
+## Starting the service
+To start the REST API service, run the following commands:
+```bash
+$ sudo cp /etc/irods/irods_client_rest_cpp.json.template /etc/irods/irods_client_rest_cpp.json # configuration
+$ sudo systemctl start irods_client_rest_cpp # start the service
+```
+
+If everything was successful, you now have a functional REST API service.
+
+If you modify the configuration file (i.e. port numbers, log level, etc.). You'll need to restart the service for the changes to take affect.
+
+## Starting the reverse proxy using Nginx
+This section assumes you have a functional REST API service.
+
+The first thing you must do is install `nginx`. Once installed, run the following commands to enable the reverse proxy:
+```bash
+$ sudo cp /etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf # configuration
+$ sudo ln -s /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf /etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf # configuration
+$ sudo systemctl restart nginx # start the service
+```
+
+If you modified any port numbers in the REST API's configuration file, you will need to adjust the reverse proxy's configuration file so that `nginx` can connect to the correct endpoint.
 
 ## Enabling logging via Rsyslog and Logrotate
 _This section assumes you've installed the C++ REST API package._
@@ -79,16 +96,16 @@ The log level for each endpoint can be adjusted by modifying the `"log_level"` o
 - critical
 
 ## Interacting with the API endpoints
-The design of this API using JWTs to contain authorization and identity. The Auth endpoint must be invoked first in order to authenticate and receive a JWT. This token will then need to be included in the Authorization header of each subsequent request. This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
+The design of this API uses JWTs to contain authorization and identity. The Auth endpoint must be invoked first in order to authenticate and receive a JWT. This token will then need to be included in the Authorization header of each subsequent request. This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
 
 ### /access
 This endpoint provides a service for the generation of a read-only iRODS ticket to a given logical path, be that a collection or a data object.
 
-**Method** : POST
+**Method**: POST
 
 **Parameters:**
 - path: The url encoded logical path to a collection or data object for which access is desired
-- use_count: The maximum number of times the ticket can be used. Defaults to 0 (unlimited use).
+- use_count: The maximum number of times the ticket can be used. Defaults to 0 (unlimited use)
 - seconds_until_expiration: The number of seconds before the ticket will expire. Defaults to 30 seconds
 
 **Example CURL Command:**
@@ -111,17 +128,17 @@ An iRODS ticket token within the **irods-ticket** header, and a URL for streamin
 ### /admin
 The administration interface to the iRODS Catalog which allows the creation, removal and modification of users, groups, resources, and other entities within the zone.
 
-**Method** : POST
+**Method**: POST
 
 **Parameters**
-- action : dictates the action taken: add, modify, or remove
-- target : the subject of the action: user, zone, resource, childtoresc, childfromresc, token, group, rebalance, unusedAVUs, specificQuery
-- arg2 : generic argument, could be user name, resource name, depending on the value of `action` and `target`
-- arg3 : generic argument, see above
-- arg4 : generic argument, see above
-- arg5 : generic argument, see above
-- arg6 : generic argument, see above
-- arg7 : generic argument, see above
+- action: dictates the action taken: add, modify, or remove
+- target: the subject of the action: user, zone, resource, childtoresc, childfromresc, token, group, rebalance, unusedAVUs, specificQuery
+- arg2: generic argument, could be user name, resource name, depending on the value of `action` and `target`
+- arg3: generic argument, see above
+- arg4: generic argument, see above
+- arg5: generic argument, see above
+- arg6: generic argument, see above
+- arg7: generic argument, see above
 
 **Example CURL Command:**
 ```
@@ -135,7 +152,7 @@ curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/adm
 ### /auth
 This endpoint provides an authentication service for the iRODS zone, currently only native iRODS authentication is supported.
 
-**Method** : POST
+**Method**: POST
 
 **Parameters:**
 - Authorization Header of the form `Authorization: Basic ${SECRETS}` where ${SECRETS} is a base 64 encoded string of user_name:password
@@ -153,7 +170,7 @@ An encrypted JWT which contains everything necessary to interact with the other 
 ### /get_configuration
 This endpoint will return a JSON structure holding the configuration for an iRODS server
 
-**Method** : GET
+**Method**: GET
 
 **Parameters**
 - None
@@ -166,15 +183,15 @@ curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/get_
 ### /list
 This endpoint provides a recursive listing of a collection, or stat, metadata, and access control information for a given data object.
 
-**Method** : GET
+**Method**: GET
 
 **Parameters**
-- path : The url encoded logical path which is to be listed
-- stat : Boolean flag to indicate stat information is desired
-- permissions : Boolean flag to indicate access control information is desired
-- metadata : Boolean flag to indicate metadata is desired
-- offset : number of records to skip for pagination
-- limit : number of records desired per page
+- path: The url encoded logical path which is to be listed
+- stat: Boolean flag to indicate stat information is desired
+- permissions: Boolean flag to indicate access control information is desired
+- metadata: Boolean flag to indicate metadata is desired
+- offset: number of records to skip for pagination
+- limit: number of records desired per page
 
 **Example CURL Command:**
 ```
@@ -221,24 +238,24 @@ A JSON structured response within the body containing the listing, or an iRODS e
 ### /put_configuration
 This endpoint will write the url encoded JSON to the specified files in `/etc/irods`
 
-**Method** : PUT
+**Method**: PUT
 
 **Parameters**
-- cfg : a url encoded json string of the format
+- cfg: a url encoded json string of the format
 ```JSON
 [
     {
         "file_name":"test_rest_cfg_put_1.json",
-        "contents" : {
+        "contents": {
             "key0":"value0",
-            "key1" : "value1"
+            "key1": "value1"
         }
     },
     {
         "file_name":"test_rest_cfg_put_2.json",
-        "contents" : {
-            "key2" : "value2",
-            "key3" : "value3"
+        "contents": {
+            "key2": "value2",
+            "key3": "value3"
         }
     }
 ]
@@ -256,13 +273,13 @@ Nothing on success
 ### /query
 This endpoint provides access to the iRODS General Query language, which is a generic query service for the iRODS catalog.
 
-**Method** : GET
+**Method**: GET
 
 **Parameters**
-- query_string : A url encoded general query
-- query_limit : Number of desired rows
-- row_offset : Number of rows to skip for paging
-- query_type : Either 'general' or 'specific'
+- query_string: A url encoded general query
+- query_limit: Number of desired rows
+- row_offset: Number of rows to skip for paging
+- query_type: Either 'general' or 'specific'
 
 **Example CURL Command:**
 ```
@@ -307,24 +324,24 @@ A JSON structure containing the query results
 ### /stream
 Stream data into and out of an iRODS data object
 
-**Method** : GET and PUT
+**Method**: GET and PUT
 
 **Parameters**
-- path : The url encoded logical path to a data object
-- offset : The offset in bytes into the data object (Defaults to 0)
-- count : The maximum number of bytes to read or write.
+- path: The url encoded logical path to a data object
+- offset: The offset in bytes into the data object (Defaults to 0)
+- count: The maximum number of bytes to read or write.
   - Required for GET requests.
   - On a GET, this parameter is limited to signed 32-bit integer.
   - On a PUT, this parameter is limited to signed 64-bit integer.
-- truncate : Truncates the data object on open
+- truncate: Truncates the data object on open
   - Defaults to "true".
   - Applies to PUT requests only.
 
 **Returns**
 
-PUT : Nothing, or iRODS Exception
+PUT: Nothing, or iRODS Exception
 
-GET : The data requested in the body of the response
+GET: The data requested in the body of the response
 
 **Example CURL Command:**
 ```
@@ -338,7 +355,7 @@ curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://
 ### /zone_report
 Requests a JSON formatted iRODS Zone report, containing all configuration information for every server in the grid.
 
-**Method** : POST
+**Method**: POST
 
 **Parameters**
 - None
