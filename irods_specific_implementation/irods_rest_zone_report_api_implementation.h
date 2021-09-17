@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_ZONE_REPORT_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_ZONE_REPORT_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "zone_report.h"
@@ -58,4 +61,6 @@ namespace irods::rest
         } // operator()
     }; // class zone_report
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_ZONE_REPORT_API_IMPLEMENTATION_H
 

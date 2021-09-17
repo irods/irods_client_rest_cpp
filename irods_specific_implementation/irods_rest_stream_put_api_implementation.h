@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_STREAM_PUT_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_STREAM_PUT_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "dstream.hpp"
@@ -147,4 +150,6 @@ namespace irods::rest
         } // calculate_bytes_to_write
     }; // class stream
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_STREAM_PUT_API_IMPLEMENTATION_H
 

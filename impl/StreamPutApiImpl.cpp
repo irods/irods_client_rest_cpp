@@ -12,29 +12,25 @@
 
 #include "StreamPutApiImpl.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    StreamPutApiImpl::StreamPutApiImpl(Pistache::Address addr)
+        : StreamPutApi(addr)
+        , irods_stream_put_{}
+    {
+    }
 
-StreamPutApiImpl::StreamPutApiImpl(Pistache::Address addr)
-    : StreamPutApi(addr)
-    { }
-
-void StreamPutApiImpl::stream(const Pistache::Http::Header::Collection& headers,
-                              const std::string& body,
-                              const std::string& path,
-                              const Pistache::Optional<std::string>& offset,
-                              const Pistache::Optional<std::string>& count,
-                              const Pistache::Optional<std::string>& truncate,
-                              Pistache::Http::ResponseWriter& response) {
-    MACRO_IRODS_STREAM_PUT_API_IMPLEMENTATION
-}
-
-}
-}
-}
-}
+    void StreamPutApiImpl::stream(const Pistache::Http::Header::Collection& headers,
+                                  const std::string& body,
+                                  const std::string& path,
+                                  const Pistache::Optional<std::string>& offset,
+                                  const Pistache::Optional<std::string>& count,
+                                  const Pistache::Optional<std::string>& truncate,
+                                  Pistache::Http::ResponseWriter& response)
+    {
+        MACRO_IRODS_STREAM_PUT_API_IMPLEMENTATION
+    }
+} // namespace io::swagger::server::api
 

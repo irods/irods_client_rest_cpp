@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_ADMIN_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_ADMIN_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "generalAdmin.h"
@@ -82,4 +85,6 @@ namespace irods::rest
         } // operator()
     }; // class admin
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_ADMIN_API_IMPLEMENTATION_H
 

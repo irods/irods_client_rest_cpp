@@ -18,17 +18,15 @@
 #ifndef GetConfigurationApi_H_
 #define GetConfigurationApi_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/http_headers.h>
 #include <pistache/optional.h>
+
 #include "ModelBase.h"
 
 #include <string>
-
-#include "irods_rest_get_configuration_api_implementation.h"
 
 namespace io {
 namespace swagger {
@@ -41,6 +39,7 @@ class  GetConfigurationApi {
 public:
     GetConfigurationApi(Pistache::Address addr);
     virtual ~GetConfigurationApi() {};
+
     void init(size_t thr);
     void start();
     void shutdown();
@@ -50,13 +49,17 @@ public:
 private:
     void setupRoutes();
 
-    void obtain_token_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void get_configuration_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void get_configuration_handler(const Pistache::Rest::Request& request,
+                                   Pistache::Http::ResponseWriter response);
+
+    void get_configuration_api_default_handler(const Pistache::Rest::Request& request,
+                                               Pistache::Http::ResponseWriter response);
+
+    virtual void get_configuration(const Pistache::Http::Header::Collection& headers,
+                                   Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
-
-    irods::rest::get_configuration irods_get_configuration_;
 };
 
 }

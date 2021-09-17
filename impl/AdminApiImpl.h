@@ -19,51 +19,47 @@
 #ifndef ADMIN_API_IMPL_H_
 #define ADMIN_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <AdminApi.h>
 
+#include <memory>
 #include <string>
 
 #include "irods_rest_admin_api_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class AdminApiImpl
+        : public io::swagger::server::api::AdminApi
+    {
+    public:
+        AdminApiImpl(Pistache::Address addr);
 
-class AdminApiImpl : public io::swagger::server::api::AdminApi {
-public:
-    AdminApiImpl(Pistache::Address addr);
-    ~AdminApiImpl() { };
+        ~AdminApiImpl() {};
 
-    void catalog_admin(const Pistache::Http::Header::Collection& headers,
-                       const std::string body,
-                       const Pistache::Optional<std::string> & action,
-                       const Pistache::Optional<std::string> & target,
-                       const Pistache::Optional<std::string> & arg2,
-                       const Pistache::Optional<std::string> & arg3,
-                       const Pistache::Optional<std::string> & arg4,
-                       const Pistache::Optional<std::string> & arg5,
-                       const Pistache::Optional<std::string> & arg6,
-                       const Pistache::Optional<std::string> & arg7,
-                       Pistache::Http::ResponseWriter &response);
-    irods::rest::admin irods_admin_;
-};
+        void catalog_admin(const Pistache::Http::Header::Collection& headers,
+                           const std::string& body,
+                           const Pistache::Optional<std::string>& action,
+                           const Pistache::Optional<std::string>& target,
+                           const Pistache::Optional<std::string>& arg2,
+                           const Pistache::Optional<std::string>& arg3,
+                           const Pistache::Optional<std::string>& arg4,
+                           const Pistache::Optional<std::string>& arg5,
+                           const Pistache::Optional<std::string>& arg6,
+                           const Pistache::Optional<std::string>& arg7,
+                           Pistache::Http::ResponseWriter& response) override;
 
-}
-}
-}
-}
+        irods::rest::admin irods_admin_;
+    }; // class AdminApiImpl
+} // namespace io::swagger::server::api
 
+#endif // ADMIN_API_IMPL_H_
 
-
-#endif

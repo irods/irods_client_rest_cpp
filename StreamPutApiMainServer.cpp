@@ -15,28 +15,34 @@
 #include "pistache/router.h"
 #include "StreamPutApiImpl.h"
 
+#include "logger.hpp"
+
 using namespace io::swagger::server::api;
 
 namespace ir   = irods::rest;
 namespace irck = irods::rest::configuration_keywords;
 
-int main(int argc, char* argv[]) {
+int main()
+{
     auto cfg  = ir::configuration{ir::service_name};
+
+    auto logger = ir::init_logger(ir::service_name, cfg);
+
     auto port = cfg[irck::port];
-    if(port.empty()) {
-        std::cerr << "port is not configured for service name " << ir::service_name << std::endl;
+    if (port.empty()) {
+        logger->error("Port is not configured for service.");
         return 3;
     }
 
     auto threads = cfg[irck::threads];
-    if(threads.empty()) {
+    if (threads.empty()) {
+        logger->info("Using default number of threads [4].");
         threads = 4;
     }
 
     auto addr = Pistache::Address(Pistache::Ipv4::any(), Pistache::Port(port.get<int>()));
-
     auto server = StreamPutApiImpl(addr);
-    server.init(threads);
+    server.init(threads.get<int>());
     server.start();
 
     server.shutdown();

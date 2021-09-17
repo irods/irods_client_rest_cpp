@@ -39,6 +39,7 @@ class  ListApi {
 public:
     ListApi(Pistache::Address addr);
     virtual ~ListApi() {};
+
     void init(size_t thr);
     void start();
     void shutdown();
@@ -48,27 +49,24 @@ public:
 private:
     void setupRoutes();
 
-    void stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void list_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void stream_handler(const Pistache::Rest::Request& request,
+                        Pistache::Http::ResponseWriter response);
+
+    void list_api_default_handler(const Pistache::Rest::Request& request,
+                                  Pistache::Http::ResponseWriter response);
+
+    virtual void stream(const Pistache::Http::Header::Collection& headers,
+                        const std::string& body,
+                        const Pistache::Optional<std::string>& path,
+                        const Pistache::Optional<std::string>& stat,
+                        const Pistache::Optional<std::string>& permissions,
+                        const Pistache::Optional<std::string>& metadata,
+                        const Pistache::Optional<std::string>& offset,
+                        const Pistache::Optional<std::string>& limit,
+                        Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
-
-
-    /// <summary>
-    /// Recursively list the contents of a logical collection
-    /// </summary>
-    /// <remarks>
-    /// Recursively list the contents of a logical collection 
-    /// </remarks>
-    /// <param name="path">irods absolute logical path of the collection</param>
-    /// <param name="stat">flag to include status information (optional)</param>
-    /// <param name="permissions">flag to include permission information (optional)</param>
-    /// <param name="metadata">flag to include metadata information (optional)</param>
-    /// <param name="offset">number of records to skip for pagination (optional)</param>
-    /// <param name="limit">maximum number of records to return (optional)</param>
-    virtual void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &stat, const Pistache::Optional<std::string> &permissions, const Pistache::Optional<std::string> &metadata, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) = 0;
-
 };
 
 }

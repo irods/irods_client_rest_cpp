@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_LIST_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_LIST_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "filesystem.hpp"
@@ -235,4 +238,6 @@ namespace irods::rest {
         } // aggregate_metadata_information
     }; // class list
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_LIST_API_IMPLEMENTATION_H
 

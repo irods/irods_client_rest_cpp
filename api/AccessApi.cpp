@@ -12,6 +12,8 @@
 
 #include "AccessApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -21,7 +23,8 @@ using namespace io::swagger::server::model;
 
 AccessApi::AccessApi(Pistache::Address addr)
     : httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
-{ };
+{
+}
 
 void AccessApi::init(size_t thr = 2) {
     auto opts = Pistache::Http::Endpoint::options()
@@ -48,24 +51,29 @@ void AccessApi::setupRoutes() {
     router.addCustomHandler(Routes::bind(&AccessApi::access_api_default_handler, this));
 }
 
-void AccessApi::access_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-
-    // Getting the query params
-    auto path = request.query().get("path");
-    auto use_count = request.query().get("use_count");
-    auto seconds_until_expiration = request.query().get("seconds_until_expiration");
-
+void AccessApi::access_handler(const Pistache::Rest::Request& request,
+                               Pistache::Http::ResponseWriter response)
+{
     try {
-      this->access(request.headers(), request.body(), path, use_count, seconds_until_expiration, response);
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
-    }
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
+        // Getting the query params
+        auto path = request.query().get("path");
+        auto use_count = request.query().get("use_count");
+        auto seconds_until_expiration = request.query().get("seconds_until_expiration");
+
+        this->access(request.headers(), request.body(), path, use_count, seconds_until_expiration, response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
+    }
 }
 
-void AccessApi::access_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void AccessApi::access_api_default_handler(const Pistache::Rest::Request& request,
+                                           Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested Access method does not exist");
 }
 

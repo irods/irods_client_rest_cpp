@@ -12,6 +12,8 @@
 
 #include "PutConfigurationApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -21,7 +23,7 @@ using namespace io::swagger::server::model;
 
 PutConfigurationApi::PutConfigurationApi(Pistache::Address addr)
     : httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
-{ };
+{}
 
 void PutConfigurationApi::init(size_t thr = 2) {
     auto opts = Pistache::Http::Endpoint::options()
@@ -42,29 +44,33 @@ void PutConfigurationApi::shutdown() {
 void PutConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Put(router, base + "/put_configuration", Routes::bind(&PutConfigurationApi::request_response_handler, this));
+    Routes::Put(router, base + "/put_configuration", Routes::bind(&PutConfigurationApi::put_configuration_api_handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&PutConfigurationApi::default_handler, this));
 }
 
-void PutConfigurationApi::request_response_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void PutConfigurationApi::put_configuration_api_handler(const Pistache::Rest::Request& request,
+                                                        Pistache::Http::ResponseWriter response)
+{
     try {
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
-      // The macro expects these variables to be in scope
-      auto cfg = request.query().get("cfg");
+        // The macro expects these variables to be in scope
+        auto cfg = request.query().get("cfg");
 
-      // irods specific implementation
-      MACRO_IRODS_CONFIGURATION_PUT_API_IMPLEMENTATION
-
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
+        this->put_configuration(request.headers(), cfg, response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
     }
 }
 
-void PutConfigurationApi::default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void PutConfigurationApi::default_handler(const Pistache::Rest::Request& request,
+                                          Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested put_configuration method does not exist");
 }
 
