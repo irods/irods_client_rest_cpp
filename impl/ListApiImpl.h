@@ -19,41 +19,45 @@
 #ifndef LIST_API_IMPL_H_
 #define LIST_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <ListApi.h>
 
+#include <memory>
 #include <string>
 
 #include "irods_rest_list_api_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class ListApiImpl
+        : public io::swagger::server::api::ListApi
+    {
+    public:
+        ListApiImpl(Pistache::Address addr);
 
-class ListApiImpl : public io::swagger::server::api::ListApi {
-public:
-    ListApiImpl(Pistache::Address addr);
-    ~ListApiImpl() { };
+        ~ListApiImpl() {};
 
-    void stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &stat, const Pistache::Optional<std::string> &permissions, const Pistache::Optional<std::string> &metadata, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response);
-    irods::rest::list irods_list_;
-};
+        void stream(const Pistache::Http::Header::Collection& headers,
+                    const std::string& body,
+                    const Pistache::Optional<std::string>& path,
+                    const Pistache::Optional<std::string>& stat,
+                    const Pistache::Optional<std::string>& permissions,
+                    const Pistache::Optional<std::string>& metadata,
+                    const Pistache::Optional<std::string>& offset,
+                    const Pistache::Optional<std::string>& limit,
+                    Pistache::Http::ResponseWriter& response) override;
 
-}
-}
-}
-}
+        irods::rest::list irods_list_;
+    }; // class ListApiImpl
+} // namespace io::swagger::server::api
 
+#endif // LIST_API_IMPL_H_
 
-
-#endif

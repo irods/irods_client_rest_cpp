@@ -12,23 +12,25 @@
 
 #include "QueryApiImpl.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    QueryApiImpl::QueryApiImpl(Pistache::Address addr)
+        : QueryApi(addr)
+        , irods_query_{}
+    {
+    }
 
-QueryApiImpl::QueryApiImpl(Pistache::Address addr)
-    : QueryApi(addr)
-    { }
-
-void QueryApiImpl::catalog_query(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response) {
-    MACRO_IRODS_QUERY_API_IMPLEMENTATION
-}
-
-}
-}
-}
-}
+    void QueryApiImpl::catalog_query(const Pistache::Http::Header::Collection& headers,
+                                     const std::string& body,
+                                     const Pistache::Optional<std::string>& queryString,
+                                     const Pistache::Optional<std::string>& queryType,
+                                     const Pistache::Optional<std::string>& queryLimit,
+                                     const Pistache::Optional<std::string>& rowOffset,
+                                     Pistache::Http::ResponseWriter& response)
+    {
+        MACRO_IRODS_QUERY_API_IMPLEMENTATION
+    }
+} // namespace io::swagger::server::api
 

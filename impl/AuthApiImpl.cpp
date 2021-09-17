@@ -12,23 +12,20 @@
 
 #include "AuthApiImpl.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    AuthApiImpl::AuthApiImpl(Pistache::Address addr)
+        : AuthApi(addr)
+        , irods_auth_{}
+    {
+    }
 
-AuthApiImpl::AuthApiImpl(Pistache::Address addr)
-    : AuthApi(addr)
-    { }
-
-void AuthApiImpl::obtain_token(const Pistache::Http::Header::Collection& headers, Pistache::Http::ResponseWriter &response) {
-    MACRO_IRODS_AUTH_API_IMPLEMENTATION
-}
-
-}
-}
-}
-}
+    void AuthApiImpl::obtain_token(const Pistache::Http::Header::Collection& headers,
+                                   Pistache::Http::ResponseWriter &response)
+    {
+        MACRO_IRODS_AUTH_API_IMPLEMENTATION
+    }
+} // namespace io::swagger::server::api
 

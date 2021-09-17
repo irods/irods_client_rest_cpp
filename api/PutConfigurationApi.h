@@ -18,17 +18,15 @@
 #ifndef PutConfigurationApi_H_
 #define PutConfigurationApi_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/http_headers.h>
 #include <pistache/optional.h>
+
 #include "ModelBase.h"
 
 #include <string>
-
-#include "irods_rest_put_configuration_api_implementation.h"
 
 namespace io {
 namespace swagger {
@@ -41,6 +39,7 @@ class  PutConfigurationApi {
 public:
     PutConfigurationApi(Pistache::Address addr);
     virtual ~PutConfigurationApi() {};
+
     void init(size_t thr);
     void start();
     void shutdown();
@@ -50,13 +49,18 @@ public:
 private:
     void setupRoutes();
 
-    void request_response_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void put_configuration_api_handler(const Pistache::Rest::Request& request,
+                                       Pistache::Http::ResponseWriter response);
+
+    void default_handler(const Pistache::Rest::Request& request,
+                         Pistache::Http::ResponseWriter response);
+
+    virtual void put_configuration(const Pistache::Http::Header::Collection& headers,
+                                   const Pistache::Optional<std::string>& cfg,
+                                   Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
-
-    irods::rest::put_configuration irods_put_configuration_;
 };
 
 }

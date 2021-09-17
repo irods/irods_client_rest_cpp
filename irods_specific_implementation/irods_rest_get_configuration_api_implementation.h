@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_GET_CONFIGURATION_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_GET_CONFIGURATION_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "irods_default_paths.hpp"
@@ -11,17 +14,17 @@
 #define MACRO_IRODS_CONFIGURATION_GET_API_IMPLEMENTATION \
     Pistache::Http::Code code; \
     std::string message; \
-    std::tie(code, message) = irods_get_configuration_(request.headers().getRaw("authorization").value()); \
+    std::tie(code, message) = irods_get_configuration_(headers.getRaw("authorization").value()); \
     response.send(code, message);
 
 namespace irods::rest
 {
+    // this is contractually tied directly to the api implementation
+    const std::string service_name{"irods_rest_cpp_get_configuration_server"};
+
     namespace bfs = boost::filesystem;
 
     using json = nlohmann::json;
-
-    // this is contractually tied directly to the api implementation
-    const std::string service_name{"irods_rest_cpp_get_configuration_server"};
 
     class get_configuration : public api_base
     {
@@ -86,4 +89,6 @@ namespace irods::rest
         } // operator()
     }; // class get_configuration
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_GET_CONFIGURATION_API_IMPLEMENTATION_H
 

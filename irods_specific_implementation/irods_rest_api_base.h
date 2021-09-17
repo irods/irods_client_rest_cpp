@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_API_BASE_H
+#define IRODS_REST_CPP_API_BASE_H
+
 #include "indexed_connection_pool_with_expiry.hpp"
 
 #include "rodsClient.h"
@@ -66,6 +69,11 @@ namespace irods::rest
         {
         }
 
+        auto instance_name() const noexcept -> const std::string&
+        {
+            return instance_name_;
+        }
+
         auto contains(const std::string& _key) const -> bool
         {
             return configuration_.at(instance_name_).contains(_key);
@@ -113,7 +121,8 @@ namespace irods::rest
     {
     public:
         api_base(const std::string& _service_name)
-            : logger_{spdlog::syslog_logger_mt(_service_name, "", LOG_PID, LOG_LOCAL0, true /* enable formatting */)}
+            //: logger_{spdlog::syslog_logger_mt(_service_name, "", LOG_PID, LOG_LOCAL0, true /* enable formatting */)}
+            : logger_{spdlog::get(_service_name)}
             , connection_pool_{}
         {
             // sets the client name for the ips command
@@ -121,7 +130,7 @@ namespace irods::rest
 
             auto cfg = configuration{_service_name};
 
-            configure_logger(cfg);
+            //configure_logger(cfg);
 
             auto it = default_idle_time_in_seconds;
             if (cfg.contains(configuration_keywords::timeout)) {
@@ -360,3 +369,4 @@ namespace irods::rest
     }; // class api_base
 } // namespace irods::rest
 
+#endif // IRODS_REST_CPP_API_BASE_H

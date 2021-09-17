@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_AUTH_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_AUTH_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 // this is contractually tied directly to the swagger api definition, and the below implementation
@@ -150,4 +153,6 @@ namespace irods::rest
         } // operator()
     }; // class auth
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_AUTH_API_IMPLEMENTATION_H
 

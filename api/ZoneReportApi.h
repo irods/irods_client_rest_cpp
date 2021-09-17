@@ -18,7 +18,6 @@
 #ifndef ZoneReportApi_H_
 #define ZoneReportApi_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
@@ -40,6 +39,7 @@ class ZoneReportApi
 public:
     ZoneReportApi(Pistache::Address addr);
     virtual ~ZoneReportApi() {};
+
     void init(size_t thr);
     void start();
     void shutdown();
@@ -49,22 +49,18 @@ public:
 private:
     void setupRoutes();
 
-    void obtain_token_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
-    void zone_report_api_default_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
+    void obtain_token_handler(const Pistache::Rest::Request& request,
+                              Pistache::Http::ResponseWriter response);
 
-    std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
-    Pistache::Rest::Router router;
+    void zone_report_api_default_handler(const Pistache::Rest::Request& request,
+                                         Pistache::Http::ResponseWriter response);
 
-
-    /// <summary>
-    /// Fetch a Zone Report
-    /// </summary>
-    /// <remarks>
-    /// Fetch a JSON representation of an iRODS Zone
-    /// </remarks>
     virtual void obtain_token(const Pistache::Http::Header::Collection& headers,
                               const std::string& body,
                               Pistache::Http::ResponseWriter& response) = 0;
+
+    std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
+    Pistache::Rest::Router router;
 };
 
 }

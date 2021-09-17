@@ -18,63 +18,52 @@
 #ifndef AccessApi_H_
 #define AccessApi_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/http_headers.h>
 #include <pistache/optional.h>
+
 #include "ModelBase.h"
 
 #include <string>
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class AccessApi
+    {
+    public:
+        AccessApi(Pistache::Address addr);
+        virtual ~AccessApi() {};
 
-class  AccessApi {
-public:
-    AccessApi(Pistache::Address addr);
-    virtual ~AccessApi() {};
-    void init(size_t thr);
-    void start();
-    void shutdown();
+        void init(size_t thr);
+        void start();
+        void shutdown();
 
-    const std::string base = "/irods-rest/1.0.0";
+        const std::string base = "/irods-rest/1.0.0";
 
-private:
-    void setupRoutes();
+    private:
+        void setupRoutes();
 
-    void access_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void access_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+        void access_handler(const Pistache::Rest::Request& request,
+                            Pistache::Http::ResponseWriter response);
 
-    std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
-    Pistache::Rest::Router router;
+        void access_api_default_handler(const Pistache::Rest::Request& request,
+                                        Pistache::Http::ResponseWriter response);
 
+        std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
+        Pistache::Rest::Router router;
 
-    /// <summary>
-    /// obtain an access token and url for a given object
-    /// </summary>
-    /// <remarks>
-    /// obtain an access token and url for a given object 
-    /// </remarks>
-    /// <param name="logical_path">irods absolute logical path of the object</param>
-    virtual void access(const Pistache::Http::Header::Collection& headers,
-                        const std::string& body,
-                        const Pistache::Optional<std::string>& logical_path,
-                        const Pistache::Optional<std::string>& use_count,
-                        const Pistache::Optional<std::string>& seconds_until_expiration,
-                        Pistache::Http::ResponseWriter& response) = 0;
-
-};
-
-}
-}
-}
-}
+        virtual void access(const Pistache::Http::Header::Collection& headers,
+                            const std::string& body,
+                            const Pistache::Optional<std::string>& logical_path,
+                            const Pistache::Optional<std::string>& use_count,
+                            const Pistache::Optional<std::string>& seconds_until_expiration,
+                            Pistache::Http::ResponseWriter& response) = 0;
+    };
+} // namespace io::swagger::server::api
 
 #endif /* AccessApi_H_ */
 

@@ -12,6 +12,8 @@
 
 #include "QueryApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -21,7 +23,8 @@ using namespace io::swagger::server::model;
 
 QueryApi::QueryApi(Pistache::Address addr)
     : httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
-{ };
+{
+}
 
 void QueryApi::init(size_t thr = 2) {
     auto opts = Pistache::Http::Endpoint::options()
@@ -48,25 +51,29 @@ void QueryApi::setupRoutes() {
     router.addCustomHandler(Routes::bind(&QueryApi::query_api_default_handler, this));
 }
 
-void QueryApi::catalog_query_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-
+void QueryApi::catalog_query_handler(const Pistache::Rest::Request& request,
+                                     Pistache::Http::ResponseWriter response)
+{
     try {
-    // Getting the query params
-    auto queryString = request.query().get("query_string");
-    auto queryLimit  = request.query().get("query_limit");
-    auto rowOffset   = request.query().get("row_offset");
-    auto queryType   = request.query().get("query_type");
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
-      this->catalog_query(request.headers(), request.body(), queryString, queryType, queryLimit, rowOffset, response);
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
+        auto queryString = request.query().get("query_string");
+        auto queryLimit  = request.query().get("query_limit");
+        auto rowOffset   = request.query().get("row_offset");
+        auto queryType   = request.query().get("query_type");
+
+        this->catalog_query(request.headers(), request.body(), queryString, queryType, queryLimit, rowOffset, response);
     }
-
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
+    }
 }
 
-void QueryApi::query_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void QueryApi::query_api_default_handler(const Pistache::Rest::Request& request,
+                                         Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested Query method does not exist");
 }
 

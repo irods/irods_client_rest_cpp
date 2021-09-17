@@ -12,28 +12,24 @@
 
 #include "AccessApiImpl.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    AccessApiImpl::AccessApiImpl(Pistache::Address addr)
+        : AccessApi(addr)
+        , irods_access_{}
+    {
+    }
 
-AccessApiImpl::AccessApiImpl(Pistache::Address addr)
-    : AccessApi(addr)
-    { }
-
-void AccessApiImpl::access(const Pistache::Http::Header::Collection& headers,
-                           const std::string& body,
-                           const Pistache::Optional<std::string>& path,
-                           const Pistache::Optional<std::string>& use_count,
-                           const Pistache::Optional<std::string>& seconds_until_expiration,
-                           Pistache::Http::ResponseWriter& response) {
-    MACRO_IRODS_ACCESS_API_IMPLEMENTATION
-}
-
-}
-}
-}
-}
+    void AccessApiImpl::access(const Pistache::Http::Header::Collection& headers,
+                               const std::string& body,
+                               const Pistache::Optional<std::string>& path,
+                               const Pistache::Optional<std::string>& use_count,
+                               const Pistache::Optional<std::string>& seconds_until_expiration,
+                               Pistache::Http::ResponseWriter& response)
+    {
+        MACRO_IRODS_ACCESS_API_IMPLEMENTATION
+    }
+} // namespace io::swagger::server::api
 

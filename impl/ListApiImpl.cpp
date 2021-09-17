@@ -12,23 +12,27 @@
 
 #include "ListApiImpl.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    ListApiImpl::ListApiImpl(Pistache::Address addr)
+        : ListApi(addr)
+        , irods_list_{}
+    {
+    }
 
-ListApiImpl::ListApiImpl(Pistache::Address addr)
-    : ListApi(addr)
-    { }
-
-void ListApiImpl::stream(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &path, const Pistache::Optional<std::string> &stat, const Pistache::Optional<std::string> &permissions, const Pistache::Optional<std::string> &metadata, const Pistache::Optional<std::string> &offset, const Pistache::Optional<std::string> &limit, Pistache::Http::ResponseWriter &response) {
-    MACRO_IRODS_LIST_API_IMPLEMENTATION
-}
-
-}
-}
-}
-}
+    void ListApiImpl::stream(const Pistache::Http::Header::Collection& headers,
+                             const std::string& body,
+                             const Pistache::Optional<std::string>& path,
+                             const Pistache::Optional<std::string>& stat,
+                             const Pistache::Optional<std::string>& permissions,
+                             const Pistache::Optional<std::string>& metadata,
+                             const Pistache::Optional<std::string>& offset,
+                             const Pistache::Optional<std::string>& limit,
+                             Pistache::Http::ResponseWriter& response)
+    {
+        MACRO_IRODS_LIST_API_IMPLEMENTATION
+    }
+} // namespace io::swagger::server::api
 
