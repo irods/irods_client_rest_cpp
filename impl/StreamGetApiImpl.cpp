@@ -12,28 +12,24 @@
 
 #include "StreamGetApiImpl.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    StreamGetApiImpl::StreamGetApiImpl(Pistache::Address addr)
+        : StreamGetApi(addr)
+        , irods_stream_get_{}
+    {
+    }
 
-StreamGetApiImpl::StreamGetApiImpl(Pistache::Address addr)
-    : StreamGetApi(addr)
-    { }
-
-void StreamGetApiImpl::stream(const Pistache::Http::Header::Collection& headers,
-                              const std::string& body,
-                              const std::string& path,
-                              const std::string& count,
-                              const Pistache::Optional<std::string>& offset,
-                              Pistache::Http::ResponseWriter& response) {
-    MACRO_IRODS_STREAM_GET_API_IMPLEMENTATION
-}
-
-}
-}
-}
-}
+    void StreamGetApiImpl::stream(const Pistache::Http::Header::Collection& headers,
+                                  const std::string& body,
+                                  const std::string& path,
+                                  const std::string& count,
+                                  const Pistache::Optional<std::string>& offset,
+                                  Pistache::Http::ResponseWriter& response)
+    {
+        MACRO_IRODS_STREAM_GET_API_IMPLEMENTATION
+    }
+} // namespace io::swagger::server::api
 

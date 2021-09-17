@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_QUERY_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_QUERY_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "irods_query.hpp"
@@ -120,4 +123,6 @@ namespace irods::rest
         } // operator()
     }; // class query
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_QUERY_API_IMPLEMENTATION_H
 

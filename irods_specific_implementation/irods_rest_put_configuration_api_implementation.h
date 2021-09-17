@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_PUT_CONFIGURATION_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_PUT_CONFIGURATION_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "irods_default_paths.hpp"
@@ -10,15 +13,15 @@
 
 // this is contractually tied directly to the pistache implementation, and the below implementation
 #define MACRO_IRODS_CONFIGURATION_PUT_API_IMPLEMENTATION \
-    auto [code, message] = irods_put_configuration_(request.headers().getRaw("authorization").value(), cfg.get()); \
+    auto [code, message] = irods_put_configuration_(headers.getRaw("authorization").value(), cfg.get()); \
     response.send(code, message);
 
 namespace irods::rest
 {
-    using json = nlohmann::json;
-
     // this is contractually tied directly to the api implementation
     const std::string service_name{"irods_rest_cpp_put_configuration_server"};
+
+    using json = nlohmann::json;
 
     class put_configuration : public api_base
     {
@@ -74,4 +77,6 @@ namespace irods::rest
         } // operator()
     }; // class put_configuration
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_PUT_CONFIGURATION_API_IMPLEMENTATION_H
 

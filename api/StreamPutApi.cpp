@@ -12,6 +12,8 @@
 
 #include "StreamPutApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -48,27 +50,30 @@ void StreamPutApi::setupRoutes() {
     router.addCustomHandler(Routes::bind(&StreamPutApi::stream_put_api_default_handler, this));
 }
 
-void StreamPutApi::stream_handler(const Pistache::Rest::Request &request,
-                                  Pistache::Http::ResponseWriter response) {
-
-    // Getting the query params
-    auto path = request.query().get("path");
-    auto offset = request.query().get("offset");
-    auto count = request.query().get("count");
-    auto truncate = request.query().get("truncate");
-
+void StreamPutApi::stream_handler(const Pistache::Rest::Request& request,
+                                  Pistache::Http::ResponseWriter response)
+{
     try {
-      this->stream(request.headers(), request.body(), path.get(), offset, count, truncate, response);
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
-    }
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
+        // Getting the query params
+        auto path = request.query().get("path");
+        auto offset = request.query().get("offset");
+        auto count = request.query().get("count");
+        auto truncate = request.query().get("truncate");
+
+        this->stream(request.headers(), request.body(), path.get(), offset, count, truncate, response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
+    }
 }
 
-void StreamPutApi::stream_put_api_default_handler(const Pistache::Rest::Request &request,
-                                                  Pistache::Http::ResponseWriter response) {
+void StreamPutApi::stream_put_api_default_handler(const Pistache::Rest::Request& request,
+                                                  Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested StreamPut method does not exist");
 }
 

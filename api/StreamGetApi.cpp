@@ -12,6 +12,8 @@
 
 #include "StreamGetApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -48,24 +50,29 @@ void StreamGetApi::setupRoutes() {
     router.addCustomHandler(Routes::bind(&StreamGetApi::stream_get_api_default_handler, this));
 }
 
-void StreamGetApi::stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-
-    // Getting the query params
-    auto path = request.query().get("path");
-    auto offset = request.query().get("offset");
-    auto count = request.query().get("count");
-
+void StreamGetApi::stream_handler(const Pistache::Rest::Request& request,
+                                  Pistache::Http::ResponseWriter response)
+{
     try {
-      this->stream(request.headers(), request.body(), path.get(), count.get(), offset, response);
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
-    }
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
+        // Getting the query params
+        auto path = request.query().get("path");
+        auto offset = request.query().get("offset");
+        auto count = request.query().get("count");
+
+        this->stream(request.headers(), request.body(), path.get(), count.get(), offset, response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
+    }
 }
 
-void StreamGetApi::stream_get_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void StreamGetApi::stream_get_api_default_handler(const Pistache::Rest::Request& request,
+                                                  Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested StreamGet method does not exist");
 }
 

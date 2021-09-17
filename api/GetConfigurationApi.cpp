@@ -12,6 +12,8 @@
 
 #include "GetConfigurationApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -42,24 +44,30 @@ void GetConfigurationApi::shutdown() {
 void GetConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/get_configuration", Routes::bind(&GetConfigurationApi::obtain_token_handler, this));
+    Routes::Get(router, base + "/get_configuration", Routes::bind(&GetConfigurationApi::get_configuration_handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&GetConfigurationApi::get_configuration_api_default_handler, this));
 }
 
-void GetConfigurationApi::obtain_token_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void GetConfigurationApi::get_configuration_handler(const Pistache::Rest::Request& request,
+                                                    Pistache::Http::ResponseWriter response)
+{
     try {
-      // XXXX - JMC :: example this->obtain_token(request.headers(), request.body(), response);
-      MACRO_IRODS_CONFIGURATION_GET_API_IMPLEMENTATION
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
+        spdlog::info("Incoming request from [{}].", request.address().host());
+
+        this->get_configuration(request.headers(), response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
     }
 }
 
-void GetConfigurationApi::get_configuration_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void GetConfigurationApi::get_configuration_api_default_handler(const Pistache::Rest::Request& request,
+                                                                Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested get_configuration method does not exist");
 }
 

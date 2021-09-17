@@ -19,46 +19,41 @@
 #ifndef ACCESS_API_IMPL_H_
 #define ACCESS_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <AccessApi.h>
 
+#include <memory>
 #include <string>
 
 #include "irods_rest_access_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class AccessApiImpl
+        : public io::swagger::server::api::AccessApi
+    {
+    public:
+        AccessApiImpl(Pistache::Address addr);
+        ~AccessApiImpl() {};
 
-class AccessApiImpl : public io::swagger::server::api::AccessApi {
-public:
-    AccessApiImpl(Pistache::Address addr);
-    ~AccessApiImpl() { };
+        void access(const Pistache::Http::Header::Collection& headers,
+                    const std::string& body,
+                    const Pistache::Optional<std::string>& path,
+                    const Pistache::Optional<std::string>& use_count,
+                    const Pistache::Optional<std::string>& seconds_until_expiration,
+                    Pistache::Http::ResponseWriter& response) override;
 
-    void access(const Pistache::Http::Header::Collection& headers,
-                const std::string& body,
-                const Pistache::Optional<std::string>& path,
-                const Pistache::Optional<std::string>& use_count,
-                const Pistache::Optional<std::string>& seconds_until_expiration,
-                Pistache::Http::ResponseWriter& response);
-    irods::rest::access irods_access_;
-};
+        irods::rest::access irods_access_;
+    }; // class AccessApiImpl
+} // namespace io::swagger::server::api
 
-}
-}
-}
-}
+#endif // ACCESS_API_IMPL_H_
 
-
-
-#endif

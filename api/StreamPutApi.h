@@ -38,6 +38,7 @@ class  StreamPutApi {
 public:
     StreamPutApi(Pistache::Address addr);
     virtual ~StreamPutApi() {};
+
     void init(size_t thr);
     void start();
     void shutdown();
@@ -47,29 +48,22 @@ public:
 private:
     void setupRoutes();
 
-    void stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void stream_put_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void stream_handler(const Pistache::Rest::Request& request,
+                        Pistache::Http::ResponseWriter response);
+
+    void stream_put_api_default_handler(const Pistache::Rest::Request& request,
+                                        Pistache::Http::ResponseWriter response);
+
+    virtual void stream(const Pistache::Http::Header::Collection& headers,
+                        const std::string& body,
+                        const std::string& path,
+                        const Pistache::Optional<std::string>& offset,
+                        const Pistache::Optional<std::string>& count,
+                        const Pistache::Optional<std::string>& truncate,
+                        Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
-
-    /// <summary>
-    /// streams bytes to/from a data thinger
-    /// </summary>
-    /// <remarks>
-    /// Sends an HTTP stream of file bytes 
-    /// </remarks>
-    /// <param name="path">irods absolute logical path to the file</param>
-    /// <param name="offset">number of bytes to skip (optional)</param>
-    /// <param name="count">maximum number of bytes to write (optional)</param>
-    /// <param name="truncate">truncate the data object on open (optional)</param>
-    virtual void stream(const Pistache::Http::Header::Collection &headers,
-                        const std::string &body,
-                        const std::string &path,
-                        const Pistache::Optional<std::string> &offset,
-                        const Pistache::Optional<std::string> &count,
-                        const Pistache::Optional<std::string> &truncate,
-                        Pistache::Http::ResponseWriter &response) = 0;
 };
 
 }

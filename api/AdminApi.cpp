@@ -12,6 +12,8 @@
 
 #include "AdminApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -48,29 +50,34 @@ void AdminApi::setupRoutes() {
     router.addCustomHandler(Routes::bind(&AdminApi::admin_api_default_handler, this));
 }
 
-void AdminApi::catalog_admin_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-
-    // Getting the admin params
-    auto action = request.query().get("action");
-    auto target = request.query().get("target");
-    auto arg2   = request.query().get("arg2");
-    auto arg3   = request.query().get("arg3");
-    auto arg4   = request.query().get("arg4");
-    auto arg5   = request.query().get("arg5");
-    auto arg6   = request.query().get("arg6");
-    auto arg7   = request.query().get("arg7");
-
+void AdminApi::catalog_admin_handler(const Pistache::Rest::Request& request,
+                                     Pistache::Http::ResponseWriter response)
+{
     try {
-      this->catalog_admin(request.headers(), request.body(), action, target, arg2, arg3, arg4, arg5, arg6, arg7, response);
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
-    }
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
+        // Getting the admin params
+        auto action = request.query().get("action");
+        auto target = request.query().get("target");
+        auto arg2   = request.query().get("arg2");
+        auto arg3   = request.query().get("arg3");
+        auto arg4   = request.query().get("arg4");
+        auto arg5   = request.query().get("arg5");
+        auto arg6   = request.query().get("arg6");
+        auto arg7   = request.query().get("arg7");
+
+        this->catalog_admin(request.headers(), request.body(), action, target, arg2, arg3, arg4, arg5, arg6, arg7, response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
+    }
 }
 
-void AdminApi::admin_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void AdminApi::admin_api_default_handler(const Pistache::Rest::Request& request,
+                                         Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested Admin method does not exist");
 }
 
