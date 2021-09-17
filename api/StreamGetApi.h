@@ -39,6 +39,7 @@ class  StreamGetApi {
 public:
     StreamGetApi(Pistache::Address addr);
     virtual ~StreamGetApi() {};
+
     void init(size_t thr);
     void start();
     void shutdown();
@@ -48,29 +49,21 @@ public:
 private:
     void setupRoutes();
 
-    void stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void stream_get_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void stream_handler(const Pistache::Rest::Request& request,
+                        Pistache::Http::ResponseWriter response);
+
+    void stream_get_api_default_handler(const Pistache::Rest::Request& request,
+                                        Pistache::Http::ResponseWriter response);
+
+    virtual void stream(const Pistache::Http::Header::Collection& headers,
+                        const std::string& body,
+                        const std::string& path,
+                        const std::string& count,
+                        const Pistache::Optional<std::string>& offset,
+                        Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
-
-
-    /// <summary>
-    /// streams bytes to/from a data thinger
-    /// </summary>
-    /// <remarks>
-    /// Obtains an HTTP stream of file bytes 
-    /// </remarks>
-    /// <param name="path">irods absolute logical path to the file</param>
-    /// <param name="count">maximum number of bytes to read</param>
-    /// <param name="offset">number of bytes to skip (optional)</param>
-    virtual void stream(const Pistache::Http::Header::Collection &headers,
-                        const std::string &body,
-                        const std::string &path,
-                        const std::string &count,
-                        const Pistache::Optional<std::string> &offset,
-                        Pistache::Http::ResponseWriter &response) = 0;
-
 };
 
 }

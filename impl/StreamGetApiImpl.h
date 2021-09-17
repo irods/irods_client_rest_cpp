@@ -19,47 +19,42 @@
 #ifndef STREAM_GET_API_IMPL_H_
 #define STREAM_GET_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <StreamGetApi.h>
 
+#include <memory>
 #include <string>
 
 #include "irods_rest_stream_get_api_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class StreamGetApiImpl
+        : public io::swagger::server::api::StreamGetApi
+    {
+    public:
+        StreamGetApiImpl(Pistache::Address addr);
 
-class StreamGetApiImpl : public io::swagger::server::api::StreamGetApi {
-public:
-    StreamGetApiImpl(Pistache::Address addr);
-    ~StreamGetApiImpl() { };
+        ~StreamGetApiImpl() {};
 
-    void stream(const Pistache::Http::Header::Collection& headers,
-                const std::string& body,
-                const std::string& path,
-                const std::string& count,
-                const Pistache::Optional<std::string>& offset,
-                Pistache::Http::ResponseWriter& response);
+        void stream(const Pistache::Http::Header::Collection& headers,
+                    const std::string& body,
+                    const std::string& path,
+                    const std::string& count,
+                    const Pistache::Optional<std::string>& offset,
+                    Pistache::Http::ResponseWriter& response) override;
 
-    irods::rest::stream irods_stream_get_;
-};
+        irods::rest::stream irods_stream_get_;
+    }; // class StreamGetApiImpl
+} // namespace io::swagger::server::api
 
-}
-}
-}
-}
+#endif // STREAM_GET_API_IMPL_H_
 
-
-
-#endif

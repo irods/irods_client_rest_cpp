@@ -12,6 +12,8 @@
 
 #include "ListApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -48,27 +50,32 @@ void ListApi::setupRoutes() {
     router.addCustomHandler(Routes::bind(&ListApi::list_api_default_handler, this));
 }
 
-void ListApi::stream_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-
-    // Getting the query params
-    auto path = request.query().get("path");
-    auto stat = request.query().get("stat");
-    auto permissions = request.query().get("permissions");
-    auto metadata = request.query().get("metadata");
-    auto offset = request.query().get("offset");
-    auto limit = request.query().get("limit");
-    
+void ListApi::stream_handler(const Pistache::Rest::Request& request,
+                             Pistache::Http::ResponseWriter response)
+{
     try {
-      this->stream(request.headers(), request.body(), path, stat, permissions, metadata, offset, limit, response);
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
-    }
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
+        // Getting the query params
+        auto path = request.query().get("path");
+        auto stat = request.query().get("stat");
+        auto permissions = request.query().get("permissions");
+        auto metadata = request.query().get("metadata");
+        auto offset = request.query().get("offset");
+        auto limit = request.query().get("limit");
+
+        this->stream(request.headers(), request.body(), path, stat, permissions, metadata, offset, limit, response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
+    }
 }
 
-void ListApi::list_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void ListApi::list_api_default_handler(const Pistache::Rest::Request& request,
+                                       Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested List method does not exist");
 }
 

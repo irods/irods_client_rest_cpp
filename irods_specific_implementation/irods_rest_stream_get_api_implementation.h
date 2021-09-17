@@ -1,3 +1,6 @@
+#ifndef IRODS_REST_CPP_STREAM_GET_API_IMPLEMENTATION_H
+#define IRODS_REST_CPP_STREAM_GET_API_IMPLEMENTATION_H
+
 #include "irods_rest_api_base.h"
 
 #include "dstream.hpp"
@@ -131,4 +134,6 @@ namespace irods::rest
         }
     }; // class stream
 } // namespace irods::rest
+
+#endif // IRODS_REST_CPP_STREAM_GET_API_IMPLEMENTATION_H
 

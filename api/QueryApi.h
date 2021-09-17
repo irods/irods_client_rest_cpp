@@ -18,7 +18,6 @@
 #ifndef QueryApi_H_
 #define QueryApi_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
@@ -29,50 +28,42 @@
 #include "Query_results.h"
 #include <string>
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class QueryApi
+    {
+    public:
+        QueryApi(Pistache::Address addr);
+        virtual ~QueryApi() {};
 
-class  QueryApi {
-public:
-    QueryApi(Pistache::Address addr);
-    virtual ~QueryApi() {};
-    void init(size_t thr);
-    void start();
-    void shutdown();
+        void init(size_t thr);
+        void start();
+        void shutdown();
 
-    const std::string base = "/irods-rest/1.0.0";
+        const std::string base = "/irods-rest/1.0.0";
 
-private:
-    void setupRoutes();
+    private:
+        void setupRoutes();
 
-    void catalog_query_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void query_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+        void catalog_query_handler(const Pistache::Rest::Request& request,
+                                   Pistache::Http::ResponseWriter response);
 
-    std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
-    Pistache::Rest::Router router;
+        void query_api_default_handler(const Pistache::Rest::Request& request,
+                                       Pistache::Http::ResponseWriter response);
 
+        virtual void catalog_query(const Pistache::Http::Header::Collection& headers,
+                                   const std::string& body,
+                                   const Pistache::Optional<std::string>& queryString,
+                                   const Pistache::Optional<std::string>& queryType,
+                                   const Pistache::Optional<std::string>& queryLimit,
+                                   const Pistache::Optional<std::string>& rowOffset,
+                                   Pistache::Http::ResponseWriter& response) = 0;
 
-    /// <summary>
-    /// searches iRODS Catalog using the General Query Language
-    /// </summary>
-    /// <remarks>
-    /// By passing in the appropriate options, you can search for anything within the iRODS Catalog 
-    /// </remarks>
-    /// <param name="queryString">pass a query string using the general query language or a query type</param>
-    /// <param name="queryType">string description of the query type \&quot;general\&quot; or \&quot;specific\&quot;</param>
-    /// <param name="queryLimit">maximum number of records to return (optional)</param>
-    /// <param name="rowOffset">number of records to skip for pagination (optional)</param>
-    virtual void catalog_query(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response) = 0;
-
-};
-
-}
-}
-}
+        std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
+        Pistache::Rest::Router router;
+    };
 }
 
 #endif /* QueryApi_H_ */

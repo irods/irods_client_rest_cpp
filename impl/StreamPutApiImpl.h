@@ -23,43 +23,39 @@
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <StreamPutApi.h>
 
+#include <memory>
 #include <string>
 
 #include "irods_rest_stream_put_api_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class StreamPutApiImpl
+        : public io::swagger::server::api::StreamPutApi
+    {
+    public:
+        StreamPutApiImpl(Pistache::Address addr);
 
-class StreamPutApiImpl : public io::swagger::server::api::StreamPutApi {
-public:
-    StreamPutApiImpl(Pistache::Address addr);
-    ~StreamPutApiImpl() { };
+        ~StreamPutApiImpl() {};
 
-    void stream(const Pistache::Http::Header::Collection& headers,
-                const std::string& body,
-                const std::string& path,
-                const Pistache::Optional<std::string>& offset,
-                const Pistache::Optional<std::string>& count,
-                const Pistache::Optional<std::string>& truncate,
-                Pistache::Http::ResponseWriter& response);
+        void stream(const Pistache::Http::Header::Collection& headers,
+                    const std::string& body,
+                    const std::string& path,
+                    const Pistache::Optional<std::string>& offset,
+                    const Pistache::Optional<std::string>& count,
+                    const Pistache::Optional<std::string>& truncate,
+                    Pistache::Http::ResponseWriter& response) override;
 
-    irods::rest::stream irods_stream_put_;
-};
+        irods::rest::stream irods_stream_put_;
+    }; // class StreamPutApiImpl
+} // namespace io::swagger::server::api
 
-}
-}
-}
-}
+#endif // STREAM_PUT_API_IMPL_H_
 
-
-
-#endif

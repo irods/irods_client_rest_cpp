@@ -19,41 +19,38 @@
 #ifndef AUTH_API_IMPL_H_
 #define AUTH_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <AuthApi.h>
 
+#include <memory>
 #include <string>
 
 #include "irods_rest_auth_api_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class AuthApiImpl
+        : public io::swagger::server::api::AuthApi
+    {
+    public:
+        AuthApiImpl(Pistache::Address addr);
 
-class AuthApiImpl : public io::swagger::server::api::AuthApi {
-public:
-    AuthApiImpl(Pistache::Address addr);
-    ~AuthApiImpl() { };
+        ~AuthApiImpl() {};
 
-    void obtain_token(const Pistache::Http::Header::Collection& headers, Pistache::Http::ResponseWriter &response);
-    irods::rest::auth irods_auth_;
-};
+        void obtain_token(const Pistache::Http::Header::Collection& headers,
+                          Pistache::Http::ResponseWriter &response) override;
 
-}
-}
-}
-}
+        irods::rest::auth irods_auth_;
+    }; // class AuthApiImpl
+} // namespace io::swagger::server::api
 
+#endif // AUTH_API_IMPL_H_
 
-
-#endif

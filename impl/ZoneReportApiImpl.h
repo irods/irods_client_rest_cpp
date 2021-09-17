@@ -19,44 +19,39 @@
 #ifndef ZONE_REPORT_API_IMPL_H_
 #define ZONE_REPORT_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <ZoneReportApi.h>
 
+#include <memory>
 #include <string>
 
 #include "irods_rest_zone_report_api_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class ZoneReportApiImpl
+        : public io::swagger::server::api::ZoneReportApi
+    {
+    public:
+        ZoneReportApiImpl(Pistache::Address addr);
 
-class ZoneReportApiImpl : public io::swagger::server::api::ZoneReportApi {
-public:
-    ZoneReportApiImpl(Pistache::Address addr);
-    ~ZoneReportApiImpl() { };
+        ~ZoneReportApiImpl() {};
 
-    void obtain_token(const Pistache::Http::Header::Collection& headers,
-                      const std::string& body,
-                      Pistache::Http::ResponseWriter& response);
+        void obtain_token(const Pistache::Http::Header::Collection& headers,
+                          const std::string& body,
+                          Pistache::Http::ResponseWriter& response) override;
 
-    irods::rest::zone_report irods_zone_report_;
-};
+        irods::rest::zone_report irods_zone_report_;
+    }; // class ZoneReportApiImpl
+} // namespace io::swagger::server::api
 
-}
-}
-}
-}
+#endif // ZONE_REPORT_API_IMPL_H_
 
-
-
-#endif

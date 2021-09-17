@@ -12,6 +12,8 @@
 
 #include "AuthApi.h"
 
+#include "spdlog/spdlog.h"
+
 namespace io {
 namespace swagger {
 namespace server {
@@ -48,19 +50,24 @@ void AuthApi::setupRoutes() {
     router.addCustomHandler(Routes::bind(&AuthApi::auth_api_default_handler, this));
 }
 
-void AuthApi::obtain_token_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
-
+void AuthApi::obtain_token_handler(const Pistache::Rest::Request& request,
+                                   Pistache::Http::ResponseWriter response)
+{
     try {
-      this->obtain_token(request.headers(), response);
-    } catch (std::runtime_error & e) {
-      //send a 400 error
-      response.send(Pistache::Http::Code::Bad_Request, e.what());
-      return;
-    }
+        spdlog::info("Incoming request from [{}].", request.address().host());
 
+        this->obtain_token(request.headers(), response);
+    }
+    catch (const std::runtime_error& e) {
+        //send a 400 error
+        response.send(Pistache::Http::Code::Bad_Request, e.what());
+        return;
+    }
 }
 
-void AuthApi::auth_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response) {
+void AuthApi::auth_api_default_handler(const Pistache::Rest::Request& request,
+                                       Pistache::Http::ResponseWriter response)
+{
     response.send(Pistache::Http::Code::Not_Found, "The requested Authentication method does not exist");
 }
 

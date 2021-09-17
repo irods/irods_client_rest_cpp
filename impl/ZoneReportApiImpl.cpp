@@ -18,6 +18,7 @@ namespace io::swagger::server::api
 
     ZoneReportApiImpl::ZoneReportApiImpl(Pistache::Address addr)
         : ZoneReportApi(addr)
+        , irods_zone_report_{}
     {
     }
 

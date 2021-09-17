@@ -18,7 +18,6 @@
 #ifndef AuthApi_H_
 #define AuthApi_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
@@ -39,6 +38,7 @@ class  AuthApi {
 public:
     AuthApi(Pistache::Address addr);
     virtual ~AuthApi() {};
+
     void init(size_t thr);
     void start();
     void shutdown();
@@ -48,24 +48,17 @@ public:
 private:
     void setupRoutes();
 
-    void obtain_token_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
-    void auth_api_default_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
+    void obtain_token_handler(const Pistache::Rest::Request& request,
+                              Pistache::Http::ResponseWriter response);
+
+    void auth_api_default_handler(const Pistache::Rest::Request& request,
+                                  Pistache::Http::ResponseWriter response);
+
+    virtual void obtain_token(const Pistache::Http::Header::Collection& headers,
+                              Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
-
-
-    /// <summary>
-    /// obtain an encoded jwt for access
-    /// </summary>
-    /// <remarks>
-    /// Obtain a JWT token for accessing REST endpoints 
-    /// </remarks>
-    /// <param name="user_name"></param>
-    /// <param name="password"> (optional)</param>
-    /// <param name="auth_type"> (optional)</param>
-    virtual void obtain_token(const Pistache::Http::Header::Collection& headers, Pistache::Http::ResponseWriter &response) = 0;
-
 };
 
 }

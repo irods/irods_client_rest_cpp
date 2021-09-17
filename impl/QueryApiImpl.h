@@ -19,42 +19,45 @@
 #ifndef QUERY_API_IMPL_H_
 #define QUERY_API_IMPL_H_
 
-
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/optional.h>
-#include <memory>
+
 #include "ModelBase.h"
 
 #include <QueryApi.h>
 
 #include "Query_results.h"
+
+#include <memory>
 #include <string>
 
 #include "irods_rest_query_api_implementation.h"
 
-namespace io {
-namespace swagger {
-namespace server {
-namespace api {
+namespace io::swagger::server::api
+{
+    using namespace io::swagger::server::model;
 
-using namespace io::swagger::server::model;
+    class QueryApiImpl
+        : public io::swagger::server::api::QueryApi
+    {
+    public:
+        QueryApiImpl(Pistache::Address addr);
 
-class QueryApiImpl : public io::swagger::server::api::QueryApi {
-public:
-    QueryApiImpl(Pistache::Address addr);
-    ~QueryApiImpl() { };
+        ~QueryApiImpl() {};
 
-    void catalog_query(const Pistache::Http::Header::Collection& headers, const std::string body, const Pistache::Optional<std::string> &queryString, const Pistache::Optional<std::string> &queryType, const Pistache::Optional<std::string> &queryLimit, const Pistache::Optional<std::string> &rowOffset, Pistache::Http::ResponseWriter &response);
-    irods::rest::query irods_query_;
-};
+        void catalog_query(const Pistache::Http::Header::Collection& headers,
+                           const std::string& body,
+                           const Pistache::Optional<std::string>& queryString,
+                           const Pistache::Optional<std::string>& queryType,
+                           const Pistache::Optional<std::string>& queryLimit,
+                           const Pistache::Optional<std::string>& rowOffset,
+                           Pistache::Http::ResponseWriter& response) override;
 
-}
-}
-}
-}
+        irods::rest::query irods_query_;
+    }; // class QueryApiImpl
+} // namespace io::swagger::server::api
 
+#endif // QUERY_API_IMPL_H_
 
-
-#endif
