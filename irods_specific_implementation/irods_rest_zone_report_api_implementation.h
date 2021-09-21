@@ -6,6 +6,8 @@
 #include "zone_report.h"
 #include "irods_at_scope_exit.hpp"
 
+#include "pistache/router.h"
+
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -17,7 +19,7 @@ namespace irods::rest
         zone_report()
             : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -25,8 +27,6 @@ namespace irods::rest
                    Pistache::Http::ResponseWriter& response)
         {
             try {
-                trace("Handling request ...");
-
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
 
                 BytesBuf* bbuf = nullptr;

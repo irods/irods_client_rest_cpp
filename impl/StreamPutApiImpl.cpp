@@ -12,6 +12,8 @@
 
 #include "StreamPutApiImpl.h"
 
+#include "utils.hpp"
+
 namespace io::swagger::server::api
 {
     using namespace io::swagger::server::model;
@@ -25,8 +27,7 @@ namespace io::swagger::server::api
     void StreamPutApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                         Pistache::Http::ResponseWriter& response)
     {
-        auto [code, msg] = irods_stream_put_(request, response);
-        response.send(code, msg);
+        irods::rest::handle_request(irods_stream_put_, request, response);
     }
 } // namespace io::swagger::server::api
 

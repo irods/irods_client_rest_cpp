@@ -6,6 +6,8 @@
 #include "irods_default_paths.hpp"
 #include "query_builder.hpp"
 
+#include "pistache/router.h"
+
 #include <boost/filesystem.hpp>
 #include <fmt/format.h>
 
@@ -23,7 +25,7 @@ namespace irods::rest
     public:
         put_configuration() : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -31,8 +33,6 @@ namespace irods::rest
                    Pistache::Http::ResponseWriter& _response)
         {
             try {
-                trace("Handling request ...");
-
                 auto _configuration = _request.query().get("cfg").get();
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());

@@ -11,6 +11,7 @@
 
 #include "pistache/http.h"
 #include "pistache/optional.h"
+#include "pistache/router.h"
 
 #include <vector>
 #include <iterator>
@@ -30,7 +31,7 @@ namespace irods::rest
         stream()
             : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -38,14 +39,9 @@ namespace irods::rest
                    Pistache::Http::ResponseWriter& _response)
         {
             try {
-                trace("Handling request ...");
-
                 auto _path = _request.query().get("path").get();
                 auto _count = _request.query().get("count").get();
                 auto _offset = _request.query().get("offset");
-
-                info("Input arguments - path=[{}], count=[{}], offset=[{}]",
-                     _path, _count, _offset.getOrElse(""));
 
                 const auto& headers = _request.headers();
                 auto conn = get_connection(headers.getRaw("authorization").value());

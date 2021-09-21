@@ -12,6 +12,8 @@
 
 #include "AccessApiImpl.h"
 
+#include "utils.hpp"
+
 namespace io::swagger::server::api
 {
     using namespace io::swagger::server::model;
@@ -25,8 +27,7 @@ namespace io::swagger::server::api
     void AccessApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                      Pistache::Http::ResponseWriter& response)
     {
-        auto [code, msg] = irods_access_(request, response);
-        response.send(code, msg);
+        irods::rest::handle_request(irods_access_, request, response);
     }
 } // namespace io::swagger::server::api
 

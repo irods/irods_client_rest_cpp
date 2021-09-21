@@ -57,13 +57,10 @@ void ZoneReportApi::handler(const Pistache::Rest::Request& request,
                             Pistache::Http::ResponseWriter response)
 {
     try {
-        spdlog::info("Incoming request from [{}].", request.address().host());
         this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
-        //send a 400 error
         response.send(Pistache::Http::Code::Bad_Request, e.what());
-        return;
     }
 }
 
