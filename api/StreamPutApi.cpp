@@ -44,14 +44,14 @@ void StreamPutApi::shutdown() {
 void StreamPutApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Put(router, base + "/stream", Routes::bind(&StreamPutApi::stream_handler, this));
+    Routes::Put(router, base + "/stream", Routes::bind(&StreamPutApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&StreamPutApi::stream_put_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&StreamPutApi::default_handler, this));
 }
 
-void StreamPutApi::stream_handler(const Pistache::Rest::Request& request,
-                                  Pistache::Http::ResponseWriter response)
+void StreamPutApi::handler(const Pistache::Rest::Request& request,
+                           Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
@@ -71,8 +71,8 @@ void StreamPutApi::stream_handler(const Pistache::Rest::Request& request,
     }
 }
 
-void StreamPutApi::stream_put_api_default_handler(const Pistache::Rest::Request& request,
-                                                  Pistache::Http::ResponseWriter response)
+void StreamPutApi::default_handler(const Pistache::Rest::Request& request,
+                                   Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested StreamPut method does not exist");
 }

@@ -43,9 +43,9 @@ namespace io::swagger::server::api
     public:
         AuthApiImpl(Pistache::Address addr);
 
-        ~AuthApiImpl() {};
+        ~AuthApiImpl() = default;
 
-        void obtain_token(const Pistache::Http::Header::Collection& headers,
+        void handler_impl(const Pistache::Http::Header::Collection& headers,
                           Pistache::Http::ResponseWriter &response) override;
 
         irods::rest::auth irods_auth_;

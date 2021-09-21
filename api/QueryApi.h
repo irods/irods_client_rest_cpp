@@ -47,19 +47,19 @@ namespace io::swagger::server::api
     private:
         void setupRoutes();
 
-        void catalog_query_handler(const Pistache::Rest::Request& request,
-                                   Pistache::Http::ResponseWriter response);
+        void handler(const Pistache::Rest::Request& request,
+                     Pistache::Http::ResponseWriter response);
 
-        void query_api_default_handler(const Pistache::Rest::Request& request,
-                                       Pistache::Http::ResponseWriter response);
+        void default_handler(const Pistache::Rest::Request& request,
+                             Pistache::Http::ResponseWriter response);
 
-        virtual void catalog_query(const Pistache::Http::Header::Collection& headers,
-                                   const std::string& body,
-                                   const Pistache::Optional<std::string>& queryString,
-                                   const Pistache::Optional<std::string>& queryType,
-                                   const Pistache::Optional<std::string>& queryLimit,
-                                   const Pistache::Optional<std::string>& rowOffset,
-                                   Pistache::Http::ResponseWriter& response) = 0;
+        virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
+                                  const std::string& body,
+                                  const Pistache::Optional<std::string>& queryString,
+                                  const Pistache::Optional<std::string>& queryType,
+                                  const Pistache::Optional<std::string>& queryLimit,
+                                  const Pistache::Optional<std::string>& rowOffset,
+                                  Pistache::Http::ResponseWriter& response) = 0;
 
         std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
         Pistache::Rest::Router router;

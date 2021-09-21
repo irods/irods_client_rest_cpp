@@ -44,14 +44,14 @@ void PutConfigurationApi::shutdown() {
 void PutConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Put(router, base + "/put_configuration", Routes::bind(&PutConfigurationApi::put_configuration_api_handler, this));
+    Routes::Put(router, base + "/put_configuration", Routes::bind(&PutConfigurationApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&PutConfigurationApi::default_handler, this));
 }
 
-void PutConfigurationApi::put_configuration_api_handler(const Pistache::Rest::Request& request,
-                                                        Pistache::Http::ResponseWriter response)
+void PutConfigurationApi::handler(const Pistache::Rest::Request& request,
+                                  Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());

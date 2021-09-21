@@ -45,14 +45,14 @@ void QueryApi::shutdown() {
 void QueryApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/query", Routes::bind(&QueryApi::catalog_query_handler, this));
+    Routes::Get(router, base + "/query", Routes::bind(&QueryApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&QueryApi::query_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&QueryApi::default_handler, this));
 }
 
-void QueryApi::catalog_query_handler(const Pistache::Rest::Request& request,
-                                     Pistache::Http::ResponseWriter response)
+void QueryApi::handler(const Pistache::Rest::Request& request,
+                       Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
@@ -71,8 +71,8 @@ void QueryApi::catalog_query_handler(const Pistache::Rest::Request& request,
     }
 }
 
-void QueryApi::query_api_default_handler(const Pistache::Rest::Request& request,
-                                         Pistache::Http::ResponseWriter response)
+void QueryApi::default_handler(const Pistache::Rest::Request& request,
+                               Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested Query method does not exist");
 }

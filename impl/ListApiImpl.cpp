@@ -22,15 +22,15 @@ namespace io::swagger::server::api
     {
     }
 
-    void ListApiImpl::stream(const Pistache::Http::Header::Collection& headers,
-                             const std::string& body,
-                             const Pistache::Optional<std::string>& path,
-                             const Pistache::Optional<std::string>& stat,
-                             const Pistache::Optional<std::string>& permissions,
-                             const Pistache::Optional<std::string>& metadata,
-                             const Pistache::Optional<std::string>& offset,
-                             const Pistache::Optional<std::string>& limit,
-                             Pistache::Http::ResponseWriter& response)
+    void ListApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
+                                   const std::string& body,
+                                   const Pistache::Optional<std::string>& path,
+                                   const Pistache::Optional<std::string>& stat,
+                                   const Pistache::Optional<std::string>& permissions,
+                                   const Pistache::Optional<std::string>& metadata,
+                                   const Pistache::Optional<std::string>& offset,
+                                   const Pistache::Optional<std::string>& limit,
+                                   Pistache::Http::ResponseWriter& response)
     {
         MACRO_IRODS_LIST_API_IMPLEMENTATION
     }
