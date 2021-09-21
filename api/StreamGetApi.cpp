@@ -12,6 +12,8 @@
 
 #include "StreamGetApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -44,7 +46,7 @@ void StreamGetApi::shutdown() {
 void StreamGetApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/stream", Routes::bind(&StreamGetApi::handler, this));
+    Routes::Get(router, irods::rest::base_url + "/stream", Routes::bind(&StreamGetApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&StreamGetApi::default_handler, this));
@@ -55,13 +57,7 @@ void StreamGetApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        // Getting the query params
-        auto path = request.query().get("path");
-        auto offset = request.query().get("offset");
-        auto count = request.query().get("count");
-
-        this->stream(request.headers(), request.body(), path.get(), count.get(), offset, response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error

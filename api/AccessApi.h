@@ -42,8 +42,6 @@ namespace io::swagger::server::api
         void start();
         void shutdown();
 
-        const std::string base = "/irods-rest/1.0.0";
-
     private:
         void setupRoutes();
 
@@ -53,11 +51,7 @@ namespace io::swagger::server::api
         void default_handler(const Pistache::Rest::Request& request,
                              Pistache::Http::ResponseWriter response);
 
-        virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
-                                  const std::string& body,
-                                  const Pistache::Optional<std::string>& logical_path,
-                                  const Pistache::Optional<std::string>& use_count,
-                                  const Pistache::Optional<std::string>& seconds_until_expiration,
+        virtual void handler_impl(const Pistache::Rest::Request& request,
                                   Pistache::Http::ResponseWriter& response) = 0;
 
         std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;

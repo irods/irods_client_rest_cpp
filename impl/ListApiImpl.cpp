@@ -22,17 +22,11 @@ namespace io::swagger::server::api
     {
     }
 
-    void ListApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
-                                   const std::string& body,
-                                   const Pistache::Optional<std::string>& path,
-                                   const Pistache::Optional<std::string>& stat,
-                                   const Pistache::Optional<std::string>& permissions,
-                                   const Pistache::Optional<std::string>& metadata,
-                                   const Pistache::Optional<std::string>& offset,
-                                   const Pistache::Optional<std::string>& limit,
+    void ListApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                    Pistache::Http::ResponseWriter& response)
     {
-        MACRO_IRODS_LIST_API_IMPLEMENTATION
+        auto [code, msg] = irods_list_(request, response);
+        response.send(code, msg);
     }
 } // namespace io::swagger::server::api
 

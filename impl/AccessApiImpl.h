@@ -45,11 +45,7 @@ namespace io::swagger::server::api
 
         ~AccessApiImpl() = default;
 
-        void handler_impl(const Pistache::Http::Header::Collection& headers,
-                          const std::string& body,
-                          const Pistache::Optional<std::string>& path,
-                          const Pistache::Optional<std::string>& use_count,
-                          const Pistache::Optional<std::string>& seconds_until_expiration,
+        void handler_impl(const Pistache::Rest::Request& request,
                           Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::access irods_access_;

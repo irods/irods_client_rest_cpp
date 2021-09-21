@@ -43,10 +43,9 @@ namespace io::swagger::server::api
     public:
         ZoneReportApiImpl(Pistache::Address addr);
 
-        ~ZoneReportApiImpl() {};
+        ~ZoneReportApiImpl() = default;
 
-        void handler_impl(const Pistache::Http::Header::Collection& headers,
-                          const std::string& body,
+        void handler_impl(const Pistache::Rest::Request& request,
                           Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::zone_report irods_zone_report_;
