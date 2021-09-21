@@ -44,14 +44,14 @@ void AdminApi::shutdown() {
 void AdminApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/admin", Routes::bind(&AdminApi::catalog_admin_handler, this));
+    Routes::Post(router, base + "/admin", Routes::bind(&AdminApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&AdminApi::admin_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&AdminApi::default_handler, this));
 }
 
-void AdminApi::catalog_admin_handler(const Pistache::Rest::Request& request,
-                                     Pistache::Http::ResponseWriter response)
+void AdminApi::handler(const Pistache::Rest::Request& request,
+                       Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
@@ -75,8 +75,8 @@ void AdminApi::catalog_admin_handler(const Pistache::Rest::Request& request,
     }
 }
 
-void AdminApi::admin_api_default_handler(const Pistache::Rest::Request& request,
-                                         Pistache::Http::ResponseWriter response)
+void AdminApi::default_handler(const Pistache::Rest::Request& request,
+                               Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested Admin method does not exist");
 }

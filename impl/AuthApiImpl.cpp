@@ -22,7 +22,7 @@ namespace io::swagger::server::api
     {
     }
 
-    void AuthApiImpl::obtain_token(const Pistache::Http::Header::Collection& headers,
+    void AuthApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
                                    Pistache::Http::ResponseWriter &response)
     {
         MACRO_IRODS_AUTH_API_IMPLEMENTATION

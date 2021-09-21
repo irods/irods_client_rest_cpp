@@ -22,17 +22,17 @@ namespace io::swagger::server::api
     {
     }
 
-    void AdminApiImpl::catalog_admin(const Pistache::Http::Header::Collection& headers,
-                       const std::string& body,
-                       const Pistache::Optional<std::string>& action,
-                       const Pistache::Optional<std::string>& target,
-                       const Pistache::Optional<std::string>& arg2,
-                       const Pistache::Optional<std::string>& arg3,
-                       const Pistache::Optional<std::string>& arg4,
-                       const Pistache::Optional<std::string>& arg5,
-                       const Pistache::Optional<std::string>& arg6,
-                       const Pistache::Optional<std::string>& arg7,
-                       Pistache::Http::ResponseWriter& response)
+    void AdminApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
+                                    const std::string& body,
+                                    const Pistache::Optional<std::string>& action,
+                                    const Pistache::Optional<std::string>& target,
+                                    const Pistache::Optional<std::string>& arg2,
+                                    const Pistache::Optional<std::string>& arg3,
+                                    const Pistache::Optional<std::string>& arg4,
+                                    const Pistache::Optional<std::string>& arg5,
+                                    const Pistache::Optional<std::string>& arg6,
+                                    const Pistache::Optional<std::string>& arg7,
+                                    Pistache::Http::ResponseWriter& response)
     {
         MACRO_IRODS_ADMIN_API_IMPLEMENTATION
     }

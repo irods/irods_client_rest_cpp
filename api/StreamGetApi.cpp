@@ -44,14 +44,14 @@ void StreamGetApi::shutdown() {
 void StreamGetApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/stream", Routes::bind(&StreamGetApi::stream_handler, this));
+    Routes::Get(router, base + "/stream", Routes::bind(&StreamGetApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&StreamGetApi::stream_get_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&StreamGetApi::default_handler, this));
 }
 
-void StreamGetApi::stream_handler(const Pistache::Rest::Request& request,
-                                  Pistache::Http::ResponseWriter response)
+void StreamGetApi::handler(const Pistache::Rest::Request& request,
+                           Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
@@ -70,8 +70,8 @@ void StreamGetApi::stream_handler(const Pistache::Rest::Request& request,
     }
 }
 
-void StreamGetApi::stream_get_api_default_handler(const Pistache::Rest::Request& request,
-                                                  Pistache::Http::ResponseWriter response)
+void StreamGetApi::default_handler(const Pistache::Rest::Request& request,
+                                   Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested StreamGet method does not exist");
 }

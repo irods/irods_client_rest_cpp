@@ -43,17 +43,17 @@ namespace io::swagger::server::api
     public:
         ListApiImpl(Pistache::Address addr);
 
-        ~ListApiImpl() {};
+        ~ListApiImpl() = default;
 
-        void stream(const Pistache::Http::Header::Collection& headers,
-                    const std::string& body,
-                    const Pistache::Optional<std::string>& path,
-                    const Pistache::Optional<std::string>& stat,
-                    const Pistache::Optional<std::string>& permissions,
-                    const Pistache::Optional<std::string>& metadata,
-                    const Pistache::Optional<std::string>& offset,
-                    const Pistache::Optional<std::string>& limit,
-                    Pistache::Http::ResponseWriter& response) override;
+        void handler_impl(const Pistache::Http::Header::Collection& headers,
+                          const std::string& body,
+                          const Pistache::Optional<std::string>& path,
+                          const Pistache::Optional<std::string>& stat,
+                          const Pistache::Optional<std::string>& permissions,
+                          const Pistache::Optional<std::string>& metadata,
+                          const Pistache::Optional<std::string>& offset,
+                          const Pistache::Optional<std::string>& limit,
+                          Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::list irods_list_;
     }; // class ListApiImpl

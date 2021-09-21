@@ -44,14 +44,14 @@ void ListApi::shutdown() {
 void ListApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/list", Routes::bind(&ListApi::stream_handler, this));
+    Routes::Get(router, base + "/list", Routes::bind(&ListApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&ListApi::list_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&ListApi::default_handler, this));
 }
 
-void ListApi::stream_handler(const Pistache::Rest::Request& request,
-                             Pistache::Http::ResponseWriter response)
+void ListApi::handler(const Pistache::Rest::Request& request,
+                      Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
@@ -73,8 +73,8 @@ void ListApi::stream_handler(const Pistache::Rest::Request& request,
     }
 }
 
-void ListApi::list_api_default_handler(const Pistache::Rest::Request& request,
-                                       Pistache::Http::ResponseWriter response)
+void ListApi::default_handler(const Pistache::Rest::Request& request,
+                              Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested List method does not exist");
 }

@@ -43,10 +43,10 @@ namespace io::swagger::server::api
     public:
         GetConfigurationApiImpl(Pistache::Address addr);
 
-        ~GetConfigurationApiImpl() {};
+        ~GetConfigurationApiImpl() = default;
 
-        void get_configuration(const Pistache::Http::Header::Collection& headers,
-                               Pistache::Http::ResponseWriter& response) override;
+        void handler_impl(const Pistache::Http::Header::Collection& headers,
+                          Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::get_configuration irods_get_configuration_;
     }; // class GetConfigurationApiImpl

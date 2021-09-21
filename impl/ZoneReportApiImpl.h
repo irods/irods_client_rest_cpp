@@ -45,7 +45,7 @@ namespace io::swagger::server::api
 
         ~ZoneReportApiImpl() {};
 
-        void obtain_token(const Pistache::Http::Header::Collection& headers,
+        void handler_impl(const Pistache::Http::Header::Collection& headers,
                           const std::string& body,
                           Pistache::Http::ResponseWriter& response) override;
 
