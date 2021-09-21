@@ -5,15 +5,19 @@
 #include "rodsClient.h"
 #include "irods_random.hpp"
 #include "rodsErrorTable.h"
+#include "irods_at_scope_exit.hpp"
 
 #include "pistache/http_headers.h"
 #include "pistache/optional.h"
+#include "pistache/router.h"
 
 #include "fmt/format.h"
 #include "json.hpp"
 
 #include <chrono>
 #include <string_view>
+#include <iomanip>
+#include <sstream>
 
 using json = nlohmann::json;
 
@@ -28,27 +32,22 @@ namespace irods::rest
         access()
             : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
         operator()(const Pistache::Rest::Request& _request,
                    Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
-            auto _logical_path = _request.query().get("path").get();
-            auto _use_count = _request.query().get("use_count");
-            auto _seconds_until_expiration = _request.query().get("seconds_until_expiration");
-
-            info("Input arguments - path=[{}], use_count=[{}], seconds_until_expiration=[{}]",
-                 _logical_path, _use_count.getOrElse(""), _seconds_until_expiration.getOrElse(""));
-
             namespace fs = irods::experimental::filesystem;
 
-            auto conn = get_connection(_request.headers().getRaw("authorization").value());
-
             try {
+                auto _logical_path = _request.query().get("path").get();
+                auto _use_count = _request.query().get("use_count");
+                auto _seconds_until_expiration = _request.query().get("seconds_until_expiration");
+
+                auto conn = get_connection(_request.headers().getRaw("authorization").value());
+
                 // TODO: can we ensure this is a canonical path?
                 const std::string logical_path{decode_url(_logical_path)};
                 debug("Logical path = [{}]", logical_path);
@@ -71,8 +70,6 @@ namespace irods::rest
                     })},
                     {"url", fmt::format("{}/stream?path={}&offset=0&count={}", base_url, logical_path, size)}
                 });
-
-                debug("Result = [{}]", results.dump());
 
                 return std::make_tuple(Pistache::Http::Code::Ok, results.dump());
             }

@@ -12,6 +12,8 @@
 
 #include "AuthApiImpl.h"
 
+#include "utils.hpp"
+
 namespace io::swagger::server::api
 {
     using namespace io::swagger::server::model;
@@ -25,8 +27,7 @@ namespace io::swagger::server::api
     void AuthApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                    Pistache::Http::ResponseWriter& response)
     {
-        auto [code, msg] = irods_auth_(request, response);
-        response.send(code, msg);
+        irods::rest::handle_request(irods_auth_, request, response);
     }
 } // namespace io::swagger::server::api
 

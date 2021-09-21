@@ -6,6 +6,8 @@
 #include "generalAdmin.h"
 #include "rodsErrorTable.h"
 
+#include "pistache/router.h"
+
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -17,7 +19,7 @@ namespace irods::rest
         admin()
             : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -25,8 +27,6 @@ namespace irods::rest
                    Pistache::Http::ResponseWriter& _response)
         {
             try {
-                trace("Handling request ...");
-
                 auto _action = _request.query().get("action").get();
                 auto _target = _request.query().get("target").get();
                 auto _arg2   = _request.query().get("arg2").get();
@@ -35,10 +35,6 @@ namespace irods::rest
                 auto _arg5   = _request.query().get("arg5").get();
                 auto _arg6   = _request.query().get("arg6").get();
                 auto _arg7   = _request.query().get("arg7").get();
-
-                info("Input arguments - action=[{}], target=[{}], arg2=[{}], arg3=[{}], "
-                     "arg4=[{}], arg5=[{}], arg6=[{}]",
-                     _action, _target, _arg2, _arg3, _arg4, _arg5, _arg6);
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
 

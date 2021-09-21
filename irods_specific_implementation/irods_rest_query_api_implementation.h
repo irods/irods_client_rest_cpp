@@ -6,6 +6,8 @@
 #include "constants.hpp"
 #include "irods_query.hpp"
 
+#include "pistache/router.h"
+
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -17,7 +19,7 @@ namespace irods::rest
         query()
             : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -25,15 +27,10 @@ namespace irods::rest
                    Pistache::Http::ResponseWriter& _response)
         {
             try {
-                trace("Handling request ...");
-
                 auto _query_string = _request.query().get("query_string").get();
                 auto _query_limit = _request.query().get("query_limit").get();
                 auto _row_offset = _request.query().get("row_offset").get();
                 auto _query_type = _request.query().get("query_type").get();
-
-                info("Input arguments - query_string=[{}], query_limit=[{}], row_offset=[{}], query_type=[{}]",
-                     _query_string, _query_limit, _row_offset, _query_type);
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value(), _query_string);
 
