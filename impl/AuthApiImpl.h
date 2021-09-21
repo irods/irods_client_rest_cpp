@@ -45,8 +45,8 @@ namespace io::swagger::server::api
 
         ~AuthApiImpl() = default;
 
-        void handler_impl(const Pistache::Http::Header::Collection& headers,
-                          Pistache::Http::ResponseWriter &response) override;
+        void handler_impl(const Pistache::Rest::Request& request,
+                          Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::auth irods_auth_;
     }; // class AuthApiImpl

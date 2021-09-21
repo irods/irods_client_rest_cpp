@@ -12,6 +12,8 @@
 
 #include "QueryApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -45,7 +47,7 @@ void QueryApi::shutdown() {
 void QueryApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/query", Routes::bind(&QueryApi::handler, this));
+    Routes::Get(router, irods::rest::base_url + "/query", Routes::bind(&QueryApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&QueryApi::default_handler, this));
@@ -56,13 +58,7 @@ void QueryApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        auto queryString = request.query().get("query_string");
-        auto queryLimit  = request.query().get("query_limit");
-        auto rowOffset   = request.query().get("row_offset");
-        auto queryType   = request.query().get("query_type");
-
-        this->catalog_query(request.headers(), request.body(), queryString, queryType, queryLimit, rowOffset, response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error

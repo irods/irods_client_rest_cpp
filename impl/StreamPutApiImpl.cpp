@@ -22,15 +22,11 @@ namespace io::swagger::server::api
     {
     }
 
-    void StreamPutApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
-                                        const std::string& body,
-                                        const std::string& path,
-                                        const Pistache::Optional<std::string>& offset,
-                                        const Pistache::Optional<std::string>& count,
-                                        const Pistache::Optional<std::string>& truncate,
+    void StreamPutApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                         Pistache::Http::ResponseWriter& response)
     {
-        MACRO_IRODS_STREAM_PUT_API_IMPLEMENTATION
+        auto [code, msg] = irods_stream_put_(request, response);
+        response.send(code, msg);
     }
 } // namespace io::swagger::server::api
 

@@ -43,8 +43,6 @@ public:
     void start();
     void shutdown();
 
-    const std::string base = "/irods-rest/1.0.0";
-
 private:
     void setupRoutes();
 
@@ -54,16 +52,7 @@ private:
     void default_handler(const Pistache::Rest::Request& request,
                          Pistache::Http::ResponseWriter response);
 
-    virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
-                              const std::string& body,
-                              const Pistache::Optional<std::string>& action,
-                              const Pistache::Optional<std::string>& target,
-                              const Pistache::Optional<std::string>& arg2,
-                              const Pistache::Optional<std::string>& arg3,
-                              const Pistache::Optional<std::string>& arg4,
-                              const Pistache::Optional<std::string>& arg5,
-                              const Pistache::Optional<std::string>& arg6,
-                              const Pistache::Optional<std::string>& arg7,
+    virtual void handler_impl(const Pistache::Rest::Request& request,
                               Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;

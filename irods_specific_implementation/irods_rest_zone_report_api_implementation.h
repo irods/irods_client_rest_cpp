@@ -6,13 +6,6 @@
 #include "zone_report.h"
 #include "irods_at_scope_exit.hpp"
 
-// this is contractually tied directly to the pistache implementation, and the below implementation
-#define MACRO_IRODS_ZONE_REPORT_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_zone_report_(headers.getRaw("authorization").value()); \
-    response.send(code, message);
-
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -28,12 +21,13 @@ namespace irods::rest
         }
 
         std::tuple<Pistache::Http::Code, std::string>
-        operator()(const std::string& _auth_header)
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& response)
         {
-            trace("Handling request ...");
-
             try {
-                auto conn = get_connection(_auth_header);
+                trace("Handling request ...");
+
+                auto conn = get_connection(_request.headers().getRaw("authorization").value());
 
                 BytesBuf* bbuf = nullptr;
                 at_scope_exit free_bbuf{[&bbuf] { std::free(bbuf); }};

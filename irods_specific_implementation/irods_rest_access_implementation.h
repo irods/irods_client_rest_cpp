@@ -1,5 +1,6 @@
 #include "irods_rest_api_base.h"
 
+#include "constants.hpp"
 #include "filesystem.hpp"
 #include "rodsClient.h"
 #include "irods_random.hpp"
@@ -9,16 +10,12 @@
 #include "pistache/optional.h"
 
 #include "fmt/format.h"
+#include "json.hpp"
 
 #include <chrono>
 #include <string_view>
 
-// this is contractually tied directly to the swagger api definition, and the below implementation
-#define MACRO_IRODS_ACCESS_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_access_(headers, path.get(), base, use_count, seconds_until_expiration); \
-    response.send(code, message);
+using json = nlohmann::json;
 
 namespace irods::rest
 {
@@ -35,20 +32,21 @@ namespace irods::rest
         }
 
         std::tuple<Pistache::Http::Code, std::string>
-        operator()(const Pistache::Http::Header::Collection& _headers,
-                   const std::string& _logical_path,
-                   const std::string& _base_url,
-                   const Pistache::Optional<std::string>& _use_count,
-                   const Pistache::Optional<std::string>& _seconds_until_expiration)
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
             trace("Handling request ...");
+
+            auto _logical_path = _request.query().get("path").get();
+            auto _use_count = _request.query().get("use_count");
+            auto _seconds_until_expiration = _request.query().get("seconds_until_expiration");
 
             info("Input arguments - path=[{}], use_count=[{}], seconds_until_expiration=[{}]",
                  _logical_path, _use_count.getOrElse(""), _seconds_until_expiration.getOrElse(""));
 
             namespace fs = irods::experimental::filesystem;
 
-            auto conn = get_connection(_headers.getRaw("authorization").value());
+            auto conn = get_connection(_request.headers().getRaw("authorization").value());
 
             try {
                 // TODO: can we ensure this is a canonical path?
@@ -71,7 +69,7 @@ namespace irods::rest
                     {"headers", json::object({
                         {"irods-ticket", json::array({ticket_id})}
                     })},
-                    {"url", fmt::format("{}/stream?path={}&offset=0&count={}", _base_url, logical_path, size)}
+                    {"url", fmt::format("{}/stream?path={}&offset=0&count={}", base_url, logical_path, size)}
                 });
 
                 debug("Result = [{}]", results.dump());

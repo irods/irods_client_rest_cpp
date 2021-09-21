@@ -45,12 +45,7 @@ namespace io::swagger::server::api
 
         ~StreamPutApiImpl() = default;
 
-        void handler_impl(const Pistache::Http::Header::Collection& headers,
-                          const std::string& body,
-                          const std::string& path,
-                          const Pistache::Optional<std::string>& offset,
-                          const Pistache::Optional<std::string>& count,
-                          const Pistache::Optional<std::string>& truncate,
+        void handler_impl(const Pistache::Rest::Request& request,
                           Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::stream irods_stream_put_;

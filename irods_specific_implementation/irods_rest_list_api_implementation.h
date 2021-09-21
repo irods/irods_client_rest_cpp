@@ -3,17 +3,11 @@
 
 #include "irods_rest_api_base.h"
 
+#include "constants.hpp"
 #include "filesystem.hpp"
 #include "rodsErrorTable.h"
 
 #include <fstream>
-
-// this is contractually tied directly to the swagger api definition, and the below implementation
-#define MACRO_IRODS_LIST_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_list_(headers.getRaw("authorization").value(), path.get(), stat.get(), permissions.get(), metadata.get(), offset.get(), limit.get(), base); \
-    response.send(code, message);
 
 namespace irods::rest {
 
@@ -34,23 +28,24 @@ namespace irods::rest {
         }
 
         std::tuple<Pistache::Http::Code, std::string>
-        operator()(const std::string& _auth_header,
-                   const std::string& _logical_path,
-                   const std::string& _stat,
-                   const std::string& _permissions,
-                   const std::string& _metadata,
-                   const std::string& _offset,
-                   const std::string& _limit,
-                   const std::string& _base_url)
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
-            info("Input arguments - path=[{}], stat=[{}], permissions=[{}], metadata=[{}], "
-                 "offset=[{}], limit=[{}]",
-                 _logical_path, _stat, _permissions, _metadata, _offset, _limit);
-
             try {
-                auto conn = get_connection(_auth_header);
+                auto _logical_path = _request.query().get("path").get();
+                auto _stat = _request.query().get("stat").get();
+                auto _permissions = _request.query().get("permissions").get();
+                auto _metadata = _request.query().get("metadata").get();
+                auto _offset = _request.query().get("offset").get();
+                auto _limit = _request.query().get("limit").get();
+
+                trace("Handling request ...");
+
+                info("Input arguments - path=[{}], stat=[{}], permissions=[{}], metadata=[{}], "
+                     "offset=[{}], limit=[{}]",
+                     _logical_path, _stat, _permissions, _metadata, _offset, _limit);
+
+                auto conn = get_connection(_request.headers().getRaw("authorization").value());
 
                 std::string logical_path{decode_url(_logical_path)};
                 intmax_t limit_counter{0};
@@ -121,36 +116,36 @@ namespace irods::rest {
                 results["_embedded"] = objects;
 
                 nlohmann::json links = nlohmann::json::object();
-                const std::string base_url = _base_url + "/list?path={}&stat={}&permissions={}&metadata={}&offset={}&limit={}";
-                links["self"] = fmt::format(base_url
+                const std::string url = base_url + "/list?path={}&stat={}&permissions={}&metadata={}&offset={}&limit={}";
+                links["self"] = fmt::format(url
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , _offset
                                 , _limit);
-                links["first"] = fmt::format(base_url
+                links["first"] = fmt::format(url
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , "0"
                                 , _limit);
-                links["last"] = fmt::format(base_url
+                links["last"] = fmt::format(url
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , "UNSUPPORTED"
                                 , _limit);
-                links["next"] = fmt::format(base_url
+                links["next"] = fmt::format(url
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , std::to_string(offset+limit)
                                 , _limit);
-                links["prev"] = fmt::format(base_url
+                links["prev"] = fmt::format(url
                                 , _logical_path
                                 , _stat
                                 , _permissions
