@@ -7,6 +7,8 @@
 #include "filesystem.hpp"
 #include "rodsErrorTable.h"
 
+#include "pistache/router.h"
+
 #include <fstream>
 
 namespace irods::rest {
@@ -24,7 +26,7 @@ namespace irods::rest {
         list()
             : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
@@ -38,12 +40,6 @@ namespace irods::rest {
                 auto _metadata = _request.query().get("metadata").get();
                 auto _offset = _request.query().get("offset").get();
                 auto _limit = _request.query().get("limit").get();
-
-                trace("Handling request ...");
-
-                info("Input arguments - path=[{}], stat=[{}], permissions=[{}], metadata=[{}], "
-                     "offset=[{}], limit=[{}]",
-                     _logical_path, _stat, _permissions, _metadata, _offset, _limit);
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
 

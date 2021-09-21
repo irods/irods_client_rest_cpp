@@ -3,6 +3,8 @@
 
 #include "irods_rest_api_base.h"
 
+#include "pistache/router.h"
+
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -13,19 +15,15 @@ namespace irods::rest
     public:
         auth() : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
         operator()(const Pistache::Rest::Request& _request,
                    Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
-            std::string user_name, password, auth_type;
-
             try {
-                std::tie(user_name, password, auth_type) = decode(_request.headers().getRaw("authorization").value());
+                auto [user_name, password, auth_type] = decode(_request.headers().getRaw("authorization").value());
 
                 authenticate(user_name, password, auth_type);
 
@@ -49,7 +47,7 @@ namespace irods::rest
                 return std::make_tuple(Pistache::Http::Code::Ok, token);
             }
             catch (const irods::exception& e) {
-                error("Caught exception - [error_code={}] {}", e.code(), e.what());
+                error("Caught exception - [error_code={}] {}", e.code(), e.client_display_what());
                 return make_error_response(e.code(), e.what());
             }
             catch (const std::exception& e) {

@@ -57,7 +57,6 @@ void AccessApi::handler(const Pistache::Rest::Request& request,
                         Pistache::Http::ResponseWriter response)
 {
     try {
-        spdlog::info("Incoming request from [{}].", request.address().host());
         this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
