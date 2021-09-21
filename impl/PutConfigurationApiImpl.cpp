@@ -22,9 +22,9 @@ namespace io::swagger::server::api
     {
     }
 
-    void PutConfigurationApiImpl::put_configuration(const Pistache::Http::Header::Collection& headers,
-                                                    const Pistache::Optional<std::string>& cfg,
-                                                    Pistache::Http::ResponseWriter& response)
+    void PutConfigurationApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
+                                               const Pistache::Optional<std::string>& cfg,
+                                               Pistache::Http::ResponseWriter& response)
     {
         MACRO_IRODS_CONFIGURATION_PUT_API_IMPLEMENTATION
     }

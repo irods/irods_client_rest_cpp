@@ -22,12 +22,12 @@ namespace io::swagger::server::api
     {
     }
 
-    void AccessApiImpl::access(const Pistache::Http::Header::Collection& headers,
-                               const std::string& body,
-                               const Pistache::Optional<std::string>& path,
-                               const Pistache::Optional<std::string>& use_count,
-                               const Pistache::Optional<std::string>& seconds_until_expiration,
-                               Pistache::Http::ResponseWriter& response)
+    void AccessApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
+                                     const std::string& body,
+                                     const Pistache::Optional<std::string>& path,
+                                     const Pistache::Optional<std::string>& use_count,
+                                     const Pistache::Optional<std::string>& seconds_until_expiration,
+                                     Pistache::Http::ResponseWriter& response)
     {
         MACRO_IRODS_ACCESS_API_IMPLEMENTATION
     }

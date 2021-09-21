@@ -44,14 +44,14 @@ void GetConfigurationApi::shutdown() {
 void GetConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/get_configuration", Routes::bind(&GetConfigurationApi::get_configuration_handler, this));
+    Routes::Get(router, base + "/get_configuration", Routes::bind(&GetConfigurationApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&GetConfigurationApi::get_configuration_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&GetConfigurationApi::default_handler, this));
 }
 
-void GetConfigurationApi::get_configuration_handler(const Pistache::Rest::Request& request,
-                                                    Pistache::Http::ResponseWriter response)
+void GetConfigurationApi::handler(const Pistache::Rest::Request& request,
+                                  Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
@@ -65,8 +65,8 @@ void GetConfigurationApi::get_configuration_handler(const Pistache::Rest::Reques
     }
 }
 
-void GetConfigurationApi::get_configuration_api_default_handler(const Pistache::Rest::Request& request,
-                                                                Pistache::Http::ResponseWriter response)
+void GetConfigurationApi::default_handler(const Pistache::Rest::Request& request,
+                                          Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested get_configuration method does not exist");
 }

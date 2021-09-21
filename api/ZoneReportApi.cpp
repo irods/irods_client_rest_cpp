@@ -45,19 +45,19 @@ void ZoneReportApi::shutdown() {
 void ZoneReportApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/zone_report", Routes::bind(&ZoneReportApi::obtain_token_handler, this));
+    Routes::Post(router, base + "/zone_report", Routes::bind(&ZoneReportApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&ZoneReportApi::zone_report_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&ZoneReportApi::default_handler, this));
 }
 
-void ZoneReportApi::obtain_token_handler(const Pistache::Rest::Request& request,
-                                         Pistache::Http::ResponseWriter response)
+void ZoneReportApi::handler(const Pistache::Rest::Request& request,
+                            Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
 
-        this->obtain_token(request.headers(), request.body(), response);
+        this->handler_impl(request.headers(), request.body(), response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error
@@ -66,8 +66,8 @@ void ZoneReportApi::obtain_token_handler(const Pistache::Rest::Request& request,
     }
 }
 
-void ZoneReportApi::zone_report_api_default_handler(const Pistache::Rest::Request& request,
-                                                    Pistache::Http::ResponseWriter response)
+void ZoneReportApi::default_handler(const Pistache::Rest::Request& request,
+                                    Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested zone_report method does not exist");
 }

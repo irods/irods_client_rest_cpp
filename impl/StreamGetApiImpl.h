@@ -43,14 +43,14 @@ namespace io::swagger::server::api
     public:
         StreamGetApiImpl(Pistache::Address addr);
 
-        ~StreamGetApiImpl() {};
+        ~StreamGetApiImpl() = default;
 
-        void stream(const Pistache::Http::Header::Collection& headers,
-                    const std::string& body,
-                    const std::string& path,
-                    const std::string& count,
-                    const Pistache::Optional<std::string>& offset,
-                    Pistache::Http::ResponseWriter& response) override;
+        void handler_impl(const Pistache::Http::Header::Collection& headers,
+                          const std::string& body,
+                          const std::string& path,
+                          const std::string& count,
+                          const Pistache::Optional<std::string>& offset,
+                          Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::stream irods_stream_get_;
     }; // class StreamGetApiImpl

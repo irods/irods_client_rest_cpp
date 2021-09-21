@@ -22,7 +22,7 @@ namespace io::swagger::server::api
     {
     }
 
-    void ZoneReportApiImpl::obtain_token(const Pistache::Http::Header::Collection& headers,
+    void ZoneReportApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
                                          const std::string& body,
                                          Pistache::Http::ResponseWriter& response)
     {

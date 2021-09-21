@@ -43,11 +43,11 @@ namespace io::swagger::server::api
     public:
         PutConfigurationApiImpl(Pistache::Address addr);
 
-        ~PutConfigurationApiImpl() {};
+        ~PutConfigurationApiImpl() = default;
 
-        void put_configuration(const Pistache::Http::Header::Collection& headers,
-                               const Pistache::Optional<std::string>& cfg,
-                               Pistache::Http::ResponseWriter& response) override;
+        void handler_impl(const Pistache::Http::Header::Collection& headers,
+                          const Pistache::Optional<std::string>& cfg,
+                          Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::put_configuration irods_put_configuration_;
     }; // class PutConfigurationApiImpl

@@ -49,18 +49,18 @@ public:
 private:
     void setupRoutes();
 
-    void stream_handler(const Pistache::Rest::Request& request,
-                        Pistache::Http::ResponseWriter response);
+    void handler(const Pistache::Rest::Request& request,
+                 Pistache::Http::ResponseWriter response);
 
-    void stream_get_api_default_handler(const Pistache::Rest::Request& request,
-                                        Pistache::Http::ResponseWriter response);
+    void default_handler(const Pistache::Rest::Request& request,
+                         Pistache::Http::ResponseWriter response);
 
-    virtual void stream(const Pistache::Http::Header::Collection& headers,
-                        const std::string& body,
-                        const std::string& path,
-                        const std::string& count,
-                        const Pistache::Optional<std::string>& offset,
-                        Pistache::Http::ResponseWriter& response) = 0;
+    virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
+                              const std::string& body,
+                              const std::string& path,
+                              const std::string& count,
+                              const Pistache::Optional<std::string>& offset,
+                              Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;
