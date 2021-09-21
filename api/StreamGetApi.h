@@ -24,6 +24,7 @@
 #include <pistache/router.h>
 #include <pistache/http_headers.h>
 #include <pistache/optional.h>
+
 #include "ModelBase.h"
 
 #include <string>
@@ -44,8 +45,6 @@ public:
     void start();
     void shutdown();
 
-    const std::string base = "/irods-rest/1.0.0";
-
 private:
     void setupRoutes();
 
@@ -55,11 +54,7 @@ private:
     void default_handler(const Pistache::Rest::Request& request,
                          Pistache::Http::ResponseWriter response);
 
-    virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
-                              const std::string& body,
-                              const std::string& path,
-                              const std::string& count,
-                              const Pistache::Optional<std::string>& offset,
+    virtual void handler_impl(const Pistache::Rest::Request& request,
                               Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;

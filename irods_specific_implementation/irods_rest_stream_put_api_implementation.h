@@ -15,13 +15,6 @@
 
 #include <algorithm>
 
-// this is contractually tied directly to the swagger api definition, and the below implementation
-#define MACRO_IRODS_STREAM_PUT_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_stream_put_(headers, body, path, offset, count, truncate); \
-    response.send(code, message);
-
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -41,26 +34,29 @@ namespace irods::rest
         }
 
         std::tuple<Pistache::Http::Code, std::string>
-        operator()(const Pistache::Http::Header::Collection& _headers,
-                   const std::string& _body,
-                   const std::string& _path,
-                   const Pistache::Optional<std::string>& _offset,
-                   const Pistache::Optional<std::string>& _count,
-                   const Pistache::Optional<std::string>& _truncate)
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
-            info("Input arguments - path=[{}], count=[{}], offset=[{}], truncate=[{}]",
-                 _path, _count.getOrElse(""), _offset.getOrElse(""), _truncate.getOrElse(""));
-
-            auto conn = get_connection(_headers.getRaw("authorization").value());
-
-            if (const auto ec = set_session_ticket_if_available(_headers, conn); ec != 0) {
-                error("Encountered error [{}] while handling session ticket.", ec);
-                return make_error_response(ec, "Failed to initialize session with ticket");
-            }
-
             try {
+                trace("Handling request ...");
+
+                auto _body = _request.body();
+                auto _path = _request.query().get("path").get();
+                auto _offset = _request.query().get("offset");
+                auto _count = _request.query().get("count");
+                auto _truncate = _request.query().get("truncate");
+
+                info("Input arguments - path=[{}], count=[{}], offset=[{}], truncate=[{}]",
+                     _path, _count.getOrElse(""), _offset.getOrElse(""), _truncate.getOrElse(""));
+
+                const auto& headers = _request.headers();
+                auto conn = get_connection(headers.getRaw("authorization").value());
+
+                if (const auto ec = set_session_ticket_if_available(headers, conn); ec != 0) {
+                    error("Encountered error [{}] while handling session ticket.", ec);
+                    return make_error_response(ec, "Failed to initialize session with ticket");
+                }
+
                 io::client::native_transport xport(*conn());
                 io::odstream ds;
                 const auto decoded_path = open_replica(_path, _truncate, xport, ds);

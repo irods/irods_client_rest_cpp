@@ -12,6 +12,8 @@
 
 #include "AdminApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -44,7 +46,7 @@ void AdminApi::shutdown() {
 void AdminApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/admin", Routes::bind(&AdminApi::handler, this));
+    Routes::Post(router, irods::rest::base_url + "/admin", Routes::bind(&AdminApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&AdminApi::default_handler, this));
@@ -55,18 +57,7 @@ void AdminApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        // Getting the admin params
-        auto action = request.query().get("action");
-        auto target = request.query().get("target");
-        auto arg2   = request.query().get("arg2");
-        auto arg3   = request.query().get("arg3");
-        auto arg4   = request.query().get("arg4");
-        auto arg5   = request.query().get("arg5");
-        auto arg6   = request.query().get("arg6");
-        auto arg7   = request.query().get("arg7");
-
-        this->catalog_admin(request.headers(), request.body(), action, target, arg2, arg3, arg4, arg5, arg6, arg7, response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error

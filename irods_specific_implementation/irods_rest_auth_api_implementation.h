@@ -3,13 +3,6 @@
 
 #include "irods_rest_api_base.h"
 
-// this is contractually tied directly to the swagger api definition, and the below implementation
-#define MACRO_IRODS_AUTH_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_auth_(headers.getRaw("authorization").value()); \
-    response.send(code, message);
-
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -17,8 +10,55 @@ namespace irods::rest
 
     class auth : public api_base
     {
-        using json = nlohmann::json;
+    public:
+        auth() : api_base{service_name}
+        {
+            trace("Endpoint initialized.");
+        }
 
+        std::tuple<Pistache::Http::Code, std::string>
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
+        {
+            trace("Handling request ...");
+
+            std::string user_name, password, auth_type;
+
+            try {
+                std::tie(user_name, password, auth_type) = decode(_request.headers().getRaw("authorization").value());
+
+                authenticate(user_name, password, auth_type);
+
+                // use the zone key as our secret
+                const auto zone_key = irods::get_server_property<std::string>(irods::CFG_ZONE_KEY_KW);
+                debug("zone_key = [{}]", zone_key);
+
+                trace("Generating JWT for user [{}] ...", user_name);
+                auto token = jwt::create()
+                    .set_type("JWS")
+                    .set_issuer(keyword::issue_claim)
+                    .set_subject(keyword::subject_claim)
+                    .set_audience(keyword::audience_claim)
+                    .set_not_before(std::chrono::system_clock::now())
+                    .set_issued_at(std::chrono::system_clock::now())
+                    // TODO: consider how to handle token revocation, token refresh
+                    //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
+                    .set_payload_claim(keyword::user_name, jwt::claim(user_name))
+                    .sign(jwt::algorithm::hs256{zone_key});
+
+                return std::make_tuple(Pistache::Http::Code::Ok, token);
+            }
+            catch (const irods::exception& e) {
+                error("Caught exception - [error_code={}] {}", e.code(), e.what());
+                return make_error_response(e.code(), e.what());
+            }
+            catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
+            }
+        } // operator()
+
+    private:
         void throw_for_invalid_header(const std::string _h)
         {
             THROW(SYS_INVALID_INPUT_PARAM, fmt::format("invalid Authorization Header {}", _h));
@@ -105,52 +145,6 @@ namespace irods::rest
 
             return std::make_tuple(user_name, password, auth_type);
         } // decode
-
-    public:
-        auth() : api_base{service_name}
-        {
-            trace("Endpoint initialized.");
-        }
-
-        std::tuple<Pistache::Http::Code, std::string> operator()(const std::string& _header)
-        {
-            trace("Handling request ...");
-
-            std::string user_name, password, auth_type;
-
-            try {
-                std::tie(user_name, password, auth_type) = decode(_header);
-
-                authenticate(user_name, password, auth_type);
-
-                // use the zone key as our secret
-                const auto zone_key = irods::get_server_property<std::string>(irods::CFG_ZONE_KEY_KW);
-                debug("zone_key = [{}]", zone_key);
-
-                trace("Generating JWT for user [{}] ...", user_name);
-                auto token = jwt::create()
-                    .set_type("JWS")
-                    .set_issuer(keyword::issue_claim)
-                    .set_subject(keyword::subject_claim)
-                    .set_audience(keyword::audience_claim)
-                    .set_not_before(std::chrono::system_clock::now())
-                    .set_issued_at(std::chrono::system_clock::now())
-                    // TODO: consider how to handle token revocation, token refresh
-                    //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
-                    .set_payload_claim(keyword::user_name, jwt::claim(user_name))
-                    .sign(jwt::algorithm::hs256{zone_key});
-
-                return std::make_tuple(Pistache::Http::Code::Ok, token);
-            }
-            catch (const irods::exception& e) {
-                error("Caught exception - [error_code={}] {}", e.code(), e.what());
-                return make_error_response(e.code(), e.what());
-            }
-            catch (const std::exception& e) {
-                error("Caught exception - {}", e.what());
-                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
-            }
-        } // operator()
     }; // class auth
 } // namespace irods::rest
 

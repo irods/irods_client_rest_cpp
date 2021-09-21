@@ -12,6 +12,8 @@
 
 #include "PutConfigurationApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -44,7 +46,7 @@ void PutConfigurationApi::shutdown() {
 void PutConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Put(router, base + "/put_configuration", Routes::bind(&PutConfigurationApi::handler, this));
+    Routes::Put(router, irods::rest::base_url + "/put_configuration", Routes::bind(&PutConfigurationApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&PutConfigurationApi::default_handler, this));
@@ -55,11 +57,7 @@ void PutConfigurationApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        // The macro expects these variables to be in scope
-        auto cfg = request.query().get("cfg");
-
-        this->put_configuration(request.headers(), cfg, response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error

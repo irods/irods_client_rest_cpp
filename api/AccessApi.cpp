@@ -12,6 +12,8 @@
 
 #include "AccessApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -45,7 +47,7 @@ void AccessApi::shutdown() {
 void AccessApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/access", Routes::bind(&AccessApi::handler, this));
+    Routes::Post(router, irods::rest::base_url + "/access", Routes::bind(&AccessApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&AccessApi::default_handler, this));
@@ -56,18 +58,10 @@ void AccessApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        // Getting the query params
-        auto path = request.query().get("path");
-        auto use_count = request.query().get("use_count");
-        auto seconds_until_expiration = request.query().get("seconds_until_expiration");
-
-        this->access(request.headers(), request.body(), path, use_count, seconds_until_expiration, response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
-        //send a 400 error
         response.send(Pistache::Http::Code::Bad_Request, e.what());
-        return;
     }
 }
 

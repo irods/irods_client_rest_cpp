@@ -11,11 +11,6 @@
 
 #include <fstream>
 
-// this is contractually tied directly to the pistache implementation, and the below implementation
-#define MACRO_IRODS_CONFIGURATION_PUT_API_IMPLEMENTATION \
-    auto [code, message] = irods_put_configuration_(headers.getRaw("authorization").value(), cfg.get()); \
-    response.send(code, message);
-
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -31,14 +26,16 @@ namespace irods::rest
             trace("Endpoint initialized.");
         }
 
-        auto operator()(const std::string& _auth_header, const std::string& _configuration)
-            -> std::tuple<Pistache::Http::Code, std::string>
+        std::tuple<Pistache::Http::Code, std::string>
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
             try {
-                auto conn = get_connection(_auth_header);
+                trace("Handling request ...");
 
+                auto _configuration = _request.query().get("cfg").get();
+
+                auto conn = get_connection(_request.headers().getRaw("authorization").value());
                 throw_if_user_is_not_rodsadmin(conn);
 
                 const auto dir = get_irods_config_directory();

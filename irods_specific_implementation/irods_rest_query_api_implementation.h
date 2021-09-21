@@ -3,14 +3,8 @@
 
 #include "irods_rest_api_base.h"
 
+#include "constants.hpp"
 #include "irods_query.hpp"
-
-// this is contractually tied directly to the swagger api definition, and the below implementation
-#define MACRO_IRODS_QUERY_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_query_(headers.getRaw("authorization").value(), queryString.get(), queryLimit.get(), rowOffset.get(), queryType.get(), base); \
-    response.send(code, message);
 
 namespace irods::rest
 {
@@ -27,20 +21,21 @@ namespace irods::rest
         }
 
         std::tuple<Pistache::Http::Code, std::string>
-        operator()(const std::string& _auth_header,
-                   const std::string& _query_string,
-                   const std::string& _query_limit,
-                   const std::string& _row_offset,
-                   const std::string& _query_type,
-                   const std::string& _base_url)
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
-            info("Input arguments - query_string=[{}], query_limit=[{}], row_offset=[{}], query_type=[{}]",
-                 _query_string, _query_limit, _row_offset, _query_type);
-
             try {
-                auto conn = get_connection(_auth_header, _query_string);
+                trace("Handling request ...");
+
+                auto _query_string = _request.query().get("query_string").get();
+                auto _query_limit = _request.query().get("query_limit").get();
+                auto _row_offset = _request.query().get("row_offset").get();
+                auto _query_type = _request.query().get("query_type").get();
+
+                info("Input arguments - query_string=[{}], query_limit=[{}], row_offset=[{}], query_type=[{}]",
+                     _query_string, _query_limit, _row_offset, _query_type);
+
+                auto conn = get_connection(_request.headers().getRaw("authorization").value(), _query_string);
 
                 std::string query_string{decode_url(_query_string)};
 
@@ -75,10 +70,10 @@ namespace irods::rest
                 double dbl_query_limit = static_cast<double>(query_limit);
                 double dbl_total_row_count = static_cast<double>(total_row_count);
                 nlohmann::json links = nlohmann::json::object();
-                std::string base_url{_base_url + "query?query_string={}&query_limit={}&row_offset={}&query_type={}"};
-                links["self"] = fmt::format(base_url, query_string, _query_limit, _row_offset, _query_type);
+                std::string url{base_url + "query?query_string={}&query_limit={}&row_offset={}&query_type={}"};
+                links["self"] = fmt::format(url, query_string, _query_limit, _row_offset, _query_type);
 
-                links["first"] = fmt::format(base_url, query_string, _query_limit, "0", _query_type);
+                links["first"] = fmt::format(url, query_string, _query_limit, "0", _query_type);
 
                 double total_pages = dbl_total_row_count / dbl_query_limit;
                 double fraction_remaining_pages = (total_pages - std::trunc(total_pages));
@@ -86,7 +81,7 @@ namespace irods::rest
                 double final_page_delta{remaining_rows == 0.0 ? dbl_query_limit : remaining_rows};
                 double last_page_number{dbl_total_row_count - final_page_delta};
 
-                links["last"] = fmt::format(base_url
+                links["last"] = fmt::format(url
                                 , query_string
                                 , _query_limit
                                 , std::to_string(static_cast<int>(last_page_number))
@@ -96,14 +91,14 @@ namespace irods::rest
                 double next_page_number{std::trunc(current_page_number) + 1 * dbl_query_limit};
                 next_page_number = (next_page_number >= dbl_total_row_count) ? last_page_number : next_page_number;
 
-                links["next"] = fmt::format(base_url
+                links["next"] = fmt::format(url
                                 , query_string
                                 , _query_limit
                                 , std::to_string(static_cast<int>(next_page_number))
                                 , _query_type);
 
                 auto prev_count = dbl_row_offset - dbl_query_limit;
-                links["prev"] = fmt::format(base_url
+                links["prev"] = fmt::format(url
                                 , query_string
                                 , _query_limit
                                 , std::to_string(static_cast<int>(std::max(0.0, prev_count)))

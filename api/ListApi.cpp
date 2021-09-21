@@ -12,6 +12,8 @@
 
 #include "ListApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -44,7 +46,7 @@ void ListApi::shutdown() {
 void ListApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/list", Routes::bind(&ListApi::handler, this));
+    Routes::Get(router, irods::rest::base_url + "/list", Routes::bind(&ListApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&ListApi::default_handler, this));
@@ -55,16 +57,7 @@ void ListApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        // Getting the query params
-        auto path = request.query().get("path");
-        auto stat = request.query().get("stat");
-        auto permissions = request.query().get("permissions");
-        auto metadata = request.query().get("metadata");
-        auto offset = request.query().get("offset");
-        auto limit = request.query().get("limit");
-
-        this->stream(request.headers(), request.body(), path, stat, permissions, metadata, offset, limit, response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error

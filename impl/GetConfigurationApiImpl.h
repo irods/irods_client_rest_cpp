@@ -45,7 +45,7 @@ namespace io::swagger::server::api
 
         ~GetConfigurationApiImpl() = default;
 
-        void handler_impl(const Pistache::Http::Header::Collection& headers,
+        void handler_impl(const Pistache::Rest::Request& request,
                           Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::get_configuration irods_get_configuration_;

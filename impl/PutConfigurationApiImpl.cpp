@@ -22,11 +22,11 @@ namespace io::swagger::server::api
     {
     }
 
-    void PutConfigurationApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
-                                               const Pistache::Optional<std::string>& cfg,
+    void PutConfigurationApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                                Pistache::Http::ResponseWriter& response)
     {
-        MACRO_IRODS_CONFIGURATION_PUT_API_IMPLEMENTATION
+        auto [code, msg] = irods_put_configuration_(request, response);
+        response.send(code, msg);
     }
 } // namespace io::swagger::server::api
 

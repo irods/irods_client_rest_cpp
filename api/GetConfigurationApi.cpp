@@ -12,6 +12,8 @@
 
 #include "GetConfigurationApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -44,7 +46,7 @@ void GetConfigurationApi::shutdown() {
 void GetConfigurationApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Get(router, base + "/get_configuration", Routes::bind(&GetConfigurationApi::handler, this));
+    Routes::Get(router, irods::rest::base_url + "/get_configuration", Routes::bind(&GetConfigurationApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&GetConfigurationApi::default_handler, this));
@@ -55,8 +57,7 @@ void GetConfigurationApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        this->get_configuration(request.headers(), response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error
