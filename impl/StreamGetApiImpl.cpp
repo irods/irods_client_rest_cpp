@@ -22,12 +22,12 @@ namespace io::swagger::server::api
     {
     }
 
-    void StreamGetApiImpl::stream(const Pistache::Http::Header::Collection& headers,
-                                  const std::string& body,
-                                  const std::string& path,
-                                  const std::string& count,
-                                  const Pistache::Optional<std::string>& offset,
-                                  Pistache::Http::ResponseWriter& response)
+    void StreamGetApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
+                                        const std::string& body,
+                                        const std::string& path,
+                                        const std::string& count,
+                                        const Pistache::Optional<std::string>& offset,
+                                        Pistache::Http::ResponseWriter& response)
     {
         MACRO_IRODS_STREAM_GET_API_IMPLEMENTATION
     }

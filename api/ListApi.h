@@ -49,21 +49,21 @@ public:
 private:
     void setupRoutes();
 
-    void stream_handler(const Pistache::Rest::Request& request,
-                        Pistache::Http::ResponseWriter response);
+    void handler(const Pistache::Rest::Request& request,
+                 Pistache::Http::ResponseWriter response);
 
-    void list_api_default_handler(const Pistache::Rest::Request& request,
-                                  Pistache::Http::ResponseWriter response);
+    void default_handler(const Pistache::Rest::Request& request,
+                         Pistache::Http::ResponseWriter response);
 
-    virtual void stream(const Pistache::Http::Header::Collection& headers,
-                        const std::string& body,
-                        const Pistache::Optional<std::string>& path,
-                        const Pistache::Optional<std::string>& stat,
-                        const Pistache::Optional<std::string>& permissions,
-                        const Pistache::Optional<std::string>& metadata,
-                        const Pistache::Optional<std::string>& offset,
-                        const Pistache::Optional<std::string>& limit,
-                        Pistache::Http::ResponseWriter& response) = 0;
+    virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
+                              const std::string& body,
+                              const Pistache::Optional<std::string>& path,
+                              const Pistache::Optional<std::string>& stat,
+                              const Pistache::Optional<std::string>& permissions,
+                              const Pistache::Optional<std::string>& metadata,
+                              const Pistache::Optional<std::string>& offset,
+                              const Pistache::Optional<std::string>& limit,
+                              Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;

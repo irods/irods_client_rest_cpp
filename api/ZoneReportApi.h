@@ -49,13 +49,13 @@ public:
 private:
     void setupRoutes();
 
-    void obtain_token_handler(const Pistache::Rest::Request& request,
-                              Pistache::Http::ResponseWriter response);
+    void handler(const Pistache::Rest::Request& request,
+                 Pistache::Http::ResponseWriter response);
 
-    void zone_report_api_default_handler(const Pistache::Rest::Request& request,
-                                         Pistache::Http::ResponseWriter response);
+    void default_handler(const Pistache::Rest::Request& request,
+                         Pistache::Http::ResponseWriter response);
 
-    virtual void obtain_token(const Pistache::Http::Header::Collection& headers,
+    virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
                               const std::string& body,
                               Pistache::Http::ResponseWriter& response) = 0;
 

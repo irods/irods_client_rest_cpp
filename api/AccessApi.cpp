@@ -45,14 +45,14 @@ void AccessApi::shutdown() {
 void AccessApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/access", Routes::bind(&AccessApi::access_handler, this));
+    Routes::Post(router, base + "/access", Routes::bind(&AccessApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&AccessApi::access_api_default_handler, this));
+    router.addCustomHandler(Routes::bind(&AccessApi::default_handler, this));
 }
 
-void AccessApi::access_handler(const Pistache::Rest::Request& request,
-                               Pistache::Http::ResponseWriter response)
+void AccessApi::handler(const Pistache::Rest::Request& request,
+                        Pistache::Http::ResponseWriter response)
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
@@ -71,8 +71,8 @@ void AccessApi::access_handler(const Pistache::Rest::Request& request,
     }
 }
 
-void AccessApi::access_api_default_handler(const Pistache::Rest::Request& request,
-                                           Pistache::Http::ResponseWriter response)
+void AccessApi::default_handler(const Pistache::Rest::Request& request,
+                                Pistache::Http::ResponseWriter response)
 {
     response.send(Pistache::Http::Code::Not_Found, "The requested Access method does not exist");
 }

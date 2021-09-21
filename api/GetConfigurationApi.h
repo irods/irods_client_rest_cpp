@@ -49,14 +49,14 @@ public:
 private:
     void setupRoutes();
 
-    void get_configuration_handler(const Pistache::Rest::Request& request,
-                                   Pistache::Http::ResponseWriter response);
+    void handler(const Pistache::Rest::Request& request,
+                 Pistache::Http::ResponseWriter response);
 
-    void get_configuration_api_default_handler(const Pistache::Rest::Request& request,
-                                               Pistache::Http::ResponseWriter response);
+    void default_handler(const Pistache::Rest::Request& request,
+                         Pistache::Http::ResponseWriter response);
 
-    virtual void get_configuration(const Pistache::Http::Header::Collection& headers,
-                                   Pistache::Http::ResponseWriter& response) = 0;
+    virtual void handler_impl(const Pistache::Http::Header::Collection& headers,
+                              Pistache::Http::ResponseWriter& response) = 0;
 
     std::shared_ptr<Pistache::Http::Endpoint> httpEndpoint;
     Pistache::Rest::Router router;

@@ -22,8 +22,8 @@ namespace io::swagger::server::api
     {
     }
 
-    void GetConfigurationApiImpl::get_configuration(const Pistache::Http::Header::Collection& headers,
-                                                    Pistache::Http::ResponseWriter &response)
+    void GetConfigurationApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
+                                               Pistache::Http::ResponseWriter& response)
     {
         MACRO_IRODS_CONFIGURATION_GET_API_IMPLEMENTATION
     }
