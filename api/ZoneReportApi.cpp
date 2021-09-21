@@ -12,6 +12,8 @@
 
 #include "ZoneReportApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -45,7 +47,7 @@ void ZoneReportApi::shutdown() {
 void ZoneReportApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/zone_report", Routes::bind(&ZoneReportApi::handler, this));
+    Routes::Post(router, irods::rest::base_url + "/zone_report", Routes::bind(&ZoneReportApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&ZoneReportApi::default_handler, this));
@@ -56,8 +58,7 @@ void ZoneReportApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        this->handler_impl(request.headers(), request.body(), response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error

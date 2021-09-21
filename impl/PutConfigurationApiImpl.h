@@ -45,8 +45,7 @@ namespace io::swagger::server::api
 
         ~PutConfigurationApiImpl() = default;
 
-        void handler_impl(const Pistache::Http::Header::Collection& headers,
-                          const Pistache::Optional<std::string>& cfg,
+        void handler_impl(const Pistache::Rest::Request& request,
                           Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::put_configuration irods_put_configuration_;

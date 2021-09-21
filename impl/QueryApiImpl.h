@@ -47,12 +47,7 @@ namespace io::swagger::server::api
 
         ~QueryApiImpl() = default;
 
-        void handler_impl(const Pistache::Http::Header::Collection& headers,
-                          const std::string& body,
-                          const Pistache::Optional<std::string>& queryString,
-                          const Pistache::Optional<std::string>& queryType,
-                          const Pistache::Optional<std::string>& queryLimit,
-                          const Pistache::Optional<std::string>& rowOffset,
+        void handler_impl(const Pistache::Rest::Request& request,
                           Pistache::Http::ResponseWriter& response) override;
 
         irods::rest::query irods_query_;

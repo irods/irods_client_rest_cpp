@@ -12,6 +12,8 @@
 
 #include "AuthApi.h"
 
+#include "constants.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace io {
@@ -44,7 +46,7 @@ void AuthApi::shutdown() {
 void AuthApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, base + "/auth", Routes::bind(&AuthApi::handler, this));
+    Routes::Post(router, irods::rest::base_url + "/auth", Routes::bind(&AuthApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&AuthApi::default_handler, this));
@@ -55,8 +57,7 @@ void AuthApi::handler(const Pistache::Rest::Request& request,
 {
     try {
         spdlog::info("Incoming request from [{}].", request.address().host());
-
-        this->obtain_token(request.headers(), response);
+        this->handler_impl(request, response);
     }
     catch (const std::runtime_error& e) {
         //send a 400 error

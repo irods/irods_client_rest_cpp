@@ -6,14 +6,6 @@
 #include "generalAdmin.h"
 #include "rodsErrorTable.h"
 
-// this is contractually tied directly to the swagger api definition, and the below implementation
-#define MACRO_IRODS_ADMIN_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message;  \
-    std::tie(code, message) = irods_admin_(headers.getRaw("authorization").value(), action.get(), \
-        target.get(), arg2.get(), arg3.get(), arg4.get(), arg5.get(), arg6.get(), arg7.get()); \
-    response.send(code, message);
-
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -29,25 +21,27 @@ namespace irods::rest
         }
 
         std::tuple<Pistache::Http::Code, std::string>
-        operator()(const std::string& _auth_header,
-                   const std::string& _action,
-                   const std::string& _target,
-                   const std::string& _arg2,
-                   const std::string& _arg3,
-                   const std::string& _arg4,
-                   const std::string& _arg5,
-                   const std::string& _arg6,
-                   const std::string& _arg7)
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
-            info("Input arguments - action=[{}], target=[{}], arg2=[{}], arg3=[{}], "
-                 "arg4=[{}], arg5=[{}], arg6=[{}]",
-                 _action, _target, _arg2, _arg3, _arg4, _arg5, _arg6);
-
-            auto conn = get_connection(_auth_header);
-
             try {
+                trace("Handling request ...");
+
+                auto _action = _request.query().get("action").get();
+                auto _target = _request.query().get("target").get();
+                auto _arg2   = _request.query().get("arg2").get();
+                auto _arg3   = _request.query().get("arg3").get();
+                auto _arg4   = _request.query().get("arg4").get();
+                auto _arg5   = _request.query().get("arg5").get();
+                auto _arg6   = _request.query().get("arg6").get();
+                auto _arg7   = _request.query().get("arg7").get();
+
+                info("Input arguments - action=[{}], target=[{}], arg2=[{}], arg3=[{}], "
+                     "arg4=[{}], arg5=[{}], arg6=[{}]",
+                     _action, _target, _arg2, _arg3, _arg4, _arg5, _arg6);
+
+                auto conn = get_connection(_request.headers().getRaw("authorization").value());
+
                 const auto resc_name = decode_url(_arg2);
                 const auto vault_path = decode_url(_arg4);
                 const auto zone_name = decode_url(_arg6);

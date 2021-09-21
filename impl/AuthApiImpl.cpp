@@ -22,10 +22,11 @@ namespace io::swagger::server::api
     {
     }
 
-    void AuthApiImpl::handler_impl(const Pistache::Http::Header::Collection& headers,
-                                   Pistache::Http::ResponseWriter &response)
+    void AuthApiImpl::handler_impl(const Pistache::Rest::Request& request,
+                                   Pistache::Http::ResponseWriter& response)
     {
-        MACRO_IRODS_AUTH_API_IMPLEMENTATION
+        auto [code, msg] = irods_auth_(request, response);
+        response.send(code, msg);
     }
 } // namespace io::swagger::server::api
 

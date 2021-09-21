@@ -10,13 +10,6 @@
 
 #include <fstream>
 
-// this is contractually tied directly to the pistache implementation, and the below implementation
-#define MACRO_IRODS_CONFIGURATION_GET_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_get_configuration_(headers.getRaw("authorization").value()); \
-    response.send(code, message);
-
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -28,16 +21,6 @@ namespace irods::rest
 
     class get_configuration : public api_base
     {
-        auto ends_with_dot_json(const bfs::directory_entry& _e) -> bool
-        {
-            const auto s = std::string{".json"};
-            const auto p = _e.path().string();
-            const auto l = p.length();
-            const auto x = p.substr(l - s.length());
-
-            return x == s;
-        }
-
     public:
         get_configuration()
             : api_base{service_name}
@@ -45,13 +28,14 @@ namespace irods::rest
             trace("Endpoint initialized.");
         }
 
-        auto operator()(const std::string& _auth_header)
-            -> std::tuple<Pistache::Http::Code, std::string>
+        std::tuple<Pistache::Http::Code, std::string>
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
             trace("Handling request ...");
 
             try {
-                auto conn = get_connection(_auth_header);
+                auto conn = get_connection(_request.headers().getRaw("authorization").value());
                 throw_if_user_is_not_rodsadmin(conn);
 
                 const auto dir = get_irods_config_directory();
@@ -87,6 +71,14 @@ namespace irods::rest
                 return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
+
+    private:
+        auto ends_with_dot_json(const bfs::directory_entry& _e) -> bool
+        {
+            const std::string_view dot_json = ".json";
+            const std::string_view path = _e.path().c_str();
+            return path.substr(path.size() - dot_json.size()) == dot_json;
+        } // ends_with_dot_json
     }; // class get_configuration
 } // namespace irods::rest
 

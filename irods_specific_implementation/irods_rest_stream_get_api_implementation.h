@@ -15,13 +15,6 @@
 #include <vector>
 #include <iterator>
 
-// this is contractually tied directly to the swagger api definition, and the below implementation
-#define MACRO_IRODS_STREAM_GET_API_IMPLEMENTATION \
-    Pistache::Http::Code code; \
-    std::string message; \
-    std::tie(code, message) = irods_stream_get_(headers, body, path, count, offset); \
-    response.send(code, message);
-
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
@@ -41,25 +34,27 @@ namespace irods::rest
         }
 
         std::tuple<Pistache::Http::Code, std::string>
-        operator()(const Pistache::Http::Header::Collection& _headers,
-                   const std::string& _body,
-                   const std::string& _path,
-                   const std::string& _count,
-                   const Pistache::Optional<std::string>& _offset)
+        operator()(const Pistache::Rest::Request& _request,
+                   Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
-            info("Input arguments - path=[{}], count=[{}], offset=[{}]",
-                 _path, _count, _offset.getOrElse(""));
-
-            auto conn = get_connection(_headers.getRaw("authorization").value());
-
-            if (const auto ec = set_session_ticket_if_available(_headers, conn); ec != 0) {
-                error("Encountered error [{}] while handling session ticket.", ec);
-                return make_error_response(ec, "Failed to initialize session with ticket");
-            }
-
             try {
+                trace("Handling request ...");
+
+                auto _path = _request.query().get("path").get();
+                auto _count = _request.query().get("count").get();
+                auto _offset = _request.query().get("offset");
+
+                info("Input arguments - path=[{}], count=[{}], offset=[{}]",
+                     _path, _count, _offset.getOrElse(""));
+
+                const auto& headers = _request.headers();
+                auto conn = get_connection(headers.getRaw("authorization").value());
+
+                if (const auto ec = set_session_ticket_if_available(headers, conn); ec != 0) {
+                    error("Encountered error [{}] while handling session ticket.", ec);
+                    return make_error_response(ec, "Failed to initialize session with ticket");
+                }
+
                 const fs::path path = decode_url(_path);
                 debug("Logical path = [{}]", path.c_str());
 
@@ -131,7 +126,7 @@ namespace irods::rest
             catch (...) {
                 THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid byte count [{}]", _count));
             }
-        }
+        } // get_number_of_bytes_to_read
     }; // class stream
 } // namespace irods::rest
 
