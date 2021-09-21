@@ -6,6 +6,8 @@
 #include "irods_default_paths.hpp"
 #include "query_builder.hpp"
 
+#include "pistache/router.h"
+
 #include <boost/filesystem.hpp>
 
 #include <fstream>
@@ -25,15 +27,13 @@ namespace irods::rest
         get_configuration()
             : api_base{service_name}
         {
-            trace("Endpoint initialized.");
+            info("Endpoint initialized.");
         }
 
         std::tuple<Pistache::Http::Code, std::string>
         operator()(const Pistache::Rest::Request& _request,
                    Pistache::Http::ResponseWriter& _response)
         {
-            trace("Handling request ...");
-
             try {
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
                 throw_if_user_is_not_rodsadmin(conn);

@@ -29,6 +29,8 @@
 #include <string>
 #include <string_view>
 
+using json = nlohmann::json;
+
 namespace irods::rest
 {
     using icp = indexed_connection_pool_with_expiry;
@@ -53,8 +55,6 @@ namespace irods::rest
 
     class configuration
     {
-        using json = nlohmann::json;
-
     public:
         configuration(const std::string& instance_name)
             : instance_name_{instance_name}
@@ -79,24 +79,14 @@ namespace irods::rest
             return configuration_.at(instance_name_).contains(_key);
         }
 
-        auto at(const std::string& _key) const -> json
+        auto at(const std::string& _key) const -> const json&
         {
-            try {
-                return configuration_.at(instance_name_).at(_key);
-            }
-            catch (...) {
-                return json{};
-            }
+            return configuration_.at(instance_name_).at(_key);
         }
 
-        auto operator[](const std::string& _key) -> json
+        auto operator[](const std::string& _key) const -> const json&
         {
-            try {
                 return configuration_.at(instance_name_).at(_key);
-            }
-            catch (...) {
-                return json{};
-            }
         }
 
     private:
@@ -110,7 +100,7 @@ namespace irods::rest
                 return json::parse(ifs);
             }
 
-            return {};
+            throw std::runtime_error{fmt::format("Could not load file [{}]", file_name)};
         } // load
 
         const std::string instance_name_;

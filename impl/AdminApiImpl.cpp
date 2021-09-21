@@ -12,6 +12,8 @@
 
 #include "AdminApiImpl.h"
 
+#include "utils.hpp"
+
 namespace io::swagger::server::api
 {
     using namespace io::swagger::server::model;
@@ -25,8 +27,7 @@ namespace io::swagger::server::api
     void AdminApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                     Pistache::Http::ResponseWriter& response)
     {
-        auto [code, msg] = irods_admin_(request, response);
-        response.send(code, msg);
+        irods::rest::handle_request(irods_admin_, request, response);
     }
 } // namespace io::swagger::server::api
 
