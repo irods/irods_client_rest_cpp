@@ -166,7 +166,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
                         ${IRODS_EXTERNALS_FULLPATH_JSON}/include
                         ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
                         ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-                        /opt/irods-externals/spdlog1.5.0-1/include
+                        ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include
                         ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/include)
 
     include_directories(model)
