@@ -140,37 +140,37 @@ namespace irods::rest
         template <typename ...Args>
         void trace(const std::string_view _fmt, Args&&... _args) const
         {
-            logger_->trace(_fmt, std::forward<Args>(_args)...);
+            logger_->trace(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // trace
 
         template <typename ...Args>
         void debug(const std::string_view _fmt, Args&&... _args) const
         {
-            logger_->debug(_fmt, std::forward<Args>(_args)...);
+            logger_->debug(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // debug
 
         template <typename ...Args>
         void info(const std::string_view _fmt, Args&&... _args) const
         {
-            logger_->info(_fmt, std::forward<Args>(_args)...);
+            logger_->info(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // info
 
         template <typename ...Args>
         void warn(const std::string_view _fmt, Args&&... _args) const
         {
-            logger_->warn(_fmt, std::forward<Args>(_args)...);
+            logger_->warn(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // warn
 
         template <typename ...Args>
         void error(const std::string_view _fmt, Args&&... _args) const
         {
-            logger_->error(_fmt, std::forward<Args>(_args)...);
+            logger_->error(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // error
 
         template <typename ...Args>
         void critical(const std::string_view _fmt, Args&&... _args) const
         {
-            logger_->critical(_fmt, std::forward<Args>(_args)...);
+            logger_->critical(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // critical
 
         auto authenticate(const std::string& _user_name,
