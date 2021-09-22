@@ -115,14 +115,17 @@ namespace irods::rest
         auto parse_header(const std::string _header) -> std::tuple<std::string, std::string>
         {
             trace("Parsing header ...");
-            debug("_header = [{}]", _header);
+
+            // TODO Don't log the base64 encoded header. It contains the client's username and password.
+            // We need to determine whether logging this information is valuable.
+            //debug("_header = [{}]", _header);
 
             const auto p0 = _header.find_first_of(" ");
             if (std::string::npos == p0) {
                 throw_for_invalid_header(_header);
             }
 
-            auto type  = _header.substr(0, p0);
+            auto type = _header.substr(0, p0);
             auto token = _header.substr(p0 + 1);
 
             return std::make_tuple(type, token);
@@ -131,7 +134,10 @@ namespace irods::rest
         auto decode(const std::string _header) -> std::tuple<std::string, std::string, std::string>
         {
             trace("Decoding header for auth-type, token, username, and password ...");
-            debug("_header = [{}]", _header);
+
+            // TODO Don't log the base64 encoded header. It contains the client's username and password.
+            // We need to determine whether logging this information is valuable.
+            //debug("_header = [{}]", _header);
 
             const auto [auth_type, token] = parse_header(_header);
 
