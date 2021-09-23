@@ -1,5 +1,38 @@
 # iRODS C++ REST Mid-Tier API
 
+This REST API is designed to be run alongside an iRODS Server to provide an HTTP REST interface into the iRODS protocol.
+
+It runs under the same linux service account as the iRODS Server, accesses `/etc/irods/server_config.json`, and uses the active authenticated `rodsadmin` iRODS account.
+
+## Quickstart
+
+The iRODS C++ REST API can be installed via package manager and managed via `systemctl` alongside an existing iRODS Server:
+
+```
+# REST API - install
+$ sudo apt install irods_client_rest_cpp
+OR
+$ sudo yum install irods_client_rest_cpp
+```
+
+nginx, rsyslog, and logrotate can be configured and restarted before starting the REST API:
+
+```
+# nginx - configure and restart
+$ sudo cp /etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf
+$ sudo ln -s /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf /etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf
+$ sudo systemctl restart nginx
+
+# rsyslg - configure and restart
+$ sudo cp /etc/irods/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf
+$ sudo cp /etc/irods/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
+$ sudo systemctl restart rsyslog
+
+# REST API - configure and start
+$ sudo cp /etc/irods/irods_client_rest_cpp.json.template /etc/irods/irods_client_rest_cpp.json
+$ sudo systemctl restart irods_client_rest_cpp
+```
+
 ## Building this repository
 This is a standard CMake project which may be built with either Ninja or Make.
 
