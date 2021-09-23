@@ -4,6 +4,8 @@ This REST API is designed to be run alongside an iRODS Server to provide an HTTP
 
 It runs under the same linux service account as the iRODS Server, accesses `/etc/irods/server_config.json`, and uses the active authenticated `rodsadmin` iRODS account.
 
+This REST API requires an iRODS Server v4.2.0 or greater.
+
 ## Quickstart
 
 The iRODS C++ REST API can be installed via package manager and managed via `systemctl` alongside an existing iRODS Server:
