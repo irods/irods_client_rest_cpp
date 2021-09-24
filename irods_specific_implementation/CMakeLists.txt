@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
+cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
 find_package(IRODS 4.3.0 EXACT REQUIRED CONFIG)
 
-set(IRODS_CLIENT_REVISION "0")
-set(IRODS_CLIENT_VERSION "${IRODS_VERSION}.${IRODS_CLIENT_REVISION}")
+set(IRODS_CLIENT_VERSION_MAJOR "0")
+set(IRODS_CLIENT_VERSION_MINOR "8")
+set(IRODS_CLIENT_VERSION_PATCH "0")
+set(IRODS_CLIENT_VERSION "${IRODS_CLIENT_VERSION_MAJOR}.${IRODS_CLIENT_VERSION_MINOR}.${IRODS_CLIENT_VERSION_PATCH}")
 
 set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang)
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
@@ -51,6 +53,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
 add_compile_options(-nostdinc++)
 add_compile_options(-std=c++17)
+add_definitions(-DIRODS_CLIENT_VERSION=${IRODS_CLIENT_VERSION})
 link_libraries(c++abi)
 include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
 
@@ -197,6 +200,11 @@ foreach(API_NAME ${API_SERVER_NAMES})
         )
 endforeach()
 
+# Generate the nginx reverse proxy template.
+configure_file(${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp_reverse_proxy.conf.template.in
+               ${CMAKE_BINARY_DIR}/packaging/irods_client_rest_cpp_reverse_proxy.conf.template
+               @ONLY)
+
 install(
   FILES
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp
@@ -210,7 +218,7 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.conf.rsyslog
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.logrotate
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.json.template
-  ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp_reverse_proxy.conf.template
+  ${CMAKE_BINARY_DIR}/packaging/irods_client_rest_cpp_reverse_proxy.conf.template
   DESTINATION etc/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
   PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ

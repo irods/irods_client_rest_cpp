@@ -5,14 +5,15 @@ server {
     add_header 'Access-Control-Allow-Headers' '*' always;
     add_header 'Access-Control-Allow-Methods' 'AUTHORIZATION,ACCEPT,GET,POST,OPTIONS,PUT,DELETE' always;
 
-    location /irods-rest/1.0.0/access {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/access {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
+
         proxy_pass http://localhost:8080;
     }
 
-    location /irods-rest/1.0.0/admin {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/admin {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
@@ -20,14 +21,15 @@ server {
         proxy_pass http://localhost:8087;
     }
 
-    location /irods-rest/1.0.0/auth {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/auth {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
+
         proxy_pass http://localhost:8081;
     }
 
-    location /irods-rest/1.0.0/get_configuration {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/get_configuration {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
@@ -35,7 +37,7 @@ server {
         proxy_pass http://localhost:8088;
     }
 
-    location /irods-rest/1.0.0/put_configuration {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/put_configuration {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
@@ -43,7 +45,7 @@ server {
         proxy_pass http://localhost:8089;
     }
 
-    location /irods-rest/1.0.0/list {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/list {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
@@ -51,7 +53,7 @@ server {
         proxy_pass http://localhost:8082;
     }
 
-    location /irods-rest/1.0.0/query {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/query {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
@@ -59,26 +61,25 @@ server {
         proxy_pass http://localhost:8083;
     }
 
-    location /irods-rest/1.0.0/stream {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/stream {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
 
-        if ($request_method = GET ) {
+        if ($request_method = GET) {
             proxy_pass http://localhost:8084;
         }
 
-        if ($request_method = PUT ) {
+        if ($request_method = PUT) {
             proxy_pass http://localhost:8085;
         }
     }
 
-    location /irods-rest/1.0.0/zone_report {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/zone_report {
         if ($request_method = 'OPTIONS') {
             return 204;
         }
 
         proxy_pass http://localhost:8086;
     }
-
 }

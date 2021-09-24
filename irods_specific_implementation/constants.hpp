@@ -3,9 +3,14 @@
 
 #include <string>
 
+#define TO_STRING(X) #X
+#define MAKE_URL(VERSION) "/irods-rest/" TO_STRING(VERSION)
+
 namespace irods::rest
 {
-    const std::string base_url = "/irods-rest/1.0.0";
+    // IRODS_CLIENT_VERSION is a macro that is defined by the CMakeLists.txt file.
+    const std::string base_url = MAKE_URL(IRODS_CLIENT_VERSION);
 } // namespace irods::rest
 
 #endif // IRODS_REST_CPP_CONSTANTS_HPP
+
