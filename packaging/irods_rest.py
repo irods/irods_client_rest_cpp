@@ -31,7 +31,7 @@ except ImportError:
     from StringIO import StringIO as BytesIO
 
 def base_url():
-    return "http://localhost/irods-rest/1.0.0/"
+    return "http://localhost/irods-rest/0.8.0/"
 
 if [int(x) for x in pycurl.version_info()[1].split('.')][:2] <= [7,29]:
     StringIO = old_pycurl_mock_StringIO
