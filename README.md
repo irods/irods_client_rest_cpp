@@ -145,7 +145,7 @@ This endpoint provides a service for the generation of a read-only iRODS ticket 
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/access?path=%2FtempZone%2Fhome%2Frods%2Ffile0'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/access?path=%2FtempZone%2Fhome%2Frods%2Ffile0'
 ```
 
 **Returns**
@@ -156,7 +156,7 @@ An iRODS ticket token within the **irods-ticket** header, and a URL for streamin
   "headers": {
     "irods-ticket": ["CS11B8C4KZX2BIl"]
   },
-  "url": "/irods-rest/1.0.0/stream?path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
+  "url": "/irods-rest/0.8.0/stream?path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
 }
 ```
 
@@ -177,7 +177,7 @@ The administration interface to the iRODS Catalog which allows the creation, rem
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone'
 ```
 
 **Returns**
@@ -195,7 +195,7 @@ This endpoint provides an authentication service for the iRODS zone, currently o
 **Example CURL Command:**
 ```
 export SECRETS=$(echo -n rods:rods | base64)
-export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhost:80/irods-rest/1.0.0/auth)
+export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhost:80/irods-rest/0.8.0/auth)
 ```
 
 **Returns:**
@@ -212,7 +212,7 @@ This endpoint will return a JSON structure holding the configuration for an iROD
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/get_configuration' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/get_configuration' | jq
 ```
 
 ### /list
@@ -230,7 +230,7 @@ This endpoint provides a recursive listing of a collection, or stat, metadata, a
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
 ```
 
 **Returns**
@@ -261,11 +261,11 @@ A JSON structured response within the body containing the listing, or an iRODS e
     }
   ],
   "_links": {
-    "first": "/irods-rest/1.0.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "last": "/irods-rest/1.0.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
-    "next": "/irods-rest/1.0.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
-    "prev": "/irods-rest/1.0.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "self": "/irods-rest/1.0.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
+    "first": "/irods-rest/0.8.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "last": "/irods-rest/0.8.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
+    "next": "/irods-rest/0.8.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
+    "prev": "/irods-rest/0.8.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "self": "/irods-rest/0.8.0/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
   }
 }
 ```
@@ -299,7 +299,7 @@ This endpoint will write the url encoded JSON to the specified files in `/etc/ir
 **Example CURL Command:**
 ```
 export CONTENTS="%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
-curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/1.0.0/put_configuration?cfg=${CONTENTS}"
+curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.8.0/put_configuration?cfg=${CONTENTS}"
 ```
 
 **Returns**
@@ -318,7 +318,7 @@ This endpoint provides access to the iRODS General Query language, which is a ge
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/query?query_limit=100&row_offset=0&query_type=general&query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/query?query_limit=100&row_offset=0&query_type=general&query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
 ```
 
 **Returns**
@@ -344,11 +344,11 @@ A JSON structure containing the query results
     ]
   ],
   "_links": {
-    "first": "/irods-rest/1.0.0query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "last": "/irods-rest/1.0.0query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "next": "/irods-rest/1.0.0query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "prev": "/irods-rest/1.0.0query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "self": "/irods-rest/1.0.0query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general"
+    "first": "/irods-rest/0.8.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
+    "last": "/irods-rest/0.8.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
+    "next": "/irods-rest/0.8.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
+    "prev": "/irods-rest/0.8.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
+    "self": "/irods-rest/0.8.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general"
   },
   "count": "4",
   "total": "4"
@@ -380,11 +380,11 @@ GET: The data requested in the body of the response
 
 **Example CURL Command:**
 ```
-curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/1.0.0/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
+curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/0.8.0/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
 ```
 or
 ```
-curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/1.0.0/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
+curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.8.0/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
 ```
 
 ### /zone_report
@@ -397,7 +397,7 @@ Requests a JSON formatted iRODS Zone report, containing all configuration inform
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/1.0.0/zone_report' | jq
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/zone_report' | jq
 ```
 
 **Returns**

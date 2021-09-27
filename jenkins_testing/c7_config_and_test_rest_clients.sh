@@ -39,7 +39,7 @@ su - irods -c '~/irodsctl restart'
 
 nginx  
 
-# curl -X POST -H "Authorization: Basic $(echo -n rods:rods|base64)" http://localhost:80/irods-rest/1.0.0/auth -o /tmp/output 
+# curl -X POST -H "Authorization: Basic $(echo -n rods:rods|base64)" http://localhost:80/irods-rest/0.8.0/auth -o /tmp/output 
 # sleep 300d
 
 su - irods -c "cd ~/scripts ; python run_tests.py --run_specific_test test_irods_client_rest_cpp"
