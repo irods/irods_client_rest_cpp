@@ -45,6 +45,8 @@ macro(IRODS_MACRO_SET_AND_CHECK_DEPENDENCY_FULL_PATH DEPENDENCY_NAME DEPENDENCY_
   set(IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME} ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY})
 endmacro()
 
+include(GNUInstallDirs)
+
 find_package(OpenSSL REQUIRED)
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
@@ -117,7 +119,7 @@ set(API_SERVER_NAMES
 foreach(API_NAME ${API_SERVER_NAMES})
     string(TOLOWER ${API_NAME} LOWER_API_NAME)
 
-    link_directories(/usr/local/lib/)
+    #link_directories(/usr/local/lib/)
 
     aux_source_directory(model MODEL_SOURCES)
 
@@ -195,7 +197,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
         TARGETS
         ${EXECUTABLE_NAME}
         RUNTIME
-        DESTINATION usr/sbin
+        DESTINATION ${CMAKE_INSTALL_SBINDIR}
         COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
         )
 endforeach()
@@ -208,7 +210,7 @@ configure_file(${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp_reverse_proxy
 install(
   FILES
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp
-  DESTINATION etc/init.d
+  DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/init.d
   COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )
@@ -219,7 +221,7 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.logrotate
   ${CMAKE_SOURCE_DIR}/packaging/irods_client_rest_cpp.json.template
   ${CMAKE_BINARY_DIR}/packaging/irods_client_rest_cpp_reverse_proxy.conf.template
-  DESTINATION etc/irods
+  DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
   PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
   )
@@ -228,7 +230,7 @@ install(
   FILES
   ${CMAKE_SOURCE_DIR}/packaging/irods_rest.py
   ${CMAKE_SOURCE_DIR}/packaging/test_irods_client_rest_cpp.py
-  DESTINATION var/lib/irods/scripts/irods/test
+  DESTINATION ${IRODS_HOME_DIRECTORY}/scripts/irods/test
   COMPONENT ${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}
   PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
   )
