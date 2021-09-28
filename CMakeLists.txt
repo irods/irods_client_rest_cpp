@@ -7,102 +7,67 @@ set(IRODS_CLIENT_VERSION_MINOR "8")
 set(IRODS_CLIENT_VERSION_PATCH "0")
 set(IRODS_CLIENT_VERSION "${IRODS_CLIENT_VERSION_MAJOR}.${IRODS_CLIENT_VERSION_MINOR}.${IRODS_CLIENT_VERSION_PATCH}")
 
-set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang)
 set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-rdynamic -Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
 
 set(PROJECT_NAME irods_client_rest_cpp)
 string(REPLACE "_" "-" PROJECT_NAME_HYPHENS ${PROJECT_NAME})
 
+if (NOT IRODS_EXTERNALS_PACKAGE_ROOT)
+  set(IRODS_EXTERNALS_PACKAGE_ROOT "/opt/irods-externals" CACHE STRING "Choose the location of iRODS external packages." FORCE)
+  message(STATUS "Setting unspecified IRODS_EXTERNALS_PACKAGE_ROOT to '${IRODS_EXTERNALS_PACKAGE_ROOT}'. This is the correct setting for normal builds.")
+endif()
+
+macro(IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH DEPENDENCY_NAME DEPENDENCY_SUBDIRECTORY)
+  if (IS_DIRECTORY ${IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME}})
+    message(STATUS "Using user-specified value for IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME}: ${IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME}}")
+  else()
+    if (NOT IS_DIRECTORY ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY})
+      message(FATAL_ERROR "${DEPENDENCY_NAME} not found at ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY}")
+    endif()
+    set(IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME} ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY})
+  endif()
+endmacro()
+
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(PISTACHE pistache0.0.2-0)
+
 project(${PROJECT_NAME}
         VERSION "${IRODS_CLIENT_VERSION}"
-        LANGUAGES C CXX)
+        LANGUAGES CXX)
+
+set(CMAKE_SKIP_BUILD_RPATH OFF)
+set(CMAKE_SKIP_INSTALL_RPATH OFF)
+set(CMAKE_SKIP_RPATH OFF)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 
 include(${IRODS_TARGETS_PATH})
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-if (NOT CPACK_PACKAGING_INSTALL_PREFIX)
-  set(CPACK_PACKAGING_INSTALL_PREFIX "/" CACHE STRING "Package root path. \"/\" is correct for normal package builds.." FORCE)
-  message(STATUS "Setting unspecified CPACK_PACKAGING_INSTALL_PREFIX to '${CPACK_PACKAGING_INSTALL_PREFIX}'. This is the correct setting for normal builds.")
-endif()
+include(GNUInstallDirs)
+include(UseLibCXX)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build {Debug, Release}." FORCE)
   message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'")
 endif()
 
-if (NOT IRODS_EXTERNALS_PACKAGE_ROOT)
-  set(IRODS_EXTERNALS_PACKAGE_ROOT "/opt/irods-externals" CACHE STRING "Choose the location of iRODS external packages." FORCE)
-  message(STATUS "Setting unspecified IRODS_EXTERNALS_PACKAGE_ROOT to '${IRODS_EXTERNALS_PACKAGE_ROOT}'")
+if (NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
+  set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 endif()
-
-macro(IRODS_MACRO_SET_AND_CHECK_DEPENDENCY_FULL_PATH DEPENDENCY_NAME DEPENDENCY_SUBDIRECTORY)
-  if (NOT IS_DIRECTORY ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY})
-    message(FATAL_ERROR "${DEPENDENCY_NAME} not found at ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY}")
-  endif()
-  set(IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME} ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY})
-endmacro()
-
-include(GNUInstallDirs)
-
+find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
-add_compile_options(-nostdinc++)
-add_compile_options(-std=c++17)
 add_definitions(-DIRODS_CLIENT_VERSION=${IRODS_CLIENT_VERSION})
-link_libraries(c++abi)
-include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
 
-set(IRODS_PACKAGE_NAME irods-client-rest-cpp)
+add_compile_options(-Wall -Wextra -Werror -Wno-unused-parameter)
 
-set(CPACK_PACKAGE_VERSION ${IRODS_CLIENT_VERSION})
-set(CPACK_PACKAGE_FILE_NAME "${IRODS_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${IRODS_LINUX_DISTRIBUTION_NAME}${IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-set(CPACK_COMPONENTS_GROUPING IGNORE)
-set(CPACK_PACKAGE_CONTACT "Renaissance Computing Institute <info@irods.org>")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The integrated Rule-Oriented Data System")
-set(CPACK_PACKAGE_VENDOR "Renaissance Computing Institute <info@irods.org>")
-
-set(CPACK_DEB_COMPONENT_INSTALL ON)
-set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
-set(CPACK_DEBIAN_COMPRESSION_TYPE "gzip")
-set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://irods.org")
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
-set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/packaging/postinst;")
-
-set(CPACK_RPM_COMPONENT_INSTALL ON)
-set(CPACK_RPM_PACKAGE_RELEASE "1")
-set(CPACK_RPM_PACKAGE_LICENSE "BSD-3-Clause")
-set(CPACK_RPM_PACKAGE_VENDOR "iRODS Consortium")
-set(CPACK_RPM_PACKAGE_URL "https://irods.org")
-set(CPACK_RPM_PACKAGE_AUTOREQ 0)
-set(CPACK_RPM_PACKAGE_AUTOPROV 0)
-set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/packaging/postinst")
-
-set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}var")
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}var/lib")
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}var/lib/irods")
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}var/lib/irods/scripts")
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}var/lib/irods/scripts/irods")
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}var/lib/irods/scripts/irods/test")
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}etc/irods")
-list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}usr/sbin")
-
-set(IRODS_PACKAGE_COMPONENT_PROJECT__NAME "${PROJECT__NAME_HYPHENS}${IRODS_PACKAGE_FILE_NAME_SUFFIX}")
-string(TOUPPER ${IRODS_PACKAGE_COMPONENT_PROJECT__NAME} IRODS_PACKAGE_COMPONENT_PROJECT__NAME_UPPERCASE)
-
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++17)
+set(MODEL_SOURCES
+    ${CMAKE_SOURCE_DIR}/model/ModelBase.cpp
+    ${CMAKE_SOURCE_DIR}/model/Query_results.cpp
+    )
 
 set(API_SERVER_NAMES
     Access
@@ -114,82 +79,55 @@ set(API_SERVER_NAMES
     Query
     StreamGet
     StreamPut
-    ZoneReport)
+    ZoneReport
+    )
 
 foreach(API_NAME ${API_SERVER_NAMES})
     string(TOLOWER ${API_NAME} LOWER_API_NAME)
-
-    #link_directories(/usr/local/lib/)
-
-    aux_source_directory(model MODEL_SOURCES)
-
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-    add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-parameter)
-
-    include_directories(irods_specific_implementation)
-    include_directories(jwt-cpp)
-    include_directories(model)
-    include_directories(api)
-    include_directories(impl)
-
-    set(
-        EXECUTABLE_NAME
-        irods_client_rest_cpp_${LOWER_API_NAME}_server
-    )
-
-    file(GLOB API_SOURCES
-        "api/${API_NAME}Api.h"
-        "api/${API_NAME}Api.cpp"
-        "impl/${API_NAME}ApiImpl.h"
-        "impl/${API_NAME}ApiImpl.cpp"
-    )
-
-    set(
-        API_SERVER_SOURCES
-        ${API_NAME}ApiMainServer.cpp
-        ${MODEL_SOURCES}
-        ${API_SOURCES}
-    )
+    set(EXECUTABLE_NAME irods_client_rest_cpp_${LOWER_API_NAME}_server)
 
     add_executable(
         ${EXECUTABLE_NAME}
-        ${API_SERVER_SOURCES}
-    )
+        ${CMAKE_SOURCE_DIR}/${API_NAME}ApiMainServer.cpp
+        ${CMAKE_SOURCE_DIR}/api/${API_NAME}Api.cpp
+        ${CMAKE_SOURCE_DIR}/impl/${API_NAME}ApiImpl.cpp
+        ${MODEL_SOURCES}
+        )
 
-    set(IRODS_EXTERNALS_FULLPATH_PISTACHE /opt/irods-externals/pistache0.0.2-0)
+    target_include_directories(
+        ${EXECUTABLE_NAME}
+        PRIVATE
+        irods_specific_implementation
+        jwt-cpp
+        model
+        api
+        impl
+        )
 
-    link_libraries(c++abi)
-    include_directories(${IRODS_INCLUDE_DIRS}
-                        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/include
-                        ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
-                        ${IRODS_EXTERNALS_FULLPATH_JSON}/include
-                        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-                        ${IRODS_EXTERNALS_FULLPATH_FMT}/include
-                        ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include
-                        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/include)
-
-    include_directories(model)
-    include_directories(api)
-    include_directories(impl)
+    target_include_directories(
+        ${EXECUTABLE_NAME}
+        PRIVATE
+        ${IRODS_INCLUDE_DIRS}
+        ${IRODS_EXTERNALS_FULLPATH_JSON}/include
+        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+        ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+        ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include
+        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/include
+        )
 
     target_link_libraries(
         ${EXECUTABLE_NAME}
-        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/lib/libpistache.a
-        pthread
-        crypto
+        PRIVATE
         irods_client
         irods_plugin_dependencies
         irods_common
         ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-    )
+        ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/lib/libpistache.a
+        OpenSSL::Crypto
+        Threads::Threads
+        )
 
     target_compile_definitions(${EXECUTABLE_NAME} PRIVATE SPDLOG_FMT_EXTERNAL)
 
@@ -235,6 +173,40 @@ install(
   PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
   )
 
+set(IRODS_PACKAGE_NAME irods-client-rest-cpp)
+
+set(CPACK_PACKAGE_FILE_NAME "${IRODS_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${IRODS_LINUX_DISTRIBUTION_NAME}${IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+set(CPACK_COMPONENTS_GROUPING IGNORE)
+set(CPACK_PACKAGE_VERSION ${IRODS_CLIENT_VERSION})
+set(CPACK_PACKAGE_CONTACT "Renaissance Computing Institute <info@irods.org>")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The integrated Rule-Oriented Data System")
+set(CPACK_PACKAGE_VENDOR "Renaissance Computing Institute <info@irods.org>")
+
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_DEBIAN_PACKAGE_SECTION "contrib/science")
+set(CPACK_DEBIAN_COMPRESSION_TYPE "gzip")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://irods.org")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
+set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/packaging/postinst;")
+
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+set(CPACK_RPM_PACKAGE_RELEASE "1")
+set(CPACK_RPM_PACKAGE_LICENSE "BSD-3-Clause")
+set(CPACK_RPM_PACKAGE_VENDOR "iRODS Consortium")
+set(CPACK_RPM_PACKAGE_URL "https://irods.org")
+set(CPACK_RPM_PACKAGE_AUTOREQ 0)
+set(CPACK_RPM_PACKAGE_AUTOPROV 0)
+set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/packaging/postinst")
+
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+
+set(IRODS_PACKAGE_COMPONENT_PROJECT__NAME "${PROJECT__NAME_HYPHENS}${IRODS_PACKAGE_FILE_NAME_SUFFIX}")
+string(TOUPPER ${IRODS_PACKAGE_COMPONENT_PROJECT__NAME} IRODS_PACKAGE_COMPONENT_PROJECT__NAME_UPPERCASE)
+
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_PROJECT_NAME_UPPERCASE}_PACKAGE_NAME ${TARGET_NAME})
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_PROJECT_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), libc6" )
 
@@ -245,11 +217,9 @@ elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
     set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_PROJECT_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-server = ${IRODS_VERSION}, irods-runtime = ${IRODS_VERSION}, libopenssl1_0_0")
 endif()
 
-set(CPACK_PACKAGE_CONTACT "Renaissance Computing Institute <info@irods.org>")
 if (NOT CPACK_GENERATOR)
     set(CPACK_GENERATOR ${IRODS_CPACK_GENERATOR} CACHE STRING "CPack generator to use, e.g. {DEB, RPM, TGZ}." FORCE)
     message(STATUS "Setting unspecified CPACK_GENERATOR to ${CPACK_GENERATOR}. This is the correct setting for normal builds.")
 endif()
 
 include(CPack)
-
