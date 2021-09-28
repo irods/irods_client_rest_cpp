@@ -7,7 +7,7 @@ set(IRODS_CLIENT_VERSION_MINOR "8")
 set(IRODS_CLIENT_VERSION_PATCH "0")
 set(IRODS_CLIENT_VERSION "${IRODS_CLIENT_VERSION_MAJOR}.${IRODS_CLIENT_VERSION_MINOR}.${IRODS_CLIENT_VERSION_PATCH}")
 
-set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
+include(IrodsCXXCompiler)
 set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-rdynamic -Wl,--export-dynamic -Wl,--enable-new-dtags -Wl,--as-needed -Wl,-z,defs")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
@@ -15,21 +15,7 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-Wl,--gc-sections -Wl,-z,combreloc")
 set(PROJECT_NAME irods_client_rest_cpp)
 string(REPLACE "_" "-" PROJECT_NAME_HYPHENS ${PROJECT_NAME})
 
-if (NOT IRODS_EXTERNALS_PACKAGE_ROOT)
-  set(IRODS_EXTERNALS_PACKAGE_ROOT "/opt/irods-externals" CACHE STRING "Choose the location of iRODS external packages." FORCE)
-  message(STATUS "Setting unspecified IRODS_EXTERNALS_PACKAGE_ROOT to '${IRODS_EXTERNALS_PACKAGE_ROOT}'. This is the correct setting for normal builds.")
-endif()
-
-macro(IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH DEPENDENCY_NAME DEPENDENCY_SUBDIRECTORY)
-  if (IS_DIRECTORY ${IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME}})
-    message(STATUS "Using user-specified value for IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME}: ${IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME}}")
-  else()
-    if (NOT IS_DIRECTORY ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY})
-      message(FATAL_ERROR "${DEPENDENCY_NAME} not found at ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY}")
-    endif()
-    set(IRODS_EXTERNALS_FULLPATH_${DEPENDENCY_NAME} ${IRODS_EXTERNALS_PACKAGE_ROOT}/${DEPENDENCY_SUBDIRECTORY})
-  endif()
-endmacro()
+include(IrodsExternals)
 
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(PISTACHE pistache0.0.2-0)
 
@@ -47,12 +33,21 @@ set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 include(${IRODS_TARGETS_PATH})
 
 include(GNUInstallDirs)
-include(UseLibCXX)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build {Debug, Release}." FORCE)
   message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'")
 endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  set(IRODS_BUILD_WITH_WERROR_DEFAULT ON)
+else()
+  set(IRODS_BUILD_WITH_WERROR_DEFAULT OFF)
+endif()
+
+set(IRODS_BUILD_WITH_WERROR ${IRODS_BUILD_WITH_WERROR_DEFAULT} CACHE BOOL "Choose whether to compile with -Werror.")
+
+include(UseLibCXX)
 
 if (NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
   set(THREADS_PREFER_PTHREAD_FLAG TRUE)
@@ -62,7 +57,15 @@ find_package(OpenSSL REQUIRED)
 
 add_definitions(-DIRODS_CLIENT_VERSION=${IRODS_CLIENT_VERSION})
 
-add_compile_options(-Wall -Wextra -Werror -Wno-unused-parameter)
+if (IRODS_BUILD_WITH_WERROR)
+  add_compile_options(-Werror)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
+endif()
+
+add_compile_options(-Wall -Wextra -Wno-unused-parameter)
 
 set(MODEL_SOURCES
     ${CMAKE_SOURCE_DIR}/model/ModelBase.cpp
