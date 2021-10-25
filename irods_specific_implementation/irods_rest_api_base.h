@@ -41,7 +41,7 @@ namespace irods::rest
 
         std::string make_error(std::int32_t _code, const std::string_view _msg)
         {
-            return fmt::format("{{\"error_code\": {}, \"error_message\": \"{}\"}}", _code, _msg);
+            return json{{"error_code", _code}, {"error_message", _msg}}.dump();
         } // make_error
 
         namespace configuration_keywords
