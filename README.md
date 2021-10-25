@@ -105,12 +105,18 @@ This endpoint provides a service for the generation of a read-only iRODS ticket 
 
 **Parameters:**
 - path: The url encoded logical path to a collection or data object for which access is desired
+- type: The type of ticket to create. The value must be either read or write. Defaults to read
 - use_count: The maximum number of times the ticket can be used. Defaults to 0 (unlimited use)
-- seconds_until_expiration: The number of seconds before the ticket will expire. Defaults to 30 seconds
+- write_file_count: The maximum number of writes allowed to a data object. Defaults to 0 (unlimited writes)
+- write_byte_count: The maximum number of bytes allowed to be written to data object. Defaults to 0 (unlimited bytes)
+- seconds_until_expiration: The number of seconds before the ticket will expire. Defaults to 0 (no expiration)
+- users: A comma-separated list of iRODS users who are allowed to use the generated ticket
+- groups: A comma-separated list of iRODS groups that are allowed to use the generated ticket
+- hosts: A comma-separated list of hosts that are allowed to use the ticket
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/access?path=%2FtempZone%2Fhome%2Frods%2Ffile0'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.8.0/access?path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write_file_count=10'
 ```
 
 **Returns**

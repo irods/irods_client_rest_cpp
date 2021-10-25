@@ -29,7 +29,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
         token = irods_rest.authenticate('rods', 'rods', 'native')
         assert(token.find('827000') == -1)
 
-    def test_access(self):
+    def test_access_with_default_arguments(self):
         with session.make_session_for_existing_admin() as admin:
             try:
                 file_name = 'test_access_object'
@@ -42,59 +42,110 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                 pwd = pwd.rstrip()
                 logical_path = os.path.join(pwd, file_name)
 
-                token  = irods_rest.authenticate('rods', 'rods', 'native')
-                result = irods_rest.access(token, logical_path)
-                assert(result.find('error') == -1)
+                token = irods_rest.authenticate('rods', 'rods', 'native')
 
-                # Verify that the use count option works as expected.
-                use_count = 50
-                result = json.loads(irods_rest.access(token, logical_path, use_count))
-                ticket_id = result['headers']['irods-ticket'][0]
-                admin.assert_icommand(['iticket', 'ls', ticket_id], 'STDOUT', ['uses limit: ' + str(use_count)])
+                json_string = irods_rest.access(token, logical_path)
+                assert(json_string.find('error') == -1)
+
+                json_object = json.loads(json_string)
+                ticket_id = json_object['headers']['irods-ticket'][0]
+
+                # Verify that the properties for the ticket are what we expect.
+                _, out, _ = admin.assert_icommand(['iticket', 'ls', ticket_id], 'STDOUT', [
+                    'ticket type: read',
+                    'uses limit: 0',
+                    'write file limit: 0',
+                    'write byte limit: 0',
+                    'expire time: none',
+                    'No user restrictions',
+                    'No group restrictions',
+                    'No host restrictions'
+                ])
+
+                admin.assert_icommand(['iticket', 'delete', ticket_id])
+
             finally:
                 os.remove(file_name)
                 admin.assert_icommand(['irm', '-f', file_name])
 
-    def test_get_configuration(self):
-        token  = irods_rest.authenticate('rods', 'rods', 'native')
-        result = irods_rest.get_configuration(token)
-        assert(result.find('advanced_settings') != -1)
+    def test_access_with_explicit_arguments(self):
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                file_name = 'test_access_object'
+                lib.make_file(file_name, 1024)
 
-    def test_put_configuration(self):
-        file1 = "/etc/irods/test_rest_cfg_put_1.json"
-        file2 = "/etc/irods/test_rest_cfg_put_2.json"
+                admin.assert_icommand(['iput', file_name])
+                admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', file_name)
 
-        # clean up
-        if os.path.exists(file1):
-              os.remove(file1)
-        if os.path.exists(file2):
-              os.remove(file2)
+                pwd, _ = lib.execute_command(['ipwd'])
+                pwd = pwd.rstrip()
+                logical_path = os.path.join(pwd, file_name)
 
-        cfg    = "%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
-        token  = irods_rest.authenticate('rods', 'rods', 'native')
+                token = irods_rest.authenticate('rods', 'rods', 'native')
 
-        # put config files
-        irods_rest.put_configuration(token, cfg)
+                # The settings for the ticket.
+                ticket_type = 'write'
+                use_count = 50
+                write_file_count = 100
+                write_byte_count = 9999
+                seconds_until_expiration = 45
+                users = 'rods'
+                groups = 'rodsadmin'
+                hosts = 'irods.org'
 
-        # config files should exist
-        assert(os.path.exists(file1))
-        assert(os.path.exists(file2))
+                json_string = irods_rest.access(token, logical_path, ticket_type, use_count,
+                                                write_file_count, write_byte_count, seconds_until_expiration,
+                                                users, groups, hosts)
+                json_object = json.loads(json_string)
+                ticket_id = json_object['headers']['irods-ticket'][0]
 
-        # confirm contents for file1
-        with open(file1) as f:
-            data = json.load(f)
-            assert(data['key0'] == 'value0')
-            assert(data['key1'] == 'value1')
+                # Verify that the properties for the ticket are what we expect.
+                _, out, _ = admin.assert_icommand(['iticket', 'ls', ticket_id], 'STDOUT', [
+                    'ticket type: ' + ticket_type,
+                    'uses limit: ' + str(use_count),
+                    'write file limit: ' + str(write_file_count),
+                    'write byte limit: ' + str(write_byte_count),
+                    'restricted-to user: ' + str(users),
+                    'restricted-to group: ' + str(groups)
+                ])
 
-        # confirm contents for file2
-        with open(file2) as f:
-            data = json.load(f)
-            assert(data['key2'] == 'value2')
-            assert(data['key3'] == 'value3')
+                # Expiration time and host restrictions must be checked separately because the
+                # values for these fields are non-deterministic. The best we can do is show that
+                # the values did change.
+                self.assertNotIn('expire time: none', out)
+                self.assertNotIn('No host restrictions', out)
+                self.assertIn('restricted-to host: ', out)
 
-        # clean up /etc/irods
-        os.remove(file1)
-        os.remove(file2)
+                admin.assert_icommand(['iticket', 'delete', ticket_id])
+
+            finally:
+                os.remove(file_name)
+                admin.assert_icommand(['irm', '-f', file_name])
+
+    def test_access_returns_error_on_invalid_value_for_seconds_until_expiration_parameter(self):
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                file_name = 'test_access_object'
+                lib.make_file(file_name, 1024)
+
+                admin.assert_icommand(['iput', file_name])
+                admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', file_name)
+
+                pwd, _ = lib.execute_command(['ipwd'])
+                pwd = pwd.rstrip()
+                logical_path = os.path.join(pwd, file_name)
+
+                token = irods_rest.authenticate('rods', 'rods', 'native')
+
+                json_string = irods_rest.access(token, logical_path, _seconds_until_expiration=-1)
+                assert(json_string.find('error') > 0)
+                json_object = json.loads(json_string)
+                self.assertEqual(json_object['error_code'], -130000)
+
+            finally:
+                os.remove(file_name)
+                admin.assert_icommand(['irm', '-f', file_name])
+
 
     def test_list(self):
         with session.make_session_for_existing_admin() as admin:
@@ -123,6 +174,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                     cnt = cnt + 1
 
                 assert(file_count == cnt)
+
             finally:
                 shutil.rmtree(dir_name)
                 admin.assert_icommand(['irm', '-f', '-r', dir_name])
@@ -158,6 +210,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                     assert(lp.find(fn) != -1)
 
                     offset = offset + 1
+
             finally:
                 shutil.rmtree(dir_name)
                 admin.assert_icommand(['irm', '-f', '-r', dir_name])
@@ -238,6 +291,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                     assert(arr[1] == fn)
 
                     offset = offset + 1
+
             finally:
                 shutil.rmtree(dir_name)
                 admin.assert_icommand(['irm', '-f', '-r', dir_name])
@@ -267,6 +321,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                 print(str(sz) + ' vs ' + str(sz2))
 
                 assert(sz == sz2)
+
             finally:
                 os.remove(file_name)
                 os.remove(file_name2)
@@ -282,3 +337,4 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
             js1 = json.loads(zr1)
 
             assert(js0 == js1)
+

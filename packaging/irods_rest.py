@@ -58,7 +58,9 @@ def authenticate(_user_name, _password, _auth_type):
 
     return body
 
-def access(_token, _logical_path, _use_count=None, _seconds_until_expiration=None):
+def access(_token, _logical_path, _ticket_type=None, _use_count=None,
+           _write_file_count=None, _write_byte_count=None, _seconds_until_expiration=None,
+           _users=None, _groups=None, _hosts=None):
     buffer = StringIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
@@ -67,8 +69,14 @@ def access(_token, _logical_path, _use_count=None, _seconds_until_expiration=Non
 
     url = '{0}access?path={1}'.format(base_url(), _logical_path)
 
+    if _ticket_type             : url += '&type={0}'.format(_ticket_type)
     if _use_count               : url += '&use_count={0}'.format(_use_count)
+    if _write_file_count        : url += '&write_file_count={0}'.format(_write_file_count)
+    if _write_byte_count        : url += '&write_byte_count={0}'.format(_write_byte_count)
     if _seconds_until_expiration: url += '&seconds_until_expiration={0}'.format(_seconds_until_expiration)
+    if _users                   : url += '&users={0}'.format(_users)
+    if _groups                  : url += '&groups={0}'.format(_groups)
+    if _hosts                   : url += '&hosts={0}'.format(_hosts)
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
