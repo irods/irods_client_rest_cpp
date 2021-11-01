@@ -146,6 +146,48 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                 os.remove(file_name)
                 admin.assert_icommand(['irm', '-f', file_name])
 
+    @unittest.skip('Disabled until support in iRODS server is complete.')
+    def test_get_configuration(self):
+        token  = irods_rest.authenticate('rods', 'rods', 'native')
+        result = irods_rest.get_configuration(token)
+        assert(result.find('advanced_settings') != -1)
+
+    @unittest.skip('Disabled until support in iRODS server is complete.')
+    def test_put_configuration(self):
+        file1 = "/etc/irods/test_rest_cfg_put_1.json"
+        file2 = "/etc/irods/test_rest_cfg_put_2.json"
+
+        # clean up
+        if os.path.exists(file1):
+              os.remove(file1)
+        if os.path.exists(file2):
+              os.remove(file2)
+
+        cfg    = "%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
+        token  = irods_rest.authenticate('rods', 'rods', 'native')
+
+        # put config files
+        irods_rest.put_configuration(token, cfg)
+
+        # config files should exist
+        assert(os.path.exists(file1))
+        assert(os.path.exists(file2))
+
+        # confirm contents for file1
+        with open(file1) as f:
+            data = json.load(f)
+            assert(data['key0'] == 'value0')
+            assert(data['key1'] == 'value1')
+
+        # confirm contents for file2
+        with open(file2) as f:
+            data = json.load(f)
+            assert(data['key2'] == 'value2')
+            assert(data['key3'] == 'value3')
+
+        # clean up /etc/irods
+        os.remove(file1)
+        os.remove(file2)
 
     def test_list(self):
         with session.make_session_for_existing_admin() as admin:
