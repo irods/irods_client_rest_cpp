@@ -32,6 +32,9 @@ namespace irods::rest
         operator()(const Pistache::Rest::Request& _request,
                    Pistache::Http::ResponseWriter& _response)
         {
+#if 1
+            return std::make_tuple(Pistache::Http::Code::Not_Implemented, "Not supported at this time.");
+#else
             try {
                 auto _configuration = _request.query().get("cfg").get();
 
@@ -71,6 +74,7 @@ namespace irods::rest
                 error("Caught exception - {}", e.what());
                 return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
+#endif
         } // operator()
     }; // class put_configuration
 } // namespace irods::rest
