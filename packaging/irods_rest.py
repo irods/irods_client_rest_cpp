@@ -256,18 +256,20 @@ def zone_report(_token):
 
     return body
 
-def query(_token, _string, _limit, _offset, _type):
+def query(_token, _string, _limit, _offset, _type, _case_sensitive='1', _distinct='1'):
     buffer = StringIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    params = { 'query_string' : _string,
-               'query_limit'  : _limit,
-               'row_offset'   : _offset,
-               'query_type'   : _type }
-    url = base_url()+'query?'+urllib.urlencode(params)
+    params = {'query_string'  : _string,
+              'query_limit'   : _limit,
+              'row_offset'    : _offset,
+              'query_type'    : _type,
+              'case_sensitive': _case_sensitive,
+              'distinct'      : _distinct}
+    url = base_url() + 'query?' + urllib.urlencode(params)
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
