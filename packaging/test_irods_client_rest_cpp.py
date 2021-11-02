@@ -338,6 +338,78 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                 shutil.rmtree(dir_name)
                 admin.assert_icommand(['irm', '-f', '-r', dir_name])
 
+    def test_query_with_case_sensitive_search_option_set_to_zero__issue_71(self):
+        with session.make_session_for_existing_admin() as admin:
+            pwd, _ = lib.execute_command(['ipwd'])
+            pwd = pwd.rstrip()
+            collection = os.path.join(pwd, 'test_query_with_case_sensitive_search_option_set_to_zero__issue_71')
+
+            try:
+                admin.assert_icommand(['imkdir', collection])
+
+                token = irods_rest.authenticate(admin.username, admin.password, 'native')
+
+                # Search for newly created collection using the case-sensitive search option.
+                gql = "SELECT COLL_NAME WHERE COLL_NAME = '{0}'".format(collection.upper())
+                result = irods_rest.query(token, gql, 1, 0, 'general', _case_sensitive='0')
+
+                print('*****************\n')
+                print(result)
+                print('*****************\n')
+
+                res = json.loads(result)
+                self.assertEqual(len(res['_embedded']), 1)
+
+                arr = res['_embedded'][0]
+                self.assertEqual(arr[0], collection)
+
+            finally:
+                admin.assert_icommand(['irmdir', collection])
+
+    def test_query_with_distinct_search_option_set_to_zero__issue_71(self):
+        with session.make_session_for_existing_admin() as admin:
+            other_resc = 'other_resc_71'
+            data_object = 'foo.issue_71'
+
+            try:
+                lib.create_ufs_resource(other_resc, admin)
+
+                admin.assert_icommand(['itouch', '-R', 'demoResc', data_object])
+                admin.assert_icommand(['irepl', '-R', other_resc, data_object])
+                admin.assert_icommand(['ils', '-l', data_object], 'STDOUT', [' 0 demoResc', ' 1 ' + other_resc])
+
+                token = irods_rest.authenticate(admin.username, admin.password, 'native')
+
+                # Search for data object. The no-distinct option should result in
+                # two rows being returned. One for each replica.
+                gql = "SELECT DATA_NAME WHERE DATA_NAME = '{0}'".format(data_object)
+                result = irods_rest.query(token, gql, 100, 0, 'general', _distinct='0')
+
+                print('*****************\n')
+                print(result)
+                print('*****************\n')
+
+                res = json.loads(result)
+                self.assertEqual(len(res['_embedded']), 2)
+
+                rows = res['_embedded']
+                self.assertEqual(rows[0][0], data_object)
+                self.assertEqual(rows[1][0], data_object)
+
+            finally:
+                admin.run_icommand(['irm', '-f', data_object])
+                admin.run_icommand(['iadmin', 'rmresc', other_resc])
+
+    def test_query_returns_error_on_invalid_options__issue_71(self):
+        with session.make_session_for_existing_admin() as admin:
+            token = irods_rest.authenticate(admin.username, admin.password, 'native')
+
+            result = irods_rest.query(token, 'select COLL_NAME', 1, 0, 'general', _case_sensitive='nopes')
+            self.assertIn('error', result)
+
+            result = irods_rest.query(token, 'select COLL_NAME', 1, 0, 'general', _distinct='nopes')
+            self.assertIn('error', result)
+
     def test_stream_put_and_get(self):
         with session.make_session_for_existing_admin() as admin:
             try:
