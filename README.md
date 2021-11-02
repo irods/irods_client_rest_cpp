@@ -282,10 +282,12 @@ This endpoint provides access to the iRODS General Query language, which is a ge
 **Method**: GET
 
 **Parameters**
-- query_string: A url encoded general query
-- query_limit: Number of desired rows
+- query_string: A url encoded GenQuery string
+- query_limit: The max number of rows to return
 - row_offset: Number of rows to skip for paging
 - query_type: Either 'general' or 'specific'
+- case_sensitive: Affects string matching in GenQuery. Defaults to 1
+- distinct: Requests distinct rows from GenQuery. Defaults to 1
 
 **Example CURL Command:**
 ```
@@ -315,11 +317,11 @@ A JSON structure containing the query results
     ]
   ],
   "_links": {
-    "first": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "last": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "next": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "prev": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general",
-    "self": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general"
+    "first": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "last": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "next": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "prev": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "self": "/irods-rest/0.9.0/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1"
   },
   "count": "4",
   "total": "4"
