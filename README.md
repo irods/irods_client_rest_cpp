@@ -38,42 +38,20 @@ $ sudo systemctl restart irods_client_rest_cpp
 ## Building this repository
 This is a standard CMake project which may be built with either Ninja or Make.
 
-This code base is built with the iRODS toolchain, which uses Clang. Since this project depends on Pistache, we also need to build Pistache with Clang in order to link against that project.
-
-First clone the iRODS externals repository:
+Prerequisites (available from https://packages.irods.org):
 ```
-$ git clone https://github.com/irods/externals
-```
-
-Install the latest iRODS CMake and Clang packages:
-```
-irods-cmake
-irods-externals-clang-runtime
-irods-externals-clang
-```
-
-Then within the externals repository, build Pistache with:
-```
-$ make pistache
-```
-
-Then install Pistache with:
-```
-$ cd pistache<VERSION>-0_src/pistache/build/
-$ make install
-```
-
-You will then need to install iRODS packages:
-```
-irods-dev
+irods-dev(el)
 irods-runtime
 irods-externals-boost
 irods-externals-json
+irods-externals-pistache0.0.2-0
+irods-externals-spdlog1.5.0-1
 ```
 
-Once this is done you can create a build directory for the REST API and run CMake, then run the following to build the REST API package:
+Create and enter a build directory, run CMake, and then make the REST API package:
 ```
-$ make package
+$ mkdir build && cd build && cmake ..
+$ make -j package
 ```
 
 ## Configuration files
