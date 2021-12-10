@@ -13,7 +13,7 @@
 #include "irods_exception.hpp"
 
 #include "fmt/format.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "jwt.h"
 #include "pistache/http_defs.h"
 #include "pistache/http_headers.h"

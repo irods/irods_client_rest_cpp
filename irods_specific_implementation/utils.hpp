@@ -4,7 +4,7 @@
 #include "pistache/http.h"
 #include "pistache/router.h"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "spdlog/spdlog.h"
 
 namespace irods::rest
