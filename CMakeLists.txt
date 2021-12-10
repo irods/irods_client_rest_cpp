@@ -57,6 +57,7 @@ if (NOT DEFINED THREADS_PREFER_PTHREAD_FLAG)
   set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 endif()
 find_package(Threads REQUIRED)
+find_package(nlohmann_json "3.6.1" REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 add_definitions(-DIRODS_CLIENT_VERSION=${IRODS_CLIENT_VERSION})
@@ -115,7 +116,6 @@ foreach(API_NAME ${API_SERVER_NAMES})
         ${EXECUTABLE_NAME}
         PRIVATE
         ${IRODS_INCLUDE_DIRS}
-        ${IRODS_EXTERNALS_FULLPATH_JSON}/include
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
         ${IRODS_EXTERNALS_FULLPATH_FMT}/include
         ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include
@@ -134,6 +134,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
         ${IRODS_EXTERNALS_FULLPATH_PISTACHE}/lib/libpistache.a
         OpenSSL::Crypto
         Threads::Threads
+        nlohmann_json::nlohmann_json
         )
 
     target_compile_definitions(${EXECUTABLE_NAME} PRIVATE SPDLOG_FMT_EXTERNAL)
