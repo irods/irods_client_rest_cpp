@@ -14,7 +14,7 @@
 
 #include "boost/algorithm/string.hpp"
 #include "fmt/format.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <chrono>
 #include <string_view>
