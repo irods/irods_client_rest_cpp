@@ -18,7 +18,7 @@ RUN mkdir /irods_packages_in
 VOLUME /irods_packages_in
 COPY irods_rest_pkg/irods*rpm /irods_packages_in/
 
-RUN rpm -ivh /irods_packages_in/irods-externals-{clang*6.0-0,cmake3.11.4,pistache}*.rpm
+RUN rpm -ivh /irods_packages_in/irods-externals-{clang*6.0-0,cmake3.21.4,pistache}*.rpm
 
 # Install prereqs for iRODS packages:
 
@@ -26,7 +26,7 @@ RUN /tmp/PKGFILE_install_dependencies /irods_packages_in build-only
 
 RUN git clone "${irods_rest_client_repo}" src_repo
 RUN cd src_repo && git checkout "${irods_rest_client_commitish}"
-RUN mkdir build_rest && cd build_rest && /opt/irods-externals/cmake3.11.4*/bin/cmake ../src_repo
+RUN mkdir build_rest && cd build_rest && /opt/irods-externals/cmake3.21.4*/bin/cmake ../src_repo
 
 RUN cd build_rest && make -j7 package
 
