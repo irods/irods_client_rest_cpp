@@ -9,7 +9,7 @@ ARG irods_rest_client_commitish
 SHELL ["/bin/bash","-c"]
 
 WORKDIR /root
-RUN yum install -y git sudo wget
+RUN yum install -y git sudo wget ca-certificates
 RUN yum install -y gcc-c++ openssl-devel rpm-build
 
 COPY PKGFILE_install_dependencies /tmp
