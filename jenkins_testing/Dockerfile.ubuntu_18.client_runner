@@ -24,7 +24,7 @@ RUN apt update && \
 RUN dpkg -i /irods_packages_in/irods-externals-*.deb
 
 RUN /tmp/PKGFILE_install_dependencies /irods_packages_in 
-RUN dpkg -i /irods_packages_in/irods*client_rest_cpp*.deb
+RUN dpkg -i /irods_packages_in/irods*client[-_]rest[-_]cpp*.deb
 RUN apt install -y postgresql
 RUN apt install -y nginx
 RUN apt install -y curl
