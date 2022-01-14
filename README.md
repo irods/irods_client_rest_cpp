@@ -12,9 +12,9 @@ The iRODS C++ REST API can be installed via package manager and managed via `sys
 
 ```
 # REST API - install
-$ sudo apt install irods_client_rest_cpp
+$ sudo apt install irods-client-rest-cpp
 OR
-$ sudo yum install irods_client_rest_cpp
+$ sudo yum install irods-client-rest-cpp
 ```
 
 nginx, rsyslog, and logrotate can be configured and restarted before starting the REST API:
