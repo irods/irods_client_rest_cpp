@@ -108,6 +108,11 @@ The log level for each endpoint can be adjusted by modifying the `"log_level"` o
 - error
 - critical
 
+## HTTP and SSL
+It is highly advised to run the service with HTTPS enabled. The administrative API endpoint (i.e. _/admin_) is implemented to accept passwords in **plaintext**. This is on purpose as it removes the password obfuscation requirements from applications built upon the C++ REST API.
+
+Please refer to your proxy server's (nginx, apache httpd, etc.) documentation for enabling SSL communication.
+
 ## Interacting with the API endpoints
 The design of this API uses JWTs to contain authorization and identity. The Auth endpoint must be invoked first in order to authenticate and receive a JWT. This token will then need to be included in the Authorization header of each subsequent request. This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
 
@@ -145,7 +150,7 @@ An iRODS ticket token within the **irods-ticket** header, and a URL for streamin
 ```
 
 ### /admin
-The administration interface to the iRODS Catalog which allows the creation, removal and modification of users, groups, resources, and other entities within the zone.
+The administration interface to the iRODS Catalog which allows the creation, removal and modification of users, groups, resources, and other entities within the zone. **ALL input parameters must be defined. If an input parameter is not to be used, set it to nothing (e.g. arg7=)**
 
 **Method**: POST
 
@@ -161,7 +166,7 @@ The administration interface to the iRODS Catalog which allows the creation, rem
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.0/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.0/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone&arg7='
 ```
 
 **Returns**

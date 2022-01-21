@@ -217,7 +217,7 @@ def admin(_token, _action, _target, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7):
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
-    c.setopt(c.CUSTOMREQUEST, 'GET')
+    c.setopt(c.CUSTOMREQUEST, 'POST')
 
     params = { 'action' : _action,
                'target' : _target,
