@@ -13,10 +13,11 @@ from . import session
 import json
 import irods_rest
 
-class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
+class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unittest.TestCase):
 
     def setUp(self):
         super(TestClientRest, self).setUp()
+        self.user = self.user_sessions[0]
 
     def tearDown(self):
         super(TestClientRest, self).tearDown()
@@ -414,7 +415,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
         with session.make_session_for_existing_admin() as admin:
             try:
                 file_name  = 'stream_put_and_get_file'
-                file_name2 = file_name+'2'
+                downloaded_file_name = file_name + '2'
                 with open(file_name, 'w') as f:
                     f.write('This is some test data.  This is only a test.')
 
@@ -427,10 +428,10 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
                 irods_rest.put(token, file_name, logical_path)
                 admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', file_name)
 
-                irods_rest.get(token, file_name2, logical_path)
+                irods_rest.get(token, downloaded_file_name, logical_path)
 
                 sz  = os.path.getsize(file_name)
-                sz2 = os.path.getsize(file_name2)
+                sz2 = os.path.getsize(downloaded_file_name)
 
                 print(str(sz) + ' vs ' + str(sz2))
 
@@ -438,7 +439,7 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
 
             finally:
                 os.remove(file_name)
-                os.remove(file_name2)
+                os.remove(downloaded_file_name)
                 admin.assert_icommand(['irm', '-f', file_name])
 
     def test_zone_report(self):
@@ -451,4 +452,26 @@ class TestClientRest(session.make_sessions_mixin([], []), unittest.TestCase):
             js1 = json.loads(zr1)
 
             assert(js0 == js1)
+
+    def test_changing_passwords_is_supported__issue_99(self):
+        # Show that the user can execute commands without error.
+        self.user.assert_icommand(['ils', '-ld'], 'STDOUT', [self.user.session_collection])
+
+        # Show that changing the user's password will require them to reauthenticate.
+        token = irods_rest.authenticate('rods', 'rods', 'native')
+        old_password = self.user.password
+        new_password = 'newpass'
+        irods_rest.admin(token, 'modify', 'user', self.user.username, 'password', new_password, None, None, None)
+        self.user.assert_icommand(['ils', '-ld'], 'STDERR', ['CAT_INVALID_AUTHENTICATION'])
+
+        # Show that reauthenticating with the new password restores the user's ability
+        # to execute commands. This proves the REST API is able to change passwords without
+        # requiring the user to obfuscate the password first.
+        self.user.assert_icommand(['iinit', new_password])
+        self.user.assert_icommand(['ils', '-ld'], 'STDOUT', [self.user.session_collection])
+
+        # Restore the user's password for other tests.
+        irods_rest.admin(token, 'modify', 'user', self.user.username, 'password', old_password, None, None, None)
+        self.user.assert_icommand(['iinit', old_password])
+        self.user.assert_icommand(['ils', '-ld'], 'STDOUT', [self.user.session_collection])
 

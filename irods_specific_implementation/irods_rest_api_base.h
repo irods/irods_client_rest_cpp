@@ -232,7 +232,8 @@ namespace irods::rest
 
         std::string decode_url(const std::string& _in) const
         {
-            trace("Decoding input [{}] ...", _in);
+            // Disabled so that sensitive input arguments aren't written to the log file.
+            //trace("Decoding input [{}] ...", _in);
 
             std::string out;
             out.reserve(_in.size());
