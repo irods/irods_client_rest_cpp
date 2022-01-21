@@ -5,8 +5,15 @@
 
 #include "generalAdmin.h"
 #include "rodsErrorTable.h"
+#include "obf.h"
+#include "authenticate.h"
 
 #include "pistache/router.h"
+
+#include <cstring>
+#include <array>
+#include <string>
+#include <string_view>
 
 namespace irods::rest
 {
@@ -38,21 +45,34 @@ namespace irods::rest
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
 
-                const auto resc_name = decode_url(_arg2);
-                const auto vault_path = decode_url(_arg4);
-                const auto zone_name = decode_url(_arg6);
-
-                debug("decoded arguments - _arg2=[{}], _arg4=[{}], _arg6=[{}]",
-                      resc_name, vault_path, zone_name);
+                const auto decoded_arg2 = decode_url(_arg2);
+                const auto decoded_arg4 = decode_url(_arg4);
+                const auto decoded_arg6 = decode_url(_arg6);
 
                 generalAdminInp_t input{};
-                input.arg0 = (_action == "remove") ? "rm" : _action.c_str();
+                std::string obfuscated_password;
+
+                if (_action == "modify" && _target == "user" && _arg3 == "password") {
+                    // DO NOT print the user's password.
+                    debug("decoded arguments - _arg2=[{}], _arg6=[{}]", decoded_arg2, decoded_arg6);
+
+                    input.arg0 = _action.c_str();
+                    obfuscated_password = obfuscate_password(decoded_arg4);
+                    input.arg4 = obfuscated_password.c_str();
+                }
+                else {
+                    debug("decoded arguments - _arg2=[{}], _arg4=[{}], _arg6=[{}]",
+                          decoded_arg2, decoded_arg4, decoded_arg6);
+
+                    input.arg0 = (_action == "remove") ? "rm" : _action.c_str();
+                    input.arg4 = decoded_arg4.c_str();
+                }
+
                 input.arg1 = _target.c_str();
-                input.arg2 = resc_name.c_str();
+                input.arg2 = decoded_arg2.c_str();
                 input.arg3 = _arg3.c_str();
-                input.arg4 = vault_path.c_str();
                 input.arg5 = _arg5.c_str();
-                input.arg6 = zone_name.c_str();
+                input.arg6 = decoded_arg6.c_str();
                 input.arg7 = _arg7.c_str();
 
                 trace("Invoking rcGeneralAdmin() ...");
@@ -73,6 +93,34 @@ namespace irods::rest
                 return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
             }
         } // operator()
+
+        std::string obfuscate_password(const std::string_view _new_password)
+        {
+            std::array<char, MAX_PASSWORD_LEN + 10> plain_text_password{};
+            std::strncpy(plain_text_password.data(), _new_password.data(), MAX_PASSWORD_LEN);
+
+            if (const auto lcopy = MAX_PASSWORD_LEN - 10 - _new_password.size(); lcopy > 15) {
+                // The random string (second argument) is used for padding and must match 
+                // what is defined on the server-side.
+                std::strncat(plain_text_password.data(), "1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs", lcopy);
+            }
+
+            std::array<char, MAX_PASSWORD_LEN + 10> admin_password{};
+
+            // Get the plain text password of the iRODS service account user.
+            // "obfGetPw" decodes the obfuscated password stored in .irods/.irodsA.
+            if (obfGetPw(admin_password.data()) != 0) {
+                THROW(SYS_INTERNAL_ERR, "failed to unobfuscate admin password in .irodsA file.");
+            }
+
+            std::array<char, MAX_PASSWORD_LEN + 100> obfuscated_password{};
+            obfEncodeByKeyV2(plain_text_password.data(),
+                             admin_password.data(),
+                             getSessionSignatureClientside(),
+                             obfuscated_password.data());
+
+            return obfuscated_password.data();
+        } // obfuscate_password
     }; // class admin
 } // namespace irods::rest
 
