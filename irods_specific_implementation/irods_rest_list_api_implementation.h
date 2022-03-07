@@ -4,8 +4,8 @@
 #include "irods_rest_api_base.h"
 
 #include "constants.hpp"
-#include "filesystem.hpp"
-#include "rodsErrorTable.h"
+#include <irods/filesystem.hpp>
+#include <irods/rodsErrorTable.h>
 
 #include "pistache/router.h"
 

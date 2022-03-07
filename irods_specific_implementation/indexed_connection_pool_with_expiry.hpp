@@ -1,9 +1,9 @@
 #ifndef IRODS_INDEXED_CONNECTION_POOL_HPP
 #define IRODS_INDEXED_CONNECTION_POOL_HPP
 
-#include "rcConnect.h"
-#include "irods_random.hpp"
-#include "irods_server_properties.hpp"
+#include <irods/rcConnect.h>
+#include <irods/irods_random.hpp>
+#include <irods/irods_server_properties.hpp>
 
 #include "jwt.h"
 #include "fmt/format.h"

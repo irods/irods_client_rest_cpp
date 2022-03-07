@@ -3,11 +3,11 @@
 
 #include "irods_rest_api_base.h"
 
-#include "dstream.hpp"
-#include "transport/default_transport.hpp"
-#include "rodsErrorTable.h"
-#include "irods_exception.hpp"
-#include "ticketAdmin.h"
+#include <irods/dstream.hpp>
+#include <irods/transport/default_transport.hpp>
+#include <irods/rodsErrorTable.h>
+#include <irods/irods_exception.hpp>
+#include <irods/ticketAdmin.h>
 
 #include "pistache/http.h"
 #include "pistache/optional.h"

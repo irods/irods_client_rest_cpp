@@ -3,10 +3,10 @@
 
 #include "irods_rest_api_base.h"
 
-#include "generalAdmin.h"
-#include "rodsErrorTable.h"
-#include "obf.h"
-#include "authenticate.h"
+#include <irods/generalAdmin.h>
+#include <irods/rodsErrorTable.h>
+#include <irods/obf.h>
+#include <irods/authenticate.h>
 
 #include "pistache/router.h"
 

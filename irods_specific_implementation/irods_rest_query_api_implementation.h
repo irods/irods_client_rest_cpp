@@ -4,9 +4,9 @@
 #include "irods_rest_api_base.h"
 
 #include "constants.hpp"
-#include "irods_query.hpp"
-#include "rodsGenQuery.h"
-#include "rodsErrorTable.h"
+#include <irods/irods_query.hpp>
+#include <irods/rodsGenQuery.h>
+#include <irods/rodsErrorTable.h>
 
 #include "pistache/router.h"
 

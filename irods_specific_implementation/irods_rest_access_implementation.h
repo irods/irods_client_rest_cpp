@@ -1,12 +1,12 @@
 #include "irods_rest_api_base.h"
 
 #include "constants.hpp"
-#include "filesystem.hpp"
-#include "rodsClient.h"
-#include "irods_random.hpp"
-#include "rodsErrorTable.h"
-#include "irods_at_scope_exit.hpp"
-#include "irods_query.hpp"
+#include <irods/filesystem.hpp>
+#include <irods/rodsClient.h>
+#include <irods/irods_random.hpp>
+#include <irods/rodsErrorTable.h>
+#include <irods/irods_at_scope_exit.hpp>
+#include <irods/irods_query.hpp>
 
 #include "pistache/http_headers.h"
 #include "pistache/optional.h"
