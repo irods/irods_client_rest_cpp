@@ -214,7 +214,7 @@ namespace irods::rest
             const auto secs = std::stoll(secs_until_exp_string);
 
             if (secs < 0) {
-                const std::string_view msg_fmt = "seconds_until_expiration [{}] must be greater than or equal to zero.";
+                constexpr std::string_view msg_fmt = "seconds_until_expiration [{}] must be greater than or equal to zero.";
                 THROW(SYS_INVALID_INPUT_PARAM, fmt::format(msg_fmt, secs));
             }
 
