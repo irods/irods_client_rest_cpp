@@ -138,37 +138,37 @@ namespace irods::rest
 
     protected:
         template <typename ...Args>
-        void trace(const std::string_view _fmt, Args&&... _args) const
+        void trace(fmt::format_string<Args...> _fmt, Args&&... _args) const
         {
             logger_->trace(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // trace
 
         template <typename ...Args>
-        void debug(const std::string_view _fmt, Args&&... _args) const
+        void debug(fmt::format_string<Args...> _fmt, Args&&... _args) const
         {
             logger_->debug(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // debug
 
         template <typename ...Args>
-        void info(const std::string_view _fmt, Args&&... _args) const
+        void info(fmt::format_string<Args...> _fmt, Args&&... _args) const
         {
             logger_->info(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // info
 
         template <typename ...Args>
-        void warn(const std::string_view _fmt, Args&&... _args) const
+        void warn(fmt::format_string<Args...> _fmt, Args&&... _args) const
         {
             logger_->warn(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // warn
 
         template <typename ...Args>
-        void error(const std::string_view _fmt, Args&&... _args) const
+        void error(fmt::format_string<Args...> _fmt, Args&&... _args) const
         {
             logger_->error(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // error
 
         template <typename ...Args>
-        void critical(const std::string_view _fmt, Args&&... _args) const
+        void critical(fmt::format_string<Args...> _fmt, Args&&... _args) const
         {
             logger_->critical(json{{"message", fmt::format(_fmt, std::forward<Args>(_args)...)}}.dump());
         } // critical
@@ -301,7 +301,7 @@ namespace irods::rest
 
                 if (type && adm::user_type::rodsadmin != *type) {
                     if (std::strlen(user.rodsZone) > 0) {
-                        const auto* msg_fmt = "{}#{} is not a rodsadmin user";
+                        constexpr auto* msg_fmt = "{}#{} is not a rodsadmin user";
                         THROW(CAT_INVALID_USER, fmt::format(msg_fmt, user.userName, user.rodsZone));
                     }
 
@@ -311,7 +311,7 @@ namespace irods::rest
             catch (const adm::user_management_error&) {
                 // TODO Log the error message once the class access specifier is fixed for
                 // the user_management_error class.
-                const auto* msg_fmt = "Encountered error while checking if user [{}] is a rodsadmin.";
+                constexpr auto* msg_fmt = "Encountered error while checking if user [{}] is a rodsadmin.";
                 THROW(SYS_INTERNAL_ERR, fmt::format(msg_fmt, user.userName));
             }
         } // throw_if_user_is_not_rodsadmin

@@ -73,8 +73,8 @@ namespace irods::rest
                 double dbl_query_limit = static_cast<double>(query_limit);
                 double dbl_total_row_count = static_cast<double>(total_row_count);
                 nlohmann::json links = nlohmann::json::object();
-                auto url = base_url + "query?query_string={}&query_limit={}&row_offset={}&query_type={}&case_sensitive={}&distinct={}";
-                links["self"] = fmt::format(url,
+                constexpr auto* url_part = "query?query_string={}&query_limit={}&row_offset={}&query_type={}&case_sensitive={}&distinct={}";
+                links["self"] = base_url + fmt::format(url_part,
                                             query_string,
                                             _query_limit,
                                             _row_offset,
@@ -82,7 +82,7 @@ namespace irods::rest
                                             _case_sensitive,
                                             _distinct);
 
-                links["first"] = fmt::format(url,
+                links["first"] = base_url + fmt::format(url_part,
                                              query_string,
                                              _query_limit,
                                              "0",
@@ -96,7 +96,7 @@ namespace irods::rest
                 double final_page_delta = (remaining_rows == 0.0) ? dbl_query_limit : remaining_rows;
                 double last_page_number = dbl_total_row_count - final_page_delta;
 
-                links["last"] = fmt::format(url,
+                links["last"] = base_url + fmt::format(url_part,
                                             query_string,
                                             _query_limit,
                                             static_cast<int>(last_page_number),
@@ -108,7 +108,7 @@ namespace irods::rest
                 double next_page_number = std::trunc(current_page_number) + 1 * dbl_query_limit;
                 next_page_number = (next_page_number >= dbl_total_row_count) ? last_page_number : next_page_number;
 
-                links["next"] = fmt::format(url,
+                links["next"] = base_url + fmt::format(url_part,
                                             query_string,
                                             _query_limit,
                                             static_cast<int>(next_page_number),
@@ -117,7 +117,7 @@ namespace irods::rest
                                             _distinct);
 
                 auto prev_count = dbl_row_offset - dbl_query_limit;
-                links["prev"] = fmt::format(url,
+                links["prev"] = base_url + fmt::format(url_part,
                                             query_string,
                                             _query_limit,
                                             static_cast<int>(std::max(0.0, prev_count)),

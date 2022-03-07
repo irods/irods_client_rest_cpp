@@ -104,7 +104,7 @@ namespace irods::rest {
                 }
                 else {
                     const auto msg = fmt::format("Logical path [{}] is not accessible.", logical_path);
-                    error(msg);
+                    error(fmt::runtime(msg));
                     return make_error_response(SYS_INVALID_INPUT_PARAM, msg);
                 }
 
@@ -112,36 +112,36 @@ namespace irods::rest {
                 results["_embedded"] = objects;
 
                 nlohmann::json links = nlohmann::json::object();
-                const std::string url = base_url + "/list?path={}&stat={}&permissions={}&metadata={}&offset={}&limit={}";
-                links["self"] = fmt::format(url
+                constexpr auto* url_part = "/list?path={}&stat={}&permissions={}&metadata={}&offset={}&limit={}";
+                links["self"] = base_url + fmt::format(url_part
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , _offset
                                 , _limit);
-                links["first"] = fmt::format(url
+                links["first"] = base_url + fmt::format(url_part
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , "0"
                                 , _limit);
-                links["last"] = fmt::format(url
+                links["last"] = base_url + fmt::format(url_part
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , "UNSUPPORTED"
                                 , _limit);
-                links["next"] = fmt::format(url
+                links["next"] = base_url + fmt::format(url_part
                                 , _logical_path
                                 , _stat
                                 , _permissions
                                 , _metadata
                                 , std::to_string(offset+limit)
                                 , _limit);
-                links["prev"] = fmt::format(url
+                links["prev"] = base_url + fmt::format(url_part
                                 , _logical_path
                                 , _stat
                                 , _permissions
