@@ -137,7 +137,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
         nlohmann_json::nlohmann_json
         )
 
-    target_compile_definitions(${EXECUTABLE_NAME} PRIVATE SPDLOG_FMT_EXTERNAL)
+    target_compile_definitions(${EXECUTABLE_NAME} PRIVATE ${IRODS_COMPILE_DEFINITIONS_PRIVATE})
 
     install(
         TARGETS
