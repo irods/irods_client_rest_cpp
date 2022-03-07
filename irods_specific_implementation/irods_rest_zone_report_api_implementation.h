@@ -3,8 +3,8 @@
 
 #include "irods_rest_api_base.h"
 
-#include "zone_report.h"
-#include "irods_at_scope_exit.hpp"
+#include <irods/zone_report.h>
+#include <irods/irods_at_scope_exit.hpp>
 
 #include "pistache/router.h"
 

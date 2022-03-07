@@ -3,8 +3,8 @@
 
 #include "irods_rest_api_base.h"
 
-#include "irods_default_paths.hpp"
-#include "query_builder.hpp"
+#include <irods/irods_default_paths.hpp>
+#include <irods/query_builder.hpp>
 
 #include "pistache/router.h"
 

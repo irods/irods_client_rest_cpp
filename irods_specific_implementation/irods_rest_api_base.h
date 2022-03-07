@@ -3,14 +3,14 @@
 
 #include "indexed_connection_pool_with_expiry.hpp"
 
-#include "rodsClient.h"
-#include "rcConnect.h"
-#include "irods_native_auth_object.hpp"
-#include "irods_kvp_string_parser.hpp"
-#include "irods_auth_constants.hpp"
-#include "irods_server_properties.hpp"
-#include "user_administration.hpp"
-#include "irods_exception.hpp"
+#include <irods/rodsClient.h>
+#include <irods/rcConnect.h>
+#include <irods/irods_native_auth_object.hpp>
+#include <irods/irods_kvp_string_parser.hpp>
+#include <irods/irods_auth_constants.hpp>
+#include <irods/irods_server_properties.hpp>
+#include <irods/user_administration.hpp>
+#include <irods/irods_exception.hpp>
 
 #include "fmt/format.h"
 #include <nlohmann/json.hpp>
