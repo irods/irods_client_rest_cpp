@@ -3,9 +3,9 @@
 
 #include "irods_rest_api_base.h"
 
-#include "fmt/format.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/syslog_sink.h"
+#include <fmt/format.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/syslog_sink.h>
 
 #include <memory>
 #include <string_view>

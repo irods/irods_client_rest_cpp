@@ -9,9 +9,9 @@
 #include <irods/irods_exception.hpp>
 #include <irods/ticketAdmin.h>
 
-#include "pistache/http.h"
-#include "pistache/optional.h"
-#include "pistache/router.h"
+#include <pistache/http.h>
+#include <pistache/optional.h>
+#include <pistache/router.h>
 
 #include <vector>
 #include <iterator>

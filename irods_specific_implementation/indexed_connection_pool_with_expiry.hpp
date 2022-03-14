@@ -6,7 +6,7 @@
 #include <irods/irods_server_properties.hpp>
 
 #include "jwt.h"
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include <map>
 #include <string>

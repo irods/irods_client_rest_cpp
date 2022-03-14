@@ -6,7 +6,7 @@
 #include <irods/irods_default_paths.hpp>
 #include <irods/query_builder.hpp>
 
-#include "pistache/router.h"
+#include <pistache/router.h>
 
 #include <boost/filesystem.hpp>
 
