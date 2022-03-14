@@ -10,9 +10,9 @@
 #include <irods/ticketAdmin.h>
 #include "indexed_connection_pool_with_expiry.hpp"
 
-#include "pistache/http.h"
-#include "pistache/optional.h"
-#include "pistache/router.h"
+#include <pistache/http.h>
+#include <pistache/optional.h>
+#include <pistache/router.h>
 
 #include <algorithm>
 

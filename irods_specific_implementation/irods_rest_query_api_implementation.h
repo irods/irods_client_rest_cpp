@@ -8,7 +8,7 @@
 #include <irods/rodsGenQuery.h>
 #include <irods/rodsErrorTable.h>
 
-#include "pistache/router.h"
+#include <pistache/router.h>
 
 namespace irods::rest
 {

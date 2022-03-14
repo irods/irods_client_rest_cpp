@@ -3,7 +3,7 @@
 
 #include "irods_rest_api_base.h"
 
-#include "pistache/router.h"
+#include <pistache/router.h>
 
 namespace irods::rest
 {

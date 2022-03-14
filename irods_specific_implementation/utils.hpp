@@ -1,11 +1,11 @@
 #ifndef IRODS_REST_CPP_UTILS_HPP
 #define IRODS_REST_CPP_UTILS_HPP
 
-#include "pistache/http.h"
-#include "pistache/router.h"
+#include <pistache/http.h>
+#include <pistache/router.h>
 
 #include <nlohmann/json.hpp>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 

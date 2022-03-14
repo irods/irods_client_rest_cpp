@@ -8,7 +8,7 @@
 #include <irods/obf.h>
 #include <irods/authenticate.h>
 
-#include "pistache/router.h"
+#include <pistache/router.h>
 
 #include <cstring>
 #include <array>

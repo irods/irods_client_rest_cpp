@@ -14,7 +14,7 @@
 
 #include "constants.hpp"
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 namespace io {
 namespace swagger {

@@ -6,7 +6,7 @@
 #include <irods/zone_report.h>
 #include <irods/irods_at_scope_exit.hpp>
 
-#include "pistache/router.h"
+#include <pistache/router.h>
 
 namespace irods::rest
 {
