@@ -85,6 +85,7 @@ set(API_SERVER_NAMES
     PutConfiguration
     List
     LogicalPath
+    Metadata
     Query
     StreamGet
     StreamPut
