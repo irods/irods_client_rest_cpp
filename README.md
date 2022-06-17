@@ -339,6 +339,41 @@ curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.1/put_
 **Returns**
 Nothing on success
 
+### /metadata
+This endpoint allows executing multiple metadata operations on a single object atomically.
+
+**Method**: POST
+
+**Parameters**
+cmds: A JSON-object encoding a single target, its entity type, and a list of operations to perform on it.
+See [here](https://docs.irods.org/4.3.0/doxygen/atomic__apply__metadata__operations_8h.html) for the format of these commands.
+
+**Example CURL Command:**
+```
+export CMDS="{\
+  "entity_name": "foo.cpp",\
+  "entity_type": "data_object",\
+  "operations": [\
+    {\
+      "operation": "add",\
+      "attribute": "data_object_attrib_foo.cp",\
+      "value": "data_object_value_foo.cp",\
+      "units": "data_object_units_foo.cp"\
+    },\
+    {\
+      "operation": "remove",\
+      "attribute": "data_object_attrib_foo.cp",\
+      "value": "data_object_value_foo.cp",\
+      "units": "data_object_units_foo.cp"\
+    }\
+  ]\
+}"
+curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.1/metadata?cmds=${CMDS}"
+```
+
+**Returns**
+Nothing on success
+
 ### /query
 This endpoint provides access to the iRODS General Query language, which is a generic query service for the iRODS catalog.
 

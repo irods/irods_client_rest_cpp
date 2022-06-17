@@ -34,12 +34,12 @@ namespace irods::rest {
                    Pistache::Http::ResponseWriter& _response)
         {
             try {
-                auto _logical_path = _request.query().get("path").get();
-                auto _stat = _request.query().get("stat").get();
-                auto _permissions = _request.query().get("permissions").get();
-                auto _metadata = _request.query().get("metadata").get();
-                auto _offset = _request.query().get("offset").get();
-                auto _limit = _request.query().get("limit").get();
+                auto _logical_path   = _request.query().get("path").get();
+                auto _stat           = _request.query().get("stat").get();
+                auto _permissions    = _request.query().get("permissions").get();
+                auto _metadata       = _request.query().get("metadata").get();
+                auto _offset         = _request.query().get("offset").get();
+                auto _limit          = _request.query().get("limit").get();
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
 

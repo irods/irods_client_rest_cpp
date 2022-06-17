@@ -60,6 +60,12 @@
         "log_level": "info"
     },
     "irods_rest_cpp_logicalpath_server": {
+        "port": 8090,
+        "threads": 4,
+        "maximum_idle_timeout_in_seconds": 10,
+        "log_level": "info"
+    },
+    "irods_rest_cpp_metadata_server": {
         "port": 8091,
         "threads": 4,
         "maximum_idle_timeout_in_seconds": 10,
