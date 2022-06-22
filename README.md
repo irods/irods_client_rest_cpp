@@ -554,6 +554,43 @@ JSON formatted Zone Report
 }
 ```
 
+### /logicalpath/replicate
+Replicates a data object into some resource
+
+**Method**: POST
+
+**Parameters**:
+- all: If selected, updates all stale copies.
+- recursive:  Required to replicate a collection. Replicates the whole subtree. Does nothing if used on a data object.
+- thread-count: The number of threads to use for replication.
+- replica-number: Specifies the particular replicate to copy from. Typically not needed.
+- dst-resource: Resource to which to replicate the data object or collection.
+- logical-path: The logical path of the data object or collection to replicate.
+
+**Example CURL command**:
+```
+export TARGET_PATH=/tempZone/home/rods/hello.cpp
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.1/logicalpath/replicate?logical-path=$TARGET_PATH'
+```
+
+### /logicalpath/trim
+
+**Method**: DELETE
+**Parameters**:
+- recursive: Required to trim a collection. Trims the whole subtree. Does nothing if used on a data object.
+- dryrun: If set, no copy will actually be trimmed.
+- minimum-age-in-minutes: The minimum age in minutes foe a data object to be a candidate for trimmed. If a data object is younger, nothing will happen to it.
+- minimum-number-of-remaining-replicas: The minimum number of copies to leave after trimming. Defaults to 2.
+- replica-number: Determines the replica to trim.
+- src-resource: If specified, only replicas on this resource will be candidates for trimming.
+- admin-mode: Required for an admin to trim replicas of other users' data objects.
+
+Note that the `/admin` endpoint already exposes the ability to make
+or remove resources, in addition to other resource-related operations.
+
+**Returns**
+Nothing on success.
+
 ## Running test suite
 
 The test suite for this repository is heavily tied to the iRODS server's python test suite and affiliated libraries. As such, an iRODS server is required to be running on the same machine as the REST client in order to run the python tests.

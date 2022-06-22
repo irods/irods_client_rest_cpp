@@ -55,6 +55,34 @@ def logical_path_rename(_token, _src, _dst):
 
     return body.decode('utf-8')
 
+def logical_path_replicate(_token, _logical_path, _admin=None, _all=None, _num_threads=None, _repl_num=None,
+         _recursive=None, _dst_resource=None,
+         _src_resource=None):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
+    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(c.CUSTOMREQUEST, 'POST')
+
+    url = '{0}/resource?logical-path={1}'.format(base_url(), _logical_path)
+
+    if _all          : url += '&all=1'
+    if _num_threads  :
+    if _recursive    : url += '&recursive=1'
+    if _repl_num     : url += '&replica-number={0}'.format(_repl_num)
+    if _src_resource : url += '&src-resource={0}'.format(_src_resource)
+    if _dst_resource : url += '&dst-resource={0}'.format(_dst_resource)
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body.decode('utf-8')
+
 def logical_path_delete(_token, _logical_path, _no_trash = None,
                         _recursive = None, _unregister = None):
     buffer = BytesIO()
@@ -66,6 +94,33 @@ def logical_path_delete(_token, _logical_path, _no_trash = None,
     if _no_trash: url += '&no-trash=1'
     if _unregister: url += '&unregister=1'
     if _recursive: url += '&recursive=1'
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body.decode('utf-8')
+
+def logical_path_trim(_token, _logical_path, _dryrun=None, _age=None, _repl_num=None, _src_resc=None, _num_copies=None,
+         _admin=None, _recursive=None):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
+    c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
+    c.setopt(c.CUSTOMREQUEST, 'DELETE')
+
+    url = '{0}/resource?logical-path={1}'.format(base_url(), _logical_path)
+
+    if _admin          : url += '&admin=1'
+    if _dryrun         : url += '&dryrun=1'
+    if _recursive      : url += '&recursive=1'
+    if _age            : url += '&age={0}'.format(_age)
+    if _repl_num       : url += '&repl-num{0}'.format(_repl_num)
+    if _src_resc       : url += '&src-resc={0}'.format(_src_resc)
+    if _num            : url += '&num={0}'.format(_num)
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)

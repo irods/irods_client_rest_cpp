@@ -11,6 +11,19 @@ from . import session
 import json
 from . import irods_rest
 
+def entity_has_metadata(session, _entity, _entity_type):
+    entity_to_query_map = {
+        'collection' : '"select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS where COLL_NAME = \'{}\'"',
+        'data_object': f'"select META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS where COLL_NAME = \'{os.path.dirname(_entity)}\' and DATA_NAME = \'{os.path.basename(_entity)}\'"',
+        'user'       : '"select META_USER_ATTR_NAME, META_USER_ATTR_VALUE, META_USER_ATTR_UNITS where USER_NAME = \'{}\'"',
+        'resource'   : '"select META_RESC_ATTR_NAME, META_RESC_ATTR_VALUE, META_RESC_ATTR_UNITS where RESC_NAME = \'{}\'"'
+    }
+    query = entity_to_query_map[_entity_type].format(_entity)
+    query_output = session.run_icommand(['iquest', '%s:%s:%s', query])[0].split('\n')
+    if "CAT_NO_ROWS_FOUND" in query_output[0]:
+        return False
+    return True # eventually should walk the actual avus to check for the target
+
 class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unittest.TestCase):
 
     def setUp(self):
@@ -737,16 +750,105 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
         self.user.assert_icommand(['iinit'], 'STDOUT', 'Enter your current iRODS password:', input=old_password + '\n')
         self.user.assert_icommand(['ils', '-ld'], 'STDOUT', [self.user.session_collection])
 
-def entity_has_metadata(session, _entity, _entity_type):
-    entity_to_query_map = {
-        'collection' : '"select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS where COLL_NAME = \'{}\'"',
-        'data_object': f'"select META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS where COLL_NAME = \'{os.path.dirname(_entity)}\' and DATA_NAME = \'{os.path.basename(_entity)}\'"',
-        'user'       : '"select META_USER_ATTR_NAME, META_USER_ATTR_VALUE, META_USER_ATTR_UNITS where USER_NAME = \'{}\'"',
-        'resource'   : '"select META_RESC_ATTR_NAME, META_RESC_ATTR_VALUE, META_RESC_ATTR_UNITS where RESC_NAME = \'{}\'"'
-    }
-    query = entity_to_query_map[_entity_type].format(_entity)
-    query_output = session.run_icommand(['iquest', '%s:%s:%s', query])[0].split('\n')
-    if "CAT_NO_ROWS_FOUND" in query_output[0]:
-        return False
-    return True # eventually should walk the actual avus to check for the target
+    def test_replicate_data_object(self):
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                token = irods_rest.authenticate('rods', 'rods', 'native')
+                logical_path = os.path.join(admin.home_collection, 'hello.cpp')
+                new_resc_name = 'newResc'
+                ## create a data object on default resource
+                admin.assert_icommand(["itouch", logical_path])
+                ## create new resource
+                lib.create_ufs_resource(new_resc_name, admin)
+                ## repl that resource with only the dest resource specified
+                res = irods_rest.logical_path_replicate(token, logical_path, _dst_resource=new_resc_name)
+                ## ilsresc to make sure that the data object has been repl'd
+                self.assertEqual(res, "")
+            finally:
+                admin.run_icommand(['iadmin', 'rmresc', new_resc_name])
+                admin.run_icommand(['irm', '-r', '-f', logical_path])
+
+    def test_replicate_collection(self):
+        token = irods_rest.authenticate('rods', 'rods', 'native')
+
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                coll_name = 'irods_coll_1'
+                coll = os.path.join(admin.home_collection, coll_name)
+
+                data_obj_name = 'data_object_1'
+                data_obj = os.path.join(coll, data_obj_name)
+
+                resc_one = "newResc1"
+
+                ## create a collection
+                admin.assert_icommand(['imkdir', coll])
+                admin.assert_icommand(['itouch'. data_object_name])
+
+                ## try to repl it without the recursive flag
+                lib.create_ufs_resource(resc_one, admin)
+
+                repl_output = irods_rest.logical_path_replicate(token, coll, _dst_resource=resc_one, _recursive=False)
+                self.assertIn("Make sure you want to repl the whole sub-tree", repl_output)
+
+                repl_output = irods_rest.logical_path_replicate(token, coll, _dst_resource=resc_one, _recursive=True)
+                self.assertEqual(repl_output, "")
+            finally:
+                admin.run_icommand(['iadmin', 'rmresc', resc_one])
+                admin.run_icommand(['irm', '-r', '-f', ''])
+
+    def test_trim_data_object(self):
+        token = irods_rest.authenticate('rods', 'rods', 'native')
+
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                data_obj_name = "data_obj"
+                data_obj = os.path.join(admin.home_collection, data_obj_name)
+                admin.assert_icommand(['itouch', data_obj])
+
+                num_resources = 4
+
+                resource_name_base = "newResc_{0}"
+                for i in range(num_resources):
+                    resc = resource_base_name.format(i)
+                    admin.assert_icommand(['iadmin', 'mkresc', resc])
+                    admin.assert_icommand(['irepl', data_obj, '-R', resc])
+
+                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=resource_name_base.format(0))
+                self.assertEqual(res, "")
+
+            finally:
+               admin.run_icommand(['irm', '-f', data_obj])
+               for i in range(num_resources):
+                   admin.run_icommand(['iadmin', 'rmresc', resource_name_base.format(i)])
+
+    def test_trim_collection(self):
+        token = irods_rest.authenticate('rods', 'rods', 'native')
+
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                coll_name = 'collection_one'
+                file_count = 1
+                file_size = 10
+                lib.make_large_local_tmp_dir(coll_name, fil_count, file_size)
+                admin.assert_icommand(['iput', '-r', coll_name])
+
+                num_resources = 4
+                resource_name_base = "newResc_{0}"
+                for i in range(num_resources):
+                    resc = resource_base_name.format(i)
+                    admin.assert_icommand(['iadmin', 'mkresc', resc])
+                    admin.assert_icommand(['irepl', coll_name, '-R', resc])
+
+                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=resource_name_base.format(0))
+                self.assertIn('Make sure you want to trim the whole sub-tree', res)
+
+                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=resource_name_base.format(0), _recursive=True)
+                self.assertEqual(res, '')
+
+            finally:
+                shutil.rmtree(coll_name)
+                admin.run_icommand(['irm', '-r', '-f', coll_name])
+                for i in range(num_resources):
+                    admin.run_icommand(['iadmin', 'rmresc', resource_name_base.format(i)])
 
