@@ -334,7 +334,7 @@ namespace irods::rest
                 if (_cfg.contains(configuration_keywords::log_level)) {
                     const auto lvl = _cfg.at(configuration_keywords::log_level).get<std::string>();
                     auto lvl_enum = spdlog::level::info;
-                    
+
                     // clang-format off
                     if      (lvl == "critical") { lvl_enum = spdlog::level::critical; }
                     else if (lvl == "error")    { lvl_enum = spdlog::level::err; }

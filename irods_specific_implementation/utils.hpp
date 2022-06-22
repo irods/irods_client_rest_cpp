@@ -1,20 +1,17 @@
 #ifndef IRODS_REST_CPP_UTILS_HPP
 #define IRODS_REST_CPP_UTILS_HPP
 
-#include <pistache/http.h>
-#include <pistache/router.h>
-
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <string_view>
 
 namespace irods::rest
 {
     class admin;
 
-    auto hide_sensitive_data(const Pistache::Http::Uri::Query& _query,
-                             nlohmann::json& _request_info) -> void
+    inline auto hide_sensitive_data(const Pistache::Http::Uri::Query& _query, nlohmann::json& _request_info) -> void
     {
         // Return immediately if "arg3=password" or "arg4" do not exist.
         if (_query.get("arg3").getOrElse("") != "password" || !_query.has("arg4")) {
@@ -25,7 +22,7 @@ namespace irods::rest
         auto safe_query = _query;
         safe_query.clear();
 
-        // Build a new query string, but hide the password value (i.e. arg4) 
+        // Build a new query string, but hide the password value (i.e. arg4)
         // with a different value.
         std::for_each(_query.parameters_begin(), _query.parameters_end(),
             [&safe_query](const auto& _e) {
@@ -66,4 +63,3 @@ namespace irods::rest
 } // namespace irods::rest
 
 #endif // IRODS_REST_CPP_UTILS_HPP
-

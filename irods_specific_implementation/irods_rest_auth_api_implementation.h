@@ -28,7 +28,7 @@ namespace irods::rest
                 authenticate(user_name, password, auth_type);
 
                 // use the zone key as our secret
-                const auto zone_key = irods::get_server_property<std::string>(irods::CFG_ZONE_KEY_KW);
+                const auto zone_key = irods::get_server_property<std::string>(irods::KW_CFG_ZONE_KEY);
                 debug("zone_key = [{}]", zone_key);
 
                 trace("Generating JWT for user [{}] ...", user_name);

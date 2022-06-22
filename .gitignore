@@ -1,0 +1,3 @@
+build
+packaging/*.pyc
+.vscode

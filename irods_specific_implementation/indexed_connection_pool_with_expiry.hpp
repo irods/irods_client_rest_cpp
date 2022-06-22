@@ -189,7 +189,7 @@ namespace irods {
         auto get_user_name_from_key(const std::string& _jwt) -> std::string
         {
             // use the zone key as our secret
-            std::string zone_key{irods::get_server_property<const std::string>(irods::CFG_ZONE_KEY_KW)};
+            std::string zone_key{irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_KEY)};
 
             // decode the jwt
             auto decoded = jwt::decode(_jwt);

@@ -116,6 +116,15 @@ Please refer to your proxy server's (nginx, apache httpd, etc.) documentation fo
 ## Interacting with the API endpoints
 The design of this API uses JWTs to contain authorization and identity. The Auth endpoint must be invoked first in order to authenticate and receive a JWT. This token will then need to be included in the Authorization header of each subsequent request. This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
 
+## Error messages
+Unless otherwise specified, successful operations by this client should return with an empty body. If some error is reported, it will follow this format:
+```json
+{
+	"error_code": integer,
+	"error_message": string
+}
+```
+
 ### /access
 This endpoint provides a service for the generation of a read-only iRODS ticket to a given logical path, be that a collection or a data object.
 
@@ -258,6 +267,42 @@ A JSON structured response within the body containing the listing, or an iRODS e
   }
 }
 ```
+
+### /logicalpath
+Deletes a data object or a collection.
+
+**Method** DELETE
+
+**Parameters**
+- logical-path: The absolute path leading to the data object or collection to be deleted.
+- no-trash: Don't send to trash, delete permanently. Optional, defaults to false.
+- recursive: Recursively delete contents of a collection. Optional, defaults to false.
+- unregister: Unregister data objects instead of deleting them. Optional, defaults to false.
+
+**Example CURL command**
+```
+curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.1/logicalpath?logical-path=/tempZone/home/rods/hello.cpp&no-trash=1"
+```
+
+**Returns**
+Nothing on success.
+
+### /logicalpath/rename
+Renames a data object or collection
+
+**Method**: POST
+
+**Parameters**
+- src: The path to the data object or collection to be renamed.
+- dst: New name of the target data object or collection.
+
+**Example CURL command**
+```
+curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.1/logicalpath/rename?src=/tempZone/home/rods/hello&dst=/tempZone/home/rods/goodbye"
+```
+
+**Returns**
+Nothing on success.
 
 ### /put_configuration
 This endpoint will write the url encoded JSON to the specified files in `/etc/irods`
