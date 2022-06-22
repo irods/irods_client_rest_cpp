@@ -58,6 +58,43 @@ def authenticate(_user_name, _password, _auth_type):
 
     return body
 
+def logical_path_rename(_token, _src, _dest):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Authorization: Native '+token])
+    c.setopt(c.CUSTOMREQUEST, 'POST')
+    url = base_url()+'logicalpath/rename?src={0}&dst={1}'.format(_src, _dst)
+
+    c.setopt(c.URL, url)
+    s.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body
+
+def logical_path_delete(_token, _logical_path, _no_trash = None,
+                        _recursive = None, _unregister = None):
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Authorization: Native ' + _token])
+    c.setopt(c.CUSTOMREQUEST, 'DELETE')
+
+    url = base_url()+'logicalpath?logical-path={0}'.format(_logical_path)
+    if _no_trash: url += '&no-trash=1'
+    if _unregister: url += '&unregister=1'
+    if _recursive: url += '&recursive=1'
+
+    c.setopt(c.URL, url)
+    s.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body
+
 def access(_token, _logical_path, _ticket_type=None, _use_count=None,
            _write_file_count=None, _write_byte_count=None, _seconds_until_expiration=None,
            _users=None, _groups=None, _hosts=None):

@@ -68,6 +68,60 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             finally:
                 os.remove(file_name)
                 admin.assert_icommand(['irm', '-f', file_name])
+    def test_logical_path_rename(self):
+        token = irods_rest.authenticate('rods', 'rods', 'native')
+        with session.make_session_for_existing_admin() as admin:
+            # test on a data object
+            pwd, _ = lib.execute_command(['ipwd'])
+            path = pwd + '/data_object'
+            admin.assert_icommand(['itouch', path])
+            new_path = path.replace('data_object', 'new_data_object')
+            res = irods_rest.logical_path_rename(
+                token,
+                path,
+                new_path
+            )
+            self.assertEqual(res, "")
+            self.assert_icommand(['irm', new_path])
+            # test on a collection
+            path = pwd + '/collection'
+            new_path = path.replace("collection", "new_collection")
+            admin.assert_icommand(['imkdir', path])
+            # make sure that it works with a collection that's actually populated
+            admin.assert_icommand(['itouch', path + '/data_object'])
+            res = irods_rest.logical_path_rename(
+                token,
+               path,
+               new_path
+            )
+            self.assertEqual(res, "")
+            admin.assert_icommand(['irm', '-r', '-f', path])
+
+
+    def test_logical_path_delete(self):
+        token = irods_rest.authenticate('rods', 'rods', 'native')
+        with session.make_session_for_existing_admin() as admin:
+            # test on data object
+            pwd, _ = lib.execute_command(['ipwd'])
+            path   = pwd + '/data_object'
+            admin.assert_icommand(['itouch', path])
+            res = irods_rest.logical_path_delete(
+                token,
+               path
+            )
+            self.assertEqual(res, "")
+            admin.assert_icommand(['irm', path])
+            # test on collections
+            path = pwd + '/collection'
+            admin.assert_icommand(['imkdir', path])
+            admin.assert_icommand(['itouch', path + '/data_object'])
+            res = irods_rest.logical_path_delete(
+                token,
+               path
+            )
+            self.assertEqual(res, "")
+            admin.assert_icommand(['irm', path])
+
 
     def test_access_with_explicit_arguments(self):
         with session.make_session_for_existing_admin() as admin:

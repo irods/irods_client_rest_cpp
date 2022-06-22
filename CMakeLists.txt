@@ -84,6 +84,7 @@ set(API_SERVER_NAMES
     GetConfiguration
     PutConfiguration
     List
+    LogicalPath
     Query
     StreamGet
     StreamPut
