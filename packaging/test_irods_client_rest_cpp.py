@@ -436,7 +436,28 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
 
             finally:
                 shutil.rmtree(dir_name)
-                admin.run_icommand(['irm', '-f', '-r', dir_name])
+                admin.assert_icommand(['irm', '-f', '-r', dir_name])
+
+    def test_list_honors_recursive__issue114():
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                pwd, _ = lib.execute_command(['ipwd'])
+                dir_name = os.path.join(pwd, "bestdirname")
+                make_deep_local_tmp_dir(dir_name)
+
+                token  = irods_rest.authenticate('rods', 'rods', 'native')
+
+                admin.assert_icommand(['iput', '-r', ], 'STDOUT_SINGLELINE', 'Running')
+                admin.assert_icommand(['ils', '-l', '-r'], 'STDOUT_SINGLELINE', dir_name)
+
+                res_deep = irods_rest.list(token, logical_path, 'false', 'false', 'false', offset, 1)
+                res_shallow = irods_rest.list(token, logical_path, 'false', 'false', 'false', offset, 1, recursive="0")
+
+                self.assertTrue(len(res_deep) > len(res_shallow))
+            finally:
+                shutil.rmtree(dir_name)
+                admin.assert_icommand(['irm', '-f', '-r', dir_name])
+
 
     def test_list_with_limit_and_offset(self):
         with session.make_session_for_existing_admin() as admin:
