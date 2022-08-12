@@ -8,6 +8,8 @@
 #include <irods/rodsGenQuery.h>
 #include <irods/rodsErrorTable.h>
 
+#include <algorithm>
+
 #include <pistache/router.h>
 
 namespace irods::rest
@@ -39,6 +41,11 @@ namespace irods::rest
                 auto conn = get_connection(_request.headers().getRaw("authorization").value(), _query_string);
 
                 std::string query_string{decode_url(_query_string)};
+                if ("0" == _case_sensitive) {
+                    std::transform(query_string.begin(), query_string.end(), query_string.begin(), [](unsigned char c) {
+                        return std::toupper(c);
+                    });
+                }
 
                 uintmax_t row_offset  = std::stoi(_row_offset);
                 uintmax_t query_limit = std::stoi(_query_limit);
