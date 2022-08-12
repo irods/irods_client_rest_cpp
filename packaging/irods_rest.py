@@ -163,14 +163,14 @@ def put_configuration(_token, _cfg):
 
     return body.decode('utf-8')
 
-def list(_token, _path, _stat, _permissions, _metadata, _offset, _limit):
+def list(_token, _path, _stat, _permissions, _metadata, _offset, _limit, _recursive="1"):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    url = base_url()+'list?path={0}&stat={1}&permissions={2}&metadata={3}&offset={4}&limit={5}'.format(_path, _stat, _permissions, _metadata, _offset, _limit)
+    url = base_url()+'list?path={0}&stat={1}&permissions={2}&metadata={3}&offset={4}&limit={5}'.format(_path, _stat, _permissions, _metadata, _offset, _limit, _recursive)
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
