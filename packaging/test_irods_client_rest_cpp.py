@@ -512,6 +512,29 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 os.remove(file_name)
                 admin.run_icommand(['irm', '-f', file_name])
 
+    def test_query_handles_case_insensitivity__issue_124(self):
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                dobj_name = 'mAy_I_tAkE_yOuR_hAt_SIR'
+                a_path = os.path.join(admin.home_collection, dobj_name)
+                admin.assert_icommand(['itouch', a_path])
+
+                token  = irods_rest.authenticate('rods', 'rods', 'native')
+
+                query_lower = "SELECT DATA_PATH, COLL_NAME, DATA_NAME, DATA_SIZE WHERE DATA_NAME LIKE '%i%'"
+                query_upper = "SELECT DATA_PATH, COLL_NAME, DATA_NAME, DATA_SIZE WHERE DATA_NAME LIKE '%I%'"
+
+                result_lower = irods_rest.query(token, query_lower, 1, 0, 'general', _case_sensitive='0')
+                result_upper = irods_rest.query(token, query_upper, 1, 0, 'general')
+                
+                embedded_lower = sorted(json.loads(result_lower)['_embedded'])
+                embedded_upper = sorted(json.loads(result_upper)['_embedded'])
+                
+                self.assertEqual(embedded_lower, embedded_upper)
+
+            finally:
+                admie.run_icommand(['irm', '-f', '-r', a_path])
+
     def test_query_with_limit_and_offset(self):
         with session.make_session_for_existing_admin() as admin:
             try:
