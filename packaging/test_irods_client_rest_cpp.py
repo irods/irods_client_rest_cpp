@@ -66,7 +66,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             finally:
                 os.remove(file_name)
                 admin.assert_icommand(['irm', '-f', file_name])
-                
+
     @unittest.skip('Fix me #129')
     def test_logical_path_rename(self):
         token = irods_rest.authenticate('rods', 'rods', 'native')
@@ -490,7 +490,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 admin.assert_icommand(['imeta', 'set', '-d', logical_path, 'attr', 'val', 'unit'])
 
                 token  = irods_rest.authenticate('rods', 'rods', 'native')
-                result = irods_rest.list(token, logical_path, 'true', 'true', 'true', 0, 0)
+                result = irods_rest.list(token, logical_path, 1, 1, 1, 0, 0)
 
                 lst = json.loads(result)['_embedded'][0]
 
@@ -673,9 +673,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 sz  = os.path.getsize(file_name)
                 sz2 = os.path.getsize(downloaded_file_name)
 
-                print(str(sz) + ' vs ' + str(sz2))
-
-                assert(sz == sz2)
+                self.assertEqual(sz, sz2)
 
             finally:
                 os.remove(file_name)

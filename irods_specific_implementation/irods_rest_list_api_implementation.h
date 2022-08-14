@@ -49,9 +49,9 @@ namespace irods::rest {
                 const intmax_t offset = std::stoi(_offset);
                 const intmax_t limit  = std::stoi(_limit);
 
-                const bool stat        = ("true" == _stat);
-                const bool permissions = ("true" == _permissions);
-                const bool metadata    = ("true" == _metadata);
+                const bool stat        = ("1" == _stat);
+                const bool permissions = ("1" == _permissions);
+                const bool metadata    = ("1" == _metadata);
 
                 nlohmann::json objects = nlohmann::json::array();
 
