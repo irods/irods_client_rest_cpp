@@ -238,7 +238,6 @@ def get(_token, _physical_path, _logical_path, _ticket_id=None):
             c.close()
 
             body = body_buffer.getvalue()
-
             f.write(body)
 
             offset = offset + len(body)
