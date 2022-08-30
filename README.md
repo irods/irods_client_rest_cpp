@@ -1,8 +1,6 @@
 # iRODS C++ REST Mid-Tier API
 
-This REST API is designed to be run alongside an iRODS Server to provide an HTTP REST interface into the iRODS protocol.
-
-It runs under the same linux service account as the iRODS Server, accesses `/etc/irods/server_config.json`, and uses the active authenticated `rodsadmin` iRODS account.
+This REST API is designed to be deployed in front of an iRODS Server to provide an HTTP REST interface into the iRODS protocol.
 
 This REST API requires an iRODS Server v4.2.0 or greater.
 
@@ -21,34 +19,39 @@ nginx, rsyslog, and logrotate can be configured and restarted before starting th
 
 ```
 # nginx - configure and restart
-$ sudo cp /etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf
 $ sudo ln -s /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf /etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf
 $ sudo systemctl restart nginx
 
 # rsyslg - configure and restart
-$ sudo cp /etc/irods/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf
-$ sudo cp /etc/irods/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
 $ sudo systemctl restart rsyslog
 
 # REST API - configure and start
-$ sudo cp /etc/irods/irods_client_rest_cpp.json.template /etc/irods/irods_client_rest_cpp.json
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.json.template /etc/irods_client_rest_cpp/irods_client_rest_cpp.json
 $ sudo systemctl restart irods_client_rest_cpp
 ```
 
 ## Building this repository
 This is a standard CMake project which may be built with either Ninja or Make.
 
-Prerequisites (available from https://packages.irods.org):
+This project depends on `irods-dev(el)` and `irods-runtime` version 4.3.0 (available from https://packages.irods.org). The minimum required CMake is 3.12.0. You can install the latest `irods-externals-cmake` package if needed (also available from https://packages.irods.org).
+
+Once these are installed, the other `irods-externals-*` versions will be revealed through building with `cmake` and may change over time as this code base develops.
+
+Prerequisites ():
 ```
 irods-dev(el)
 irods-runtime
 irods-externals-boost
+irods-externals-clang
 irods-externals-json
-irods-externals-pistache0.0.2-0
-irods-externals-spdlog1.5.0-1
+irods-externals-pistache
+irods-externals-spdlog
 ```
 
-Create and enter a build directory, run CMake, and then make the REST API package:
+Create and enter a build directory, run CMake (make sure it is visible in your `$PATH`), and then make the REST API package:
 ```
 $ mkdir build && cd build && cmake ..
 $ make -j package
@@ -57,16 +60,16 @@ $ make -j package
 ## Configuration files
 The REST API provides an executable for each individual API endpoint. These endpoints may be grouped behind a reverse proxy in order to provide a single port for access.
 
-The service relies on a configuration file in `/etc/irods` which dictates which ports are used. Two template files are placed there by the package:
+The service relies on a configuration file in `/etc/irods_client_rest_cpp` which dictates which ports are used. Two template files are placed there by the package:
 ```bash
-/etc/irods/irods_client_rest_cpp.json.template
-/etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template
+/etc/irods_client_rest_cpp/irods_client_rest_cpp.json.template
+/etc/irods_client_rest_cpp/irods_client_rest_cpp_reverse_proxy.conf.template
 ```
 
 ## Starting the service
 To start the REST API service, run the following commands:
 ```bash
-$ sudo cp /etc/irods/irods_client_rest_cpp.json.template /etc/irods/irods_client_rest_cpp.json # configuration
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.json.template /etc/irods_client_rest_cpp/irods_client_rest_cpp.json # configuration
 $ sudo systemctl start irods_client_rest_cpp # start the service
 ```
 
@@ -79,12 +82,14 @@ This section assumes you have a functional REST API service.
 
 The first thing you must do is install `nginx`. Once installed, run the following commands to enable the reverse proxy:
 ```bash
-$ sudo cp /etc/irods/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf # configuration
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf # configuration
 $ sudo ln -s /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf /etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf # configuration
 $ sudo systemctl restart nginx # start the service
 ```
 
 If you modified any port numbers in the REST API's configuration file, you will need to adjust the reverse proxy's configuration file so that `nginx` can connect to the correct endpoint.
+
+If you are getting a 404 error from the reverse proxy, make sure to remove the `default` file from `/etc/nginx/sites-enabled` directory. This default site may be listening on the same port as your reverse proxy and preventing the requests from reaching it.
 
 ## Enabling logging via Rsyslog and Logrotate
 _This section assumes you've installed the C++ REST API package._
@@ -93,14 +98,14 @@ _If you are doing a non-package install, you'll need to copy the configuration f
 
 The REST API uses rsyslog and logrotate for log file management. To enable, run the following commands:
 ```bash
-$ sudo cp /etc/irods/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf
-$ sudo cp /etc/irods/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf
+$ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
 $ sudo systemctl restart rsyslog
 ```
 
-The log file will be located at `/var/log/irods/irods_client_rest_cpp.log`.
+The log file will be located at `/var/log/irods_client_rest_cpp/irods_client_rest_cpp.log`.
 
-The log level for each endpoint can be adjusted by modifying the `"log_level"` option in `/etc/irods/irods_client_rest_cpp.json`. The following values are supported:
+The log level for each endpoint can be adjusted by modifying the `"log_level"` option in `/etc/irods_client_rest_cpp/irods_client_rest_cpp.json`. The following values are supported:
 - trace
 - debug
 - info
@@ -143,7 +148,7 @@ This endpoint provides a service for the generation of a read-only iRODS ticket 
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.1/access?path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write_file_count=10'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/access?path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write_file_count=10'
 ```
 
 **Returns**
@@ -154,7 +159,7 @@ An iRODS ticket token within the **irods-ticket** header, and a URL for streamin
   "headers": {
     "irods-ticket": ["CS11B8C4KZX2BIl"]
   },
-  "url": "/irods-rest/0.9.1/stream?path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
+  "url": "/irods-rest/0.9.2/stream?path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
 }
 ```
 
@@ -175,7 +180,7 @@ The administration interface to the iRODS Catalog which allows the creation, rem
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.1/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone&arg7='
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone&arg7='
 ```
 
 **Returns**
@@ -193,7 +198,7 @@ This endpoint provides an authentication service for the iRODS zone, currently o
 **Example CURL Command:**
 ```
 export SECRETS=$(echo -n rods:rods | base64)
-export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhost:80/irods-rest/0.9.1/auth)
+export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhost:80/irods-rest/0.9.2/auth)
 ```
 
 **Returns:**
@@ -210,7 +215,7 @@ This endpoint will return a JSON structure holding the configuration for an iROD
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.1/get_configuration' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/get_configuration' | jq
 ```
 
 ### /list
@@ -228,7 +233,7 @@ This endpoint provides a recursive listing of a collection, or stat, metadata, a
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.1/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
 ```
 
 **Returns**
@@ -259,11 +264,11 @@ A JSON structured response within the body containing the listing, or an iRODS e
     }
   ],
   "_links": {
-    "first": "/irods-rest/0.9.1/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "last": "/irods-rest/0.9.1/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
-    "next": "/irods-rest/0.9.1/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
-    "prev": "/irods-rest/0.9.1/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "self": "/irods-rest/0.9.1/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
+    "first": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "last": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
+    "next": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
+    "prev": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "self": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
   }
 }
 ```
@@ -281,7 +286,7 @@ Deletes a data object or a collection.
 
 **Example CURL command**
 ```
-curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.1/logicalpath?logical-path=/tempZone/home/rods/hello.cpp&no-trash=1"
+curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.2/logicalpath?logical-path=/tempZone/home/rods/hello.cpp&no-trash=1"
 ```
 
 **Returns**
@@ -298,7 +303,7 @@ Renames a data object or collection
 
 **Example CURL command**
 ```
-curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.1/logicalpath/rename?src=/tempZone/home/rods/hello&dst=/tempZone/home/rods/goodbye"
+curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.2/logicalpath/rename?src=/tempZone/home/rods/hello&dst=/tempZone/home/rods/goodbye"
 ```
 
 **Returns**
@@ -333,7 +338,7 @@ This endpoint will write the url encoded JSON to the specified files in `/etc/ir
 **Example CURL Command:**
 ```
 export CONTENTS="%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
-curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.1/put_configuration?cfg=${CONTENTS}"
+curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.2/put_configuration?cfg=${CONTENTS}"
 ```
 
 **Returns**
@@ -368,7 +373,7 @@ export CMDS="{\
     }\
   ]\
 }"
-curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.1/metadata?cmds=${CMDS}"
+curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.2/metadata?cmds=${CMDS}"
 ```
 
 **Returns**
@@ -389,7 +394,7 @@ This endpoint provides access to the iRODS General Query language, which is a ge
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.1/query?query_limit=100&row_offset=0&query_type=general&query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/query?query_limit=100&row_offset=0&query_type=general&query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
 ```
 
 **Returns**
@@ -415,11 +420,11 @@ A JSON structure containing the query results
     ]
   ],
   "_links": {
-    "first": "/irods-rest/0.9.1/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "last": "/irods-rest/0.9.1/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "next": "/irods-rest/0.9.1/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "prev": "/irods-rest/0.9.1/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "self": "/irods-rest/0.9.1/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1"
+    "first": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "last": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "next": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "prev": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
+    "self": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1"
   },
   "count": "4",
   "total": "4"
@@ -451,11 +456,11 @@ GET: The data requested in the body of the response
 
 **Example CURL Command:**
 ```
-curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/0.9.1/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
+curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/0.9.2/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
 ```
 or
 ```
-curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.1/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
+curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.2/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
 ```
 
 ### /zone_report
@@ -468,7 +473,7 @@ Requests a JSON formatted iRODS Zone report, containing all configuration inform
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.1/zone_report' | jq
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/zone_report' | jq
 ```
 
 **Returns**

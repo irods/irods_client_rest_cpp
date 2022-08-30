@@ -1,6 +1,7 @@
 #ifndef IRODS_REST_CPP_API_BASE_H
 #define IRODS_REST_CPP_API_BASE_H
 
+#include "configuration.hpp"
 #include "indexed_connection_pool_with_expiry.hpp"
 
 #include <irods/rodsClient.h>
@@ -53,74 +54,17 @@ namespace irods::rest
         }
     } // namespace
 
-    class configuration
-    {
-    public:
-        configuration(const std::string& instance_name)
-            : instance_name_{instance_name}
-            , configuration_{load(DEFAULT_CONFIGURATION_FILE)}
-        {
-        }
-
-        configuration(const std::string& instance_name,
-                      const std::string& file_name)
-            : instance_name_{instance_name}
-            , configuration_{load(file_name)}
-        {
-        }
-
-        auto instance_name() const noexcept -> const std::string&
-        {
-            return instance_name_;
-        }
-
-        auto contains(const std::string& _key) const -> bool
-        {
-            return configuration_.at(instance_name_).contains(_key);
-        }
-
-        auto at(const std::string& _key) const -> const json&
-        {
-            return configuration_.at(instance_name_).at(_key);
-        }
-
-        auto operator[](const std::string& _key) const -> const json&
-        {
-                return configuration_.at(instance_name_).at(_key);
-        }
-
-    private:
-        const std::string DEFAULT_CONFIGURATION_FILE{"/etc/irods/irods_client_rest_cpp.json"};
-
-        auto load(const std::string& file_name) -> json
-        {
-            std::ifstream ifs(file_name);
-
-            if (ifs.is_open()) {
-                return json::parse(ifs);
-            }
-
-            throw std::runtime_error{fmt::format("Could not load file [{}]", file_name)};
-        } // load
-
-        const std::string instance_name_;
-        const json        configuration_;
-    }; // class configuration
-
     class api_base
     {
     public:
         api_base(const std::string& _service_name)
-            //: logger_{spdlog::syslog_logger_mt(_service_name, "", LOG_PID, LOG_LOCAL0, true /* enable formatting */)}
             : logger_{spdlog::get(_service_name)}
             , connection_pool_{}
         {
             // sets the client name for the ips command
             setenv(SP_OPTION, _service_name.c_str(), 1);
 
-            auto cfg = configuration{_service_name};
-
-            //configure_logger(cfg);
+            const auto& cfg = irods::rest::configuration::rest_service(_service_name);
 
             auto it = default_idle_time_in_seconds;
             if (cfg.contains(configuration_keywords::timeout)) {
@@ -325,37 +269,6 @@ namespace irods::rest
         std::shared_ptr<spdlog::logger> logger_;
 
     private:
-        void configure_logger(const configuration& _cfg) noexcept
-        {
-            try {
-                logger_->set_pattern(R"_({"timestamp": "%Y-%m-%dT%T.%e%z", "service": "%n", )_"
-                                     R"_("pid": %P, "thread": %t, "severity": "%l", "message": "%v"})_");
-
-                if (_cfg.contains(configuration_keywords::log_level)) {
-                    const auto lvl = _cfg.at(configuration_keywords::log_level).get<std::string>();
-                    auto lvl_enum = spdlog::level::info;
-
-                    // clang-format off
-                    if      (lvl == "critical") { lvl_enum = spdlog::level::critical; }
-                    else if (lvl == "error")    { lvl_enum = spdlog::level::err; }
-                    else if (lvl == "warn")     { lvl_enum = spdlog::level::warn; }
-                    else if (lvl == "info")     { lvl_enum = spdlog::level::info; }
-                    else if (lvl == "debug")    { lvl_enum = spdlog::level::debug; }
-                    else if (lvl == "trace")    { lvl_enum = spdlog::level::trace; }
-                    else                        { lvl_enum = spdlog::level::info; }
-                    // clang-format on
-
-                    logger_->set_level(lvl_enum);
-                }
-                else {
-                    logger_->set_level(spdlog::level::info);
-                }
-            }
-            catch (...) {
-                logger_->set_level(spdlog::level::info);
-            }
-        } // configure_logger
-
         icp connection_pool_;
     }; // class api_base
 } // namespace irods::rest

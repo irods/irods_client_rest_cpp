@@ -14,26 +14,33 @@ namespace irck = irods::rest::configuration_keywords;
 
 int main()
 {
-    auto cfg  = ir::configuration{ir::service_name};
+    try {
+        ir::configuration::init();
 
-    auto logger = ir::init_logger(ir::service_name, cfg);
+        const auto& cfg = ir::configuration::rest_service(ir::service_name);
 
-    auto port = cfg[irck::port];
-    if (port.empty()) {
-        logger->error("Port is not configured for service.");
-        return 3;
+        auto logger = ir::init_logger(ir::service_name);
+
+        auto port = cfg[irck::port];
+        if (port.empty()) {
+            logger->error("Port is not configured for service.");
+            return 3;
+        }
+
+        auto threads = cfg[irck::threads];
+        if (threads.empty()) {
+            logger->info("Using default number of threads [4].");
+            threads = 4;
+        }
+
+        auto addr = Pistache::Address(Pistache::Ipv4::any(), Pistache::Port(port.get<int>()));
+        auto server = MetadataApiImpl(addr);
+        server.init(threads.get<int>());
+        server.start();
+
+        server.shutdown();
     }
-
-    auto threads = cfg[irck::threads];
-    if (threads.empty()) {
-        logger->info("Using default number of threads [4].");
-        threads = 4;
+    catch (...) {
+        return 1;
     }
-
-    auto addr = Pistache::Address(Pistache::Ipv4::any(), Pistache::Port(port.get<int>()));
-    auto server = MetadataApiImpl(addr);
-    server.init(threads.get<int>());
-    server.start();
-
-    server.shutdown();
 }

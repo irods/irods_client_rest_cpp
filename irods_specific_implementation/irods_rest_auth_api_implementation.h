@@ -2,6 +2,7 @@
 #define IRODS_REST_CPP_AUTH_API_IMPLEMENTATION_H
 
 #include "irods_rest_api_base.h"
+#include "utils.hpp"
 
 #include <pistache/router.h>
 
@@ -27,22 +28,18 @@ namespace irods::rest
 
                 authenticate(user_name, password, auth_type);
 
-                // use the zone key as our secret
-                const auto zone_key = irods::get_server_property<std::string>(irods::KW_CFG_ZONE_KEY);
-                debug("zone_key = [{}]", zone_key);
-
                 trace("Generating JWT for user [{}] ...", user_name);
                 auto token = jwt::create()
-                    .set_type("JWS")
-                    .set_issuer(keyword::issue_claim)
-                    .set_subject(keyword::subject_claim)
-                    .set_audience(keyword::audience_claim)
-                    .set_not_before(std::chrono::system_clock::now())
-                    .set_issued_at(std::chrono::system_clock::now())
-                    // TODO: consider how to handle token revocation, token refresh
-                    //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
-                    .set_payload_claim(keyword::user_name, jwt::claim(user_name))
-                    .sign(jwt::algorithm::hs256{zone_key});
+                                 .set_type("JWS")
+                                 .set_issuer(keyword::issue_claim)
+                                 .set_subject(keyword::subject_claim)
+                                 .set_audience(keyword::audience_claim)
+                                 .set_not_before(std::chrono::system_clock::now())
+                                 .set_issued_at(std::chrono::system_clock::now())
+                                 // TODO: consider how to handle token revocation, token refresh
+                                 //.set_expires_at(std::chrono::system_clock::now() - std::chrono::seconds{30})
+                                 .set_payload_claim(keyword::user_name, jwt::claim(user_name))
+                                 .sign(jwt::algorithm::hs256{irods::rest::configuration::get_jwt_signing_key()});
 
                 return std::make_tuple(Pistache::Http::Code::Ok, token);
             }

@@ -12,8 +12,13 @@
 
 namespace irods::rest
 {
-    auto init_logger(const std::string_view _service_name, irods::rest::configuration& _config)
-        -> std::shared_ptr<spdlog::logger>
+    /// \brief Initialize logging for the REST service specified by \p _service_name.
+    ///
+    /// The logging module is initialized based on the level set in the JSON configuration
+    /// for the specified \p _service_name. If none is specified, the log level is set to "info".
+    ///
+    /// \param[in] _service_name Key for JSON configuration for the target REST service
+    auto init_logger(const std::string_view _service_name) -> std::shared_ptr<spdlog::logger>
     {
         constexpr auto enable_formatting = true;
 
@@ -27,12 +32,14 @@ namespace irods::rest
             logger->set_pattern(R"_({"timestamp":"%Y-%m-%dT%T.%e%z","service":"%n",)_"
                                 R"_("pid":%P,"thread":%t,"severity":"%l","payload":%v})_");
 
-            if (_config.contains(configuration_keywords::log_level)) {
+            const auto& cfg = configuration::rest_service(_service_name);
+
+            if (const auto lvl_itr = cfg.find(configuration_keywords::log_level); lvl_itr != cfg.end()) {
                 namespace keywords = configuration_keywords;
 
-                const auto& lvl = _config.at(keywords::log_level).get_ref<const std::string&>();
+                const auto& lvl = lvl_itr->get_ref<const std::string&>();
                 auto lvl_enum = spdlog::level::info;
-                
+
                 // clang-format off
                 if      (lvl == "critical") { lvl_enum = spdlog::level::critical; }
                 else if (lvl == "error")    { lvl_enum = spdlog::level::err; }
