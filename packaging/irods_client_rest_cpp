@@ -16,37 +16,45 @@
 # Description:       Manages the iRODS C++ REST service
 ### END INIT INFO
 
+find_os() {
+    UNAMERESULTS=`uname`
+    if [ -f "/etc/redhat-release" ]; then       # CentOS and RHEL and Fedora
+        DETECTEDOS="RedHatCompatible"
+    elif [ -f "/etc/SuSE-release" ]; then       # SuSE
+        DETECTEDOS="SuSE"
+    elif [ -f "/etc/arch-release" ]; then       # ArchLinux
+        DETECTEDOS="ArchLinux"
+    elif [ -f "/etc/lsb-release" ]; then        # Ubuntu
+        DETECTEDOS="Ubuntu"
+    elif [ -f "/etc/debian_version" ]; then     # Debian
+        DETECTEDOS="Debian"
+    elif [ -f "/usr/bin/sw_vers" ]; then        # MacOSX
+        DETECTEDOS="MacOSX"
+    elif [ "$UNAMERESULTS" == "SunOS" ]; then   # Solaris
+        DETECTEDOS="Solaris"
+    fi
+
+    echo "$DETECTEDOS"
+}
 
 set -e
 
 PROJECT="irods_client_rest_cpp"
 PREFIX="${PROJECT}_"
 
-# import service account information
-if [ -f /etc/irods/service_account.config ] ; then
-    # get service account information
-    . /etc/irods/service_account.config 2> /dev/null
-else
-    IRODS_SERVICE_ACCOUNT_NAME=`ls -ld /var/lib/irods | awk '{print $3}'`
-    IRODS_SERVICE_GROUP_NAME=`ls -ld /var/lib/irods | awk '{print $4}'`
-fi
-
-IRODS_HOME=/var/lib/irods
-IRODS_CTL=$IRODS_HOME/irodsctl
-
-DETECTEDOS=`$IRODS_HOME/packaging/find_os.sh`
+DETECTEDOS=find_os
 
 stop_irods_client_rest_cpp() {
     for PID in `ps -ef | grep $PREFIX | grep -v 'grep' |  awk '{print $2}'`
     do
-        su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "kill -9 $PID"
+        kill -9 ${PID}
     done
 }
 
 start_irods_client_rest_cpp() {
     for API in `ls /usr/sbin/$PREFIX*`
     do
-        su $SU_SHELL_OPTS $IRODS_SERVICE_ACCOUNT_NAME -c "$API&"
+        ${API}&
     done
 }
 

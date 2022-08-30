@@ -1,4 +1,4 @@
-/var/log/irods/irods_client_rest_cpp.log {
+/var/log/irods_client_rest_cpp/irods_client_rest_cpp.log {
     weekly
     rotate 26
     copytruncate

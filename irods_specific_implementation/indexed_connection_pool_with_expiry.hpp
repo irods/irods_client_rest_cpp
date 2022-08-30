@@ -1,9 +1,13 @@
 #ifndef IRODS_INDEXED_CONNECTION_POOL_HPP
 #define IRODS_INDEXED_CONNECTION_POOL_HPP
 
-#include <irods/rcConnect.h>
+#include "configuration.hpp"
+
+#include <irods/irods_exception.hpp>
 #include <irods/irods_random.hpp>
-#include <irods/irods_server_properties.hpp>
+#include <irods/obf.h>
+#include <irods/rcConnect.h>
+#include <irods/rodsErrorTable.h>
 
 #include "jwt.h"
 #include <fmt/format.h>
@@ -36,36 +40,25 @@ namespace irods {
 
             connection_handle(const std::string& _client_name)
             {
-                rodsEnv env;
-                _getRodsEnv(env);
-                conn_ = _rcConnect(
-                            env.rodsHost,
-                            env.rodsPort,
-                            env.rodsUserName,
-                            env.rodsZone,
-                            _client_name.c_str(),
-                            env.rodsZone,
-                            &err_,
-                            0,
-                            NO_RECONN);
+                const auto& env = irods::rest::configuration::irods_client_environment();
+                const char* host = env.at("host").get_ref<const std::string&>().data();
+                const auto port = env.at("port").get<int>();
+                const char* zone = env.at("zone").get_ref<const std::string&>().data();
+                const char* rodsadmin_username = env.at("rodsadmin_username").get_ref<const std::string&>().data();
+                conn_ =
+                    _rcConnect(host, port, rodsadmin_username, zone, _client_name.c_str(), zone, &err_, 0, NO_RECONN);
             } // ctor
 
             connection_handle(
                   const std::string& _client_name
                 , const std::string& _proxy_name)
             {
-                rodsEnv env;
-                _getRodsEnv(env);
-                conn_ = _rcConnect(
-                            env.rodsHost,
-                            env.rodsPort,
-                            _proxy_name.c_str(),
-                            env.rodsZone,
-                            _client_name.c_str(),
-                            env.rodsZone,
-                            &err_,
-                            0,
-                            NO_RECONN);
+                const auto& env = irods::rest::configuration::irods_client_environment();
+                const char* host = env.at("host").get_ref<const std::string&>().data();
+                const auto port = env.at("port").get<int>();
+                const char* zone = env.at("zone").get_ref<const std::string&>().data();
+                conn_ =
+                    _rcConnect(host, port, _proxy_name.c_str(), zone, _client_name.c_str(), zone, &err_, 0, NO_RECONN);
             } // ctor
 
             virtual ~connection_handle()
@@ -188,29 +181,44 @@ namespace irods {
 
         auto get_user_name_from_key(const std::string& _jwt) -> std::string
         {
-            // use the zone key as our secret
-            std::string zone_key{irods::get_server_property<const std::string>(irods::KW_CFG_ZONE_KEY)};
-
             // decode the jwt
             auto decoded = jwt::decode(_jwt);
 
+            const auto& signing_key = irods::rest::configuration::get_jwt_signing_key();
+
             // verify the jwt
-            auto verifier = jwt::verify()
-                                .allow_algorithm(jwt::algorithm::hs256{zone_key})
-                                .with_issuer(keyword::issue_claim);
+            auto verifier =
+                jwt::verify().allow_algorithm(jwt::algorithm::hs256{signing_key}).with_issuer(keyword::issue_claim);
             verifier.verify(decoded);
 
             auto payload = decoded.get_payload_claims();
 
             return payload[keyword::user_name].as_string();
-
         } // get_user_name_from_key
+
+        static auto save_rodsadmin_password_if_necessary() -> void
+        {
+            namespace irc = irods::rest::configuration;
+
+            if (const int ec = obfGetPw(nullptr); ec < 0) {
+                const auto& rodsadmin_password =
+                    irc::irods_client_environment().at("rodsadmin_password").get_ref<const std::string&>();
+                if (const int ec = obfSavePw(0, 0, 0, rodsadmin_password.data()); ec < 0) {
+                    THROW(ec, "Failed to save password for rodsadmin proxy user");
+                }
+            }
+        } // save_rodsadmin_password_if_necessary
 
         auto make_connection(const std::string& _jwt) -> std::shared_ptr<connection_handle>
         {
             auto user_name = get_user_name_from_key(_jwt);
 
             auto conn = std::make_shared<connection_handle>(user_name);
+
+            // If we can't get the obfuscated password, the rodsadmin proxy user has not been authenticated.
+            // All currently supported authentication plugins require the obfuscated password file to exist
+            // when using clientLogin, so make sure this is done here before proceeding to authentication.
+            save_rodsadmin_password_if_necessary();
 
             auto err = clientLogin(conn->get());
             if(err < 0) {
