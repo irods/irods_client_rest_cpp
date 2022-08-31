@@ -150,6 +150,39 @@ It is highly advised to run the service with HTTPS enabled. The administrative A
 
 Please refer to your proxy server's (nginx, apache httpd, etc.) documentation for enabling SSL communication.
 
+## Starting the services with Docker Compose
+
+This repository provides a Docker Compose project which runs a local iRODS C++ REST client package in an Ubuntu 20.04-based container alongside an nginx reverse-proxy service.
+
+To run, the following things will be required:
+
+1. A `.deb` package built for Ubuntu 20.04 residing on the filesystem of the local host (see [Building with Docker](#building-with-docker)).
+2. An iRODS server reachable by the containers providing the Compose project services on the host machine.
+
+The Compose project is found under `docker/runner` along with the attendant files.
+
+Copy the `.deb` package into `docker/runner` (i.e. `cp /path/to/package.deb ./docker/run`). The package will be installed as part of the Docker image built for the REST client service. If you are having trouble, check to make sure that the name of the file you copied matches the `local_package` build argument under the `irods-client-rest-cpp` service definition in the `./docker/runner/docker-compose.yml` file.
+
+You will also need to modify `./docker/runner/irods_client_rest_cpp.json` to match the desired iRODS client environment. You may also wish to change the `jwt_signing_key` outside of an experimental context.
+
+Now that things are set up, let's run it:
+```
+cd ./docker/runner
+docker-compose up
+```
+
+The nginx and REST client service Docker images should be built and then containers spawned for each service. The nginx service exposes port 80 on the host machine by default. If you wish to change this, edit the `./docker/runner/docker-compose.yml` file and restart the service.  Note: The ports for the REST services are not exposed on the host machine - only the nginx reverse-proxy port is exposed.
+
+To stop the service:
+```
+docker-compose down
+```
+
+To modify configuration settings for the REST services, edit the `./docker/runner/irods_client_rest_cpp.json` file on the host machine and restart the services:
+```
+docker-compose restart
+```
+
 ## Interacting with the API endpoints
 The design of this API uses JWTs to contain authorization and identity. The Auth endpoint must be invoked first in order to authenticate and receive a JWT. This token will then need to be included in the Authorization header of each subsequent request. This API follows a [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS#:~:text=Hypermedia%20as%20the%20Engine%20of,provide%20information%20dynamically%20through%20hypermedia.) design which provides not only the requested information but possible next operations on that information.
 
