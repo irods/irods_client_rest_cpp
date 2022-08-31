@@ -23,7 +23,7 @@ $ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp_reverse_proxy.conf.te
 $ sudo ln -s /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf /etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf
 $ sudo systemctl restart nginx
 
-# rsyslg - configure and restart
+# rsyslog - configure and restart
 $ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf
 $ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
 $ sudo systemctl restart rsyslog
@@ -56,6 +56,38 @@ Create and enter a build directory, run CMake (make sure it is visible in your `
 $ mkdir build && cd build && cmake ..
 $ make -j package
 ```
+
+## Building with Docker
+
+This repository provides a Dockerfile with all of the tools needed to build a package for Ubuntu 20.04.
+
+The builder image itself must first be built. This can be done by running the following:
+```bash
+cd docker/builder
+docker build -t irods-client-rest-cpp-builder:ubuntu-20.04 .
+```
+
+This will produce a Docker Image with tag `irods-client-rest-cpp-builder:ubuntu-20.04`. The tag can be anything, as long as it is used consistently.
+
+Once built, the builder can be run to build packages from source code on the host machine. The script run by the container takes the following inputs:
+
+1. A volume mount for the source directory (this repository) on the host
+2. A volume mount for the output build files on the host
+3. A volume mount for the package by itself on the host
+
+Here is an example usage:
+```bash
+docker run -t --rm \
+           -v ${sourcedir}:/src:ro \
+           -v ${builddir}:/build \
+           -v ${packagedir}:/packages \
+           irods-client-rest-cpp-builder:ubuntu-20.04
+```
+`$sourcedir`, `$builddir`, and `$packagedir` should be full paths to the source code directory, the desired output directory for build artifacts, and the desired output directory for the built package.
+
+Once the build has completed, you should find a `.deb` file on the host machine where you specified `$packagedir` to be.
+
+Integrating this into your workflow is an exercise left to the reader.
 
 ## Configuration files
 The REST API provides an executable for each individual API endpoint. These endpoints may be grouped behind a reverse proxy in order to provide a single port for access.
