@@ -1,0 +1,103 @@
+---
+Checks:
+    -*,
+    boost-*,
+    bugprone-*,
+    clang-diagnostic-*,
+    clang-analyzer-*,
+    -clang-analyzer-osx.*,
+    -clang-analyzer-optin.osx.*,
+    cert-dcl*,
+    cert-env33-c,
+    cert-err34-c,
+    cert-err*-cpp,
+    cert-flp30-c,
+    cert-oop*,
+    cppcoreguidelines-*,
+    concurrency-*,
+    google-build-namespaces,
+    google-build-using-namespace,
+    google-default-arguments,
+    google-explicit-constructor,
+    google-global-names-in-headers,
+    google-readability-casting,
+    google-readability-todo,
+    google-runtime-int,
+    google-runtime-operator,
+    hicpp-exception-baseclass,
+    hicpp-signed-bitwise,
+    misc-*,
+    modernize-*,
+    performance-*,
+    portability-std-allocator-const,
+    portability-simd-intrinsics,
+    readability-*
+WarningsAsErrors:
+    boost-*,
+    bugprone-*,
+    clang-diagnostic-*,
+    clang-analyzer-*,
+    cert-dcl*,
+    -cert-dcl59-cpp,
+    cert-env33-c,
+    cert-err34-c,
+    cert-err*-cpp,
+    cert-flp30-c,
+    cert-oop*,
+    cppcoreguidelines-*,
+    concurrency-thread-canceltype-asynchronous,
+    google-build-namespaces,
+    google-build-using-namespace,
+    google-default-arguments,
+    google-explicit-constructor,
+    google-global-names-in-headers,
+    google-readability-casting,
+    google-runtime-int,
+    google-runtime-operator,
+    hicpp-exception-baseclass,
+    hicpp-signed-bitwise,
+    misc-*,
+    modernize-*,
+    performance-*,
+    portability-std-allocator-const,
+    readability-*
+FormatStyle:     none
+CheckOptions:
+  - key:             llvm-else-after-return.WarnOnConditionVariables
+    value:           'false'
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             cert-str34-c.DiagnoseSignedUnsignedCharComparisons
+    value:           'false'
+  - key:             google-readability-namespace-comments.ShortNamespaceLines
+    value:           '10'
+  - key:             cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
+    value:           'false'
+  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           'true'
+  - key:             cert-dcl16-c.NewSuffixes
+    value:           'L;LL;LU;LLU'
+  - key:             google-readability-braces-around-statements.ShortStatementLines
+    value:           '1'
+  - key:             modernize-pass-by-value.IncludeStyle
+    value:           llvm
+  - key:             google-readability-namespace-comments.SpacesBeforeComments
+    value:           '2'
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           '16'
+  - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
+    value:           'true'
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+  - key:             llvm-qualified-auto.AddConstToQualified
+    value:           'false'
+  - key:             modernize-loop-convert.NamingStyle
+    value:           CamelCase
+  - key:             llvm-else-after-return.WarnOnUnfixable
+    value:           'false'
+  - key:             google-readability-function-size.StatementThreshold
+    value:           '800'
+...
+
