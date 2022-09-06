@@ -201,7 +201,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 token = irods_rest.authenticate('rods', 'rods', 'native')
 
                 json_string = irods_rest.access(token, logical_path, _seconds_until_expiration=-1)
-                assert(json_string.find('error') > 0)
+                self.assertGreater(json_string.find('error'), 0)
                 json_object = json.loads(json_string)
                 self.assertEqual(json_object['error_code'], -130000)
 
@@ -533,7 +533,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 self.assertEqual(embedded_lower, embedded_upper)
 
             finally:
-                admie.run_icommand(['irm', '-f', '-r', a_path])
+                admin.run_icommand(['irm', '-f', '-r', a_path])
 
     def test_query_with_limit_and_offset(self):
         with session.make_session_for_existing_admin() as admin:
