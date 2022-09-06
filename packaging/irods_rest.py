@@ -170,7 +170,7 @@ def list(_token, _path, _stat, _permissions, _metadata, _offset, _limit, _recurs
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    url = base_url()+'list?path={0}&stat={1}&permissions={2}&metadata={3}&offset={4}&limit={5}'.format(_path, _stat, _permissions, _metadata, _offset, _limit, _recursive)
+    url = base_url()+f'list?path={_path}&stat={_stat}&permissions={_permissions}&metadata={_metadata}&offset={_offset}&limit={_limit}&recursive={_recursive}'
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)

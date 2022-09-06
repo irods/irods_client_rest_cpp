@@ -438,25 +438,28 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 shutil.rmtree(dir_name)
                 admin.assert_icommand(['irm', '-f', '-r', dir_name])
 
-    def test_list_honors_recursive__issue114():
+    def test_list_honors_recursive__issue_114(self):
         with session.make_session_for_existing_admin() as admin:
             try:
-                pwd, _ = lib.execute_command(['ipwd'])
-                dir_name = os.path.join(pwd, "bestdirname")
-                make_deep_local_tmp_dir(dir_name)
+                dirname = 'test_list_honors_recursive__issue_114'
+                logical_path = os.path.join(admin.home_collection, dirname)
+                physical_path = os.path.join(admin.local_session_dir, dirname)
+                lib.make_deep_local_tmp_dir(physical_path)
 
-                token  = irods_rest.authenticate('rods', 'rods', 'native')
+                token = irods_rest.authenticate('rods', 'rods', 'native')
 
-                admin.assert_icommand(['iput', '-r', ], 'STDOUT_SINGLELINE', 'Running')
-                admin.assert_icommand(['ils', '-l', '-r'], 'STDOUT_SINGLELINE', dir_name)
+                admin.assert_icommand(['iput', '-r', physical_path, logical_path], 'STDOUT_SINGLELINE', 'Running')
 
-                res_deep = irods_rest.list(token, logical_path, 'false', 'false', 'false', offset, 1)
-                res_shallow = irods_rest.list(token, logical_path, 'false', 'false', 'false', offset, 1, recursive="0")
+                offset = 0
+                limit = 0
+                res_deep = irods_rest.list(token, logical_path, 0, 0, 0, offset, limit)
+                res_shallow = irods_rest.list(token, logical_path, 0, 0, 0, offset, limit, _recursive=0)
 
-                self.assertTrue(len(res_deep) > len(res_shallow))
+                self.assertGreater(len(res_deep), len(res_shallow))
+
             finally:
-                shutil.rmtree(dir_name)
-                admin.assert_icommand(['irm', '-f', '-r', dir_name])
+                shutil.rmtree(physical_path)
+                admin.assert_icommand(['irm', '-f', '-r', logical_path])
 
 
     def test_list_with_limit_and_offset(self):
