@@ -553,3 +553,22 @@ JSON formatted Zone Report
     }]
 }
 ```
+
+## Running test suite
+
+The test suite for this repository is heavily tied to the iRODS server's python test suite and affiliated libraries. As such, an iRODS server is required to be running on the same machine as the REST client in order to run the python tests.
+
+Running the tests has been captured in a Compose project under `./docker/tester`. Like the Compose project in `./docker/runner`, a .deb package built for Ubuntu 20.04 is required in the build context. The package is installed when the Compose project is run.
+
+To run the tests using Docker Compose, copy the .deb file to `./docker/tester` and run the following:
+```bash
+cd ./docker/tester
+docker-compose up
+```
+
+The Compose project will set up the iRODS server and REST client, and then run the python test suite. If you are having trouble, check to make sure that the name of the file you copied matches the `local_package` environment variable under the `irods-client-rest-cpp-tester` service definition in the `./docker/tester/docker-compose.yml` file.
+
+When the tests have completed, the `irods-client-rest-cpp-tester` service will end, but the Compose project will not be brought down by itself. This can be done by running the following:
+```bash
+docker-compose down
+```

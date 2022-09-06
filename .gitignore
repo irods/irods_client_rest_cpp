@@ -2,4 +2,4 @@ build
 packaging/*.pyc
 .vscode
 tags
-docker/runner/*.deb
+*.deb
