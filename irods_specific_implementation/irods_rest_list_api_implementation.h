@@ -40,7 +40,7 @@ namespace irods::rest {
                 auto _metadata       = _request.query().get("metadata").get();
                 auto _offset         = _request.query().get("offset").get();
                 auto _limit          = _request.query().get("limit").get();
-		auto _recursive = _request.query().get("recursive").getOrElse("1"); // preserve old behavior
+                auto _recursive = _request.query().get("recursive").getOrElse("1"); // preserve old behavior
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
 
@@ -72,69 +72,82 @@ namespace irods::rest {
                     objects.push_back(obj_info);
                 }
                 else if (fcli::is_collection(*conn(), start_path)) {
-		    if ("1" == _recursive) {
-			for (auto&& p : fcli::recursive_collection_iterator(*conn(), start_path)) {
-			    // skip earlier entries for paging
-			    if (offset > 0 && offset_counter < offset) {
-				++offset_counter;
-				continue;
-			    }
+                    if ("1" == _recursive) {
+                        for (auto&& p : fcli::recursive_collection_iterator(*conn(), start_path)) {
+                            // skip earlier entries for paging
+                            if (offset > 0 && offset_counter < offset) {
+                                ++offset_counter;
+                                continue;
+                            }
 
-			    try {
-				const auto object_status = fcli::status(*conn(), p.path());
+                            try {
+                                const auto object_status = fcli::status(*conn(), p.path());
 
-				nlohmann::json obj_info = nlohmann::json::object();
-				obj_info["type"] = type_to_string.at(object_status.type());
-				obj_info["logical_path"] = p.path().c_str();
+                                nlohmann::json obj_info = nlohmann::json::object();
+                                obj_info["type"] = type_to_string.at(object_status.type());
+                                obj_info["logical_path"] = p.path().c_str();
 
-				if (stat) { aggregate_stat_information(*conn(), obj_info, p.path()); }
-				if (permissions) { aggregate_permissions_information(obj_info, object_status.permissions()); }
-				if (metadata) { aggregate_metadata_information(*conn(), obj_info, p.path()); }
+                                if (stat) {
+                                    aggregate_stat_information(*conn(), obj_info, p.path());
+                                }
+                                if (permissions) {
+                                    aggregate_permissions_information(obj_info, object_status.permissions());
+                                }
+                                if (metadata) {
+                                    aggregate_metadata_information(*conn(), obj_info, p.path());
+                                }
 
-				objects.push_back(obj_info);
-			    }
-			    catch (const irods::exception& e) {
-				error("Caught exception - [error_code={}] {}", e.code(), e.what());
-				return make_error_response(e.code(), e.client_display_what());
-			    }
+                                objects.push_back(obj_info);
+                            }
+                            catch (const irods::exception& e) {
+                                error("Caught exception - [error_code={}] {}", e.code(), e.what());
+                                return make_error_response(e.code(), e.client_display_what());
+                            }
 
-			    ++limit_counter;
-			    if (limit > 0 && limit_counter >= limit) {
-				break;
-			    }
-			} // for path
-		    } else {
-			for (auto&& p : fcli::collection_iterator(*conn(), start_path)) {
-			    // skip earlier entries for paging
-			    if (offset > 0 && offset_counter < offset) {
-				++offset_counter;
-				continue;
-			    }
+                            ++limit_counter;
+                            if (limit > 0 && limit_counter >= limit) {
+                                break;
+                            }
+                        } // for path
+                    }
+                    else {
+                        for (auto&& p : fcli::collection_iterator(*conn(), start_path)) {
+                            // skip earlier entries for paging
+                            if (offset > 0 && offset_counter < offset) {
+                                ++offset_counter;
+                                continue;
+                            }
 
-			    try {
-				const auto object_status = fcli::status(*conn(), p.path());
+                            try {
+                                const auto object_status = fcli::status(*conn(), p.path());
 
-				nlohmann::json obj_info = nlohmann::json::object();
-				obj_info["type"] = type_to_string.at(object_status.type());
-				obj_info["logical_path"] = p.path().c_str();
+                                nlohmann::json obj_info = nlohmann::json::object();
+                                obj_info["type"] = type_to_string.at(object_status.type());
+                                obj_info["logical_path"] = p.path().c_str();
 
-				if (stat) { aggregate_stat_information(*conn(), obj_info, p.path()); }
-				if (permissions) { aggregate_permissions_information(obj_info, object_status.permissions()); }
-				if (metadata) { aggregate_metadata_information(*conn(), obj_info, p.path()); }
+                                if (stat) {
+                                    aggregate_stat_information(*conn(), obj_info, p.path());
+                                }
+                                if (permissions) {
+                                    aggregate_permissions_information(obj_info, object_status.permissions());
+                                }
+                                if (metadata) {
+                                    aggregate_metadata_information(*conn(), obj_info, p.path());
+                                }
 
-				objects.push_back(obj_info);
-			    }
-			    catch (const irods::exception& e) {
-				error("Caught exception - [error_code={}] {}", e.code(), e.what());
-				return make_error_response(e.code(), e.client_display_what());
-			    }
+                                objects.push_back(obj_info);
+                            }
+                            catch (const irods::exception& e) {
+                                error("Caught exception - [error_code={}] {}", e.code(), e.what());
+                                return make_error_response(e.code(), e.client_display_what());
+                            }
 
-			    ++limit_counter;
-			    if (limit > 0 && limit_counter >= limit) {
-				break;
-			    }
-			} // for path
-		    }
+                            ++limit_counter;
+                            if (limit > 0 && limit_counter >= limit) {
+                                break;
+                            }
+                        } // for path
+                    }
                 }
                 else {
                     const auto msg = fmt::format("Logical path [{}] is not accessible.", logical_path);
