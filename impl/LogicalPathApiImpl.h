@@ -28,14 +28,14 @@ namespace io::swagger::server::api
         void rename_handler_impl(const Pistache::Rest::Request& request,
                                  Pistache::Http::ResponseWriter& response) override;
 
-        void delete_handler_impl(const Pistache::Rest::Request& request,
-                                       Pistache::Http::ResponseWriter& response) override;
+        void delete_handler_impl(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter& response)
+            override;
 
-        void trim_handler_impl(const Pistache::Rest::Request& request,
-                                          Pistache::Http::ResponseWriter& response) override;
+        void trim_handler_impl(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter& response)
+            override;
 
-        void replicate_handler_impl(const Pistache::Rest::Request& request,
-                                       Pistache::Http::ResponseWriter& response) override;
+        void replicate_handler_impl(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter& response)
+            override;
 
         irods::rest::logical_path irods_logical_path_;
     }; // class LogicalPathApiImpl
