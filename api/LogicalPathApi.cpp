@@ -39,11 +39,11 @@ namespace io::swagger::server::api
             router, irods::rest::base_url + "/logicalpath", Routes::bind(&LogicalPathApi::delete_handler, this));
         Routes::Post(
             router, irods::rest::base_url + "/logicalpath/rename", Routes::bind(&LogicalPathApi::rename_handler, this));
-        Routes::Delete(
+        Routes::Post(
             router, irods::rest::base_url + "/logicalpath/trim", Routes::bind(&LogicalPathApi::trim_handler, this));
         Routes::Post(
             router,
-            irods::rest::base_url + "/logicalpath/repl",
+            irods::rest::base_url + "/logicalpath/replicate",
             Routes::bind(&LogicalPathApi::replicate_handler, this));
 
         // Default handler, called when a route is not found

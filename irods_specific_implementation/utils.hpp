@@ -61,7 +61,7 @@ namespace irods::rest
         _response.send(http_code, msg);
     } // handle_request
 
-    inline bool is_set(const std::string_view s)
+    inline auto is_set(const std::string_view s) -> bool
     {
         return s == "1"; // we only honor "1" for this client
     }

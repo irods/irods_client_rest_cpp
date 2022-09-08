@@ -125,20 +125,18 @@ namespace irods::rest
             }
         }
 
-        std::tuple<Pistache::Http::Code, std::string> trim_dispatcher(
-            const Pistache::Rest::Request& _request,
-            Pistache::Http::ResponseWriter& _response)
+        auto trim_dispatcher(const Pistache::Rest::Request& _request, Pistache::Http::ResponseWriter& _response)
+            -> std::tuple<Pistache::Http::Code, std::string>
         {
             try {
                 auto conn = get_connection(_request.headers().getRaw("authorization").value());
-                dataObjInp_t trim_input{};
 
-                bool is_collection = false;
+                auto inp = create_data_obj_trim_inp(_request);
 
-                setup_input_for_trim(_request, trim_input, *conn(), is_collection);
+                // This will ensure that the KeyValPair member of the input is free'd.
+                const auto trim_input_lm = irods::at_scope_exit{[&inp] { clearKeyVal(&inp.condInput); }};
 
-                int status;
-                if (is_collection) {
+                if (fscli::is_collection(fscli::status(*conn(), decode_url(inp.objPath)))) {
                     if (!is_set(_request.query().get("recursive").getOrElse("0"))) {
                         return make_error_response(
                             USER_INCOMPATIBLE_PARAMS,
@@ -146,196 +144,31 @@ namespace irods::rest
                             "sub-tree.");
                     }
 
-                    for (const auto& pathname : fscli::recursive_collection_iterator(*conn(), trim_input.objPath)) {
-                        if (fscli::is_data_object(fscli::status(*conn(), decode_url(pathname.path())))) {
-                            strcpy(trim_input.objPath, pathname.path().c_str());
+                    for (const auto& pathname : fscli::recursive_collection_iterator(*conn(), inp.objPath)) {
+                        if (fscli::is_collection(fscli::status(*conn(), decode_url(pathname.path())))) {
+                            continue;
+                        }
 
-                            status = rcDataObjTrim(conn(), &trim_input);
-                            if (status == SYS_NOT_ALLOWED) {
-                                return make_error_response(
-                                    status,
-                                    "You have tried to trim a data object or collection you don't have permissions "
-                                    "for.");
-                            }
-                            else if (status == USER_INPUT_PATH_ERR) {
-                                return make_error_response(
-                                    status, "You tried to trim a path that doesn't seem to exist in this zone.");
-                            }
-                            else if (status == USER_INCOMPATIBLE_PARAMS) {
-                                return make_error_response(
-                                    status,
-                                    "You have specified two or more parameters for your trim operation which are "
-                                    "incompatible with each other. See "
-                                    "https://docs.irods.org/4.3.0/icommands/user/#itrim");
-                            }
-                            else if (status == CAT_NO_ROWS_FOUND) {
-                                return make_error_response(
-                                    status,
-                                    "Could not find the logical path you entered. You may have passed an empty "
-                                    "string.");
-                            }
-                            else if (status < 0) {
-                                return make_error_response(
-                                    status,
-                                    "Client experienced an error processing your trim request. Please check the logs "
-                                    "or notify your administrator.");
-                            }
+                        std::strncpy(inp.objPath, pathname.path().c_str(), MAX_NAME_LEN);
+
+                        if (const auto ec = rcDataObjTrim(conn(), &inp); ec < 0) {
+                            const auto msg = fmt::format("Error occurred during trim of [{}]", inp.objPath);
+                            return make_error_response(ec, msg);
                         }
                     }
-                }
-                else {
-                    if (fscli::is_data_object(fscli::status(*conn(), decode_url(trim_input.objPath)))) {
-                        status = rcDataObjTrim(conn(), &trim_input);
-                    }
-                    else {
-                        return make_error_response(USER_INCOMPATIBLE_PARAMS, "Target is not a data object.");
-                    }
-                }
-                if (status == SYS_NOT_ALLOWED) {
-                    return make_error_response(
-                        status, "You have tried to trim a data object or collection you don't have permissions for.");
-                }
-                else if (status == USER_INPUT_PATH_ERR) {
-                    return make_error_response(
-                        status, "You tried to trim a path that doesn't seem to exist in this zone.");
-                }
-                else if (status == USER_INCOMPATIBLE_PARAMS) {
-                    return make_error_response(
-                        status, "You have specified incompatible parameters for your trim operation.");
-                }
-                else if (status == CAT_NO_ROWS_FOUND) {
-                    return make_error_response(
-                        status, "Could not find the logical path you entered. You may have passed an empty string.");
-                }
-                else if (status < 0) {
-                    return make_error_response(
-                        status,
-                        "Client experienced an error processing your trim request. Please check the logs or notify "
-                        "your administrator.");
+
+                    return std::make_tuple(Pistache::Http::Code::Ok, "");
                 }
 
-                return std::make_tuple(Pistache::Http::Code::Ok, "");
-            }
-            catch (const irods::exception& e) {
-                error("Caught exception - [error_code={}] {}", e.code(), e.what());
-                return make_error_response(e.code(), e.what());
-            }
-            catch (const std::exception& e) {
-                error("Caught exception - {}", e.what());
-                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
-            }
-            catch (...) {
-                error("Caught unknown exception.");
-                return make_error_response(SYS_UNKNOWN_ERROR, "Caught unknown exception");
-            }
-        }
-
-        std::tuple<Pistache::Http::Code, std::string> replicate_dispatcher(
-            const Pistache::Rest::Request& _request,
-            Pistache::Http::ResponseWriter& _response)
-        {
-            try {
-                dataObjInp_t repl_input{};
-
-                auto conn = get_connection(_request.headers().getRaw("authorization").value());
-
-                bool is_collection = false;
-
-                setup_input_for_repl(repl_input, _request, *conn(), is_collection);
-
-                int status;
-                const auto start_path = repl_input.objPath;
-                if (is_collection) {
-                    if (!is_set(_request.query().get("recursive").getOrElse(""))) {
-                        return std::make_tuple(
-                            Pistache::Http::Code::Bad_Request,
-                            "'recursive=1' required to replicate a collection. Make sure you want to replicate the "
-                            "whole sub-tree.");
-                    }
-
-                    for (const auto& pathname : fscli::recursive_collection_iterator(*conn(), start_path)) {
-                        if (fscli::is_data_object(fscli::status(*conn(), decode_url(pathname.path())))) {
-                            strcpy(repl_input.objPath, pathname.path().c_str());
-
-                            status = rcDataObjRepl(conn(), &repl_input);
-                            if (status == SYS_INVALID_FILE_PATH) {
-                                return make_error_response(
-                                    status,
-                                    "You passed an invalid path for replication. Make sure that you are giving an "
-                                    "absolute path.");
-                            }
-                            else if (status == SYS_NOT_ALLOWED) {
-                                std::stringstream msg;
-                                msg << "You have tried to repl an object in a way that is not allowed.\n";
-                                msg << "Some possible causes are:\n";
-                                msg << "- You may have tried to replicate a non-good replica.\n";
-                                msg << "- The object you tried to replicate may have a checksum that wasn't "
-                                       "verified.\n";
-                                msg << "- You may have tried to replicate a data object onto an already identical "
-                                       "replica.\n";
-                                msg << "Please check for these issues and contact your administrator if the issue "
-                                       "isn't resolved.\n";
-                                return make_error_response(SYS_NOT_ALLOWED, msg.str());
-                            }
-                            else if (status == USER_INPUT_PATH_ERR) {
-                                return make_error_response(
-                                    status, "You tried to trim a path that doesn't seem to exist in this zone.");
-                            }
-                            else if (status == USER_INCOMPATIBLE_PARAMS) {
-                                return make_error_response(
-                                    status,
-                                    "You have specified two or more parameters for your trim operation which are "
-                                    "incompatible with each other. See "
-                                    "https://docs.irods.org/4.3.0/icommands/user/#itrim");
-                            }
-                            else if (status < 0) {
-                                return make_error_response(
-                                    status,
-                                    "Client experienced an error processing your trim request. Please check the logs "
-                                    "or notify your administrator.");
-                            }
-                        }
-                    }
-                }
-                else {
-                    status = rcDataObjRepl(conn(), &repl_input);
-                    if (status == SYS_INVALID_FILE_PATH) {
-                        return make_error_response(
-                            status,
-                            "You passed an invalid path for replication. Make sure that you are giving an absolute "
-                            "path.");
-                    }
-                    else if (status == USER_INPUT_PATH_ERR) {
-                        return make_error_response(
-                            status, "You tried to trim a path that doesn't seem to exist in this zone.");
-                    }
-                    else if (status == USER_INCOMPATIBLE_PARAMS) {
-                        return make_error_response(
-                            status, "You have specified incompatible parameters for your trim operation.");
-                    }
-                    else if (status == SYS_NOT_ALLOWED) {
-                        std::stringstream msg;
-                        msg << "You have tried to repl an object in a way that is not allowed.\n";
-                        msg << "Some possible causes are:\n";
-                        msg << "- You may have tried to replicate a non-good replica.\n";
-                        msg << "- The object you tried to replicate may have a checksum that wasn't verified.\n";
-                        msg << "- You may have tried to replicate a data object onto an already identical replica.\n";
-                        msg << "Please check for these issues and contact your administrator if the issue isn't "
-                               "resolved.\n";
-                        return make_error_response(SYS_NOT_ALLOWED, msg.str());
-                    }
-                    else if (status < 0) {
-                        return make_error_response(
-                            status,
-                            "Client experienced an error processing your trim request. Please check the logs or notify "
-                            "your administrator.");
-                    }
+                if (const auto ec = rcDataObjTrim(conn(), &inp); ec < 0) {
+                    const auto msg = fmt::format("Error occurred during trim of [{}]", inp.objPath);
+                    return make_error_response(ec, msg);
                 }
 
                 return std::make_tuple(Pistache::Http::Code::Ok, "");
             }
             catch (const fs::filesystem_error& e) {
-                error("Caught exception - [error_code=]", e.code().value());
+                error("Caught exception - [error_code={}] {}", e.code().value(), e.what());
                 return make_error_response(e.code().value(), e.what());
             }
             catch (const irods::exception& e) {
@@ -350,143 +183,164 @@ namespace irods::rest
                 error("Caught unknown exception.");
                 return make_error_response(SYS_UNKNOWN_ERROR, "Caught unknown exception");
             }
-        }
+        } // trim_dispatcher
+
+        auto replicate_dispatcher(const Pistache::Rest::Request& _request, Pistache::Http::ResponseWriter& _response)
+            -> std::tuple<Pistache::Http::Code, std::string>
+        {
+            try {
+                auto conn = get_connection(_request.headers().getRaw("authorization").value());
+
+                auto inp = create_data_obj_repl_inp(_request);
+
+                // This will ensure that the KeyValPair member of the input is free'd.
+                const auto trim_input_lm = irods::at_scope_exit{[&inp] { clearKeyVal(&inp.condInput); }};
+
+                if (fscli::is_collection(fscli::status(*conn(), decode_url(inp.objPath)))) {
+                    if (!is_set(_request.query().get("recursive").getOrElse("0"))) {
+                        return std::make_tuple(
+                            Pistache::Http::Code::Bad_Request,
+                            "'recursive=1' required to replicate a collection. Make sure you want to replicate the "
+                            "whole sub-tree.");
+                    }
+
+                    for (const auto& pathname : fscli::recursive_collection_iterator(*conn(), inp.objPath)) {
+                        if (fscli::is_collection(fscli::status(*conn(), decode_url(pathname.path())))) {
+                            continue;
+                        }
+
+                        std::strncpy(inp.objPath, pathname.path().c_str(), MAX_NAME_LEN);
+
+                        if (const auto ec = rcDataObjRepl(conn(), &inp); ec != 0) {
+                            const auto msg = fmt::format("Error occurred during replication of [{}]", inp.objPath);
+                            return make_error_response(ec, msg);
+                        }
+                    }
+
+                    return std::make_tuple(Pistache::Http::Code::Ok, "");
+                }
+
+                if (const auto ec = rcDataObjRepl(conn(), &inp); ec != 0) {
+                    const auto msg = fmt::format("Error occurred during replication of [{}]", inp.objPath);
+                    return make_error_response(ec, msg);
+                }
+
+                return std::make_tuple(Pistache::Http::Code::Ok, "");
+            }
+            catch (const fs::filesystem_error& e) {
+                error("Caught exception - [error_code={}] {}", e.code().value(), e.what());
+                return make_error_response(e.code().value(), e.what());
+            }
+            catch (const irods::exception& e) {
+                error("Caught exception - [error_code={}] {}", e.code(), e.what());
+                return make_error_response(e.code(), e.what());
+            }
+            catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
+            }
+            catch (...) {
+                error("Caught unknown exception.");
+                return make_error_response(SYS_UNKNOWN_ERROR, "Caught unknown exception");
+            }
+        } // replicate_dispatcher
 
       private:
-        void setup_input_for_trim(
-            const Pistache::Http::Request& _request,
-            dataObjInp_t& trim_input,
-            rcComm_t& conn,
-            bool& is_collection)
+        static auto create_data_obj_trim_inp(const Pistache::Http::Request& _request) -> DataObjInp
         {
             const auto _logical_path = _request.query().get("logical-path").getOrElse("");
-            is_collection = fscli::is_collection(fscli::status(conn, decode_url(_logical_path)));
+            if (_logical_path.empty()) {
+                throw std::runtime_error{"logical-path missing from request or empty"};
+            }
 
-            // optional params
-            // ---------------
-            // Boolean
-            const auto _recursive = _request.query().get("recursive").getOrElse("0");
-            // Boolean
-            const auto _dryrun = _request.query().get("dryrun").getOrElse("");
-            // Integer
-            const auto _age = _request.query().get("minimum-age-in-minutes").getOrElse("");
-            // Integer
-            const auto _num = _request.query().get("minimum-number-of-remaining-replicas").getOrElse("");
-            // Integer
-            const auto _replica_number = _request.query().get("replica-number").getOrElse("");
-            // String
-            const auto _src_resc = _request.query().get("src-rescource").getOrElse("");
-            // Boolean
-            const auto _admin = _request.query().get("admin-mode").getOrElse("");
+            DataObjInp inp{};
+            std::strncpy(inp.objPath, _logical_path.c_str(), MAX_NAME_LEN);
 
-            // Set up key-value proxy
-            irods::experimental::key_value_proxy kvp{trim_input.condInput};
+            auto kvp = irods::experimental::key_value_proxy{inp.condInput};
 
-            if (is_set(_recursive)) {
+            if (is_set(_request.query().get("recursive").getOrElse("0"))) {
                 kvp[RECURSIVE_OPR__KW] = "";
             }
 
-            if (is_set(_admin)) {
+            if (is_set(_request.query().get("admin-mode").getOrElse("0"))) {
                 kvp[ADMIN_KW] = "";
             }
 
-            if (is_set(_dryrun)) {
-                kvp[DRYRUN_KW] = "";
-            }
-
-            rstrcpy(trim_input.objPath, _logical_path.c_str(), MAX_NAME_LEN);
-
+            const auto _num = _request.query().get("minimum-number-of-remaining-replicas").getOrElse("");
             if (!_num.empty()) {
                 kvp[COPIES_KW] = _num.c_str();
             }
 
+            const auto _age = _request.query().get("minimum-age-in-minutes").getOrElse("");
             if (!_age.empty()) {
                 kvp[AGE_KW] = _age.c_str();
             }
 
+            const auto _replica_number = _request.query().get("replica-number").getOrElse("");
             if (!_replica_number.empty()) {
                 kvp[REPL_NUM_KW] = _replica_number.c_str();
             }
 
+            const auto _src_resc = _request.query().get("src-resource").getOrElse("");
             if (!_src_resc.empty()) {
                 kvp[RESC_NAME_KW] = _src_resc.c_str();
             }
-        } // setup_input_for_trim
 
-        void setup_input_for_repl(
-            dataObjInp_t& _repl_input,
-            const Pistache::Http::Request& _request,
-            rcComm_t& _conn,
-            bool& _is_collection)
+            return inp;
+        } // create_data_obj_trim_inp
+
+        static auto create_data_obj_repl_inp(const Pistache::Http::Request& _request) -> DataObjInp
         {
-            rodsEnv myRodsEnv;
-            getRodsEnv(&myRodsEnv);
+            const auto _logical_path = _request.query().get("logical-path").getOrElse("");
+            if (_logical_path.empty()) {
+                throw std::runtime_error{"logical-path missing from request or empty"};
+            }
 
-            // Optional parameters
-            // Boolean parameters
-            auto _all = _request.query().get("all").getOrElse("0");
-            auto _admin = _request.query().get("admin-mode").getOrElse("0");
-            auto _recursive = _request.query().get("recursive").getOrElse("0");
+            DataObjInp inp{};
+            std::strncpy(inp.objPath, _logical_path.c_str(), MAX_NAME_LEN);
 
-            auto _src_resource = _request.query().get("src-resource").getOrElse("");
+            auto kvp = irods::experimental::key_value_proxy{inp.condInput};
 
-            // Int parameters
-            auto _thread_count = _request.query().get("thread-count").getOrElse("");
-            auto _replica_number = _request.query().get("replica-number").getOrElse("");
-
-            // String paramaeters
-            auto _dst_resource = _request.query().get("dst-resource").getOrElse("");
-
-            // Required parameters
-            auto _logical_path = _request.query().get("logical-path").getOrElse("");
-            rstrcpy(_repl_input.objPath, _logical_path.c_str(), MAX_NAME_LEN);
-
-            irods::experimental::key_value_proxy kvp{_repl_input.condInput};
-
-            _is_collection = fscli::is_collection(fscli::status(_conn, decode_url(_logical_path)));
-
+            const auto _replica_number = _request.query().get("replica-number").getOrElse("");
             if (!_replica_number.empty()) {
                 kvp[REPL_NUM_KW] = _replica_number.c_str();
             }
 
+            const auto _thread_count = _request.query().get("thread-count").getOrElse("");
             if (!_thread_count.empty()) {
-                _repl_input.numThreads = std::stoi(_thread_count);
+                inp.numThreads = std::stoi(_thread_count);
             }
             else {
-                _repl_input.numThreads = NO_THREADING;
+                inp.numThreads = NO_THREADING;
             }
 
+            const auto _src_resource = _request.query().get("src-resource").getOrElse("");
+            if (!_src_resource.empty()) {
+                kvp[RESC_NAME_KW] = _src_resource.c_str();
+            }
+
+            const auto _dst_resource = _request.query().get("dst-resource").getOrElse("");
             if (!_dst_resource.empty()) {
                 kvp[DEST_RESC_NAME_KW] = _dst_resource.c_str();
             }
-            else if (strlen(myRodsEnv.rodsDefResource) > 0) {
-                kvp[DEST_RESC_NAME_KW] = myRodsEnv.rodsDefResource;
+            else {
+                const auto& cfg = irods::rest::configuration::irods_client_environment();
+                kvp[DEST_RESC_NAME_KW] = cfg.at("default_resource").get_ref<const std::string&>();
             }
 
-            if (is_set(_recursive)) {
+            if (is_set(_request.query().get("recursive").getOrElse("0"))) {
                 kvp[RECURSIVE_OPR__KW] = "";
             }
 
-            if (is_set(_admin)) {
+            if (is_set(_request.query().get("admin-mode").getOrElse("0"))) {
                 kvp[ADMIN_KW] = "";
             }
 
-            if (is_set(_all)) {
+            if (is_set(_request.query().get("all").getOrElse("0"))) {
                 kvp[ALL_KW] = "";
             }
 
-            char resc[MAX_NAME_LEN] = {'\0'};
-            if (!_dst_resource.empty()) {
-                strcpy(resc, _dst_resource.c_str());
-            }
-
-            // If we didn't get a dest resource from the user,
-            // get it from the rods environment
-            if ('\0' == resc[0] && strlen(myRodsEnv.rodsDefResource) > 0) {
-                strcpy(resc, myRodsEnv.rodsDefResource);
-            }
-
-            kvp[DEST_RESC_NAME_KW] = resc;
-        } // setup_args_for_repl
+            return inp;
+        } // create_data_obj_repl_inp
     }; // class logical_path_rename
 } // namespace irods::rest

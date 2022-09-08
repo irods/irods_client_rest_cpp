@@ -138,7 +138,7 @@ foreach(API_NAME ${API_SERVER_NAMES})
 
     target_include_directories(
         ${EXECUTABLE_NAME}
-	PRIVATE
+        PRIVATE
         irods_specific_implementation
         jwt-cpp
         model
