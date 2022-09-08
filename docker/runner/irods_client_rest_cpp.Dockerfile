@@ -9,6 +9,7 @@ RUN apt-get update && \
         apt-transport-https \
         gnupg \
         lsb-release \
+        rsyslog \
         sudo \
         wget \
     && \
@@ -28,6 +29,10 @@ RUN apt-get update && \
     apt-get install -fy --allow-downgrades && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/*
+
+# Use the default rsyslog configuration for this image
+RUN cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.conf.rsyslog /etc/rsyslog.d/00-irods_client_rest_cpp.conf && \
+    cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.logrotate /etc/logrotate.d/irods_client_rest_cpp
 
 COPY entrypoint.sh /
 RUN chmod u+x /entrypoint.sh
