@@ -9,6 +9,7 @@ RUN apt-get update && \
         apt-transport-https \
         gnupg \
         lsb-release \
+        rsyslog \
         sudo \
         wget \
     && \

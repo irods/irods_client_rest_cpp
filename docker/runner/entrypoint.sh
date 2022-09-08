@@ -1,5 +1,7 @@
 #! /bin/bash -e
 
+/etc/init.d/rsyslog start
+
 /etc/init.d/irods_client_rest_cpp start
 
 # sleep forever
