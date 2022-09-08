@@ -5,7 +5,8 @@
         "port": 1247,
         "ssl_negotiation_policy": "CS_NEG_REFUSE",
         "rodsadmin_username": "rods",
-        "rodsadmin_password": "rods"
+        "rodsadmin_password": "rods",
+        "default_resource": "demoResc"
     },
     "rest_api": {
         "jwt_signing_key": "TEMPORARY_SIGNING_KEY",

@@ -751,104 +751,139 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
         self.user.assert_icommand(['ils', '-ld'], 'STDOUT', [self.user.session_collection])
 
     def test_replicate_data_object(self):
+        token = irods_rest.authenticate('rods', 'rods', 'native')
+
         with session.make_session_for_existing_admin() as admin:
+            new_resc_name = 'newResc'
+            logical_path = os.path.join(admin.home_collection, 'hello.cpp')
+
             try:
-                token = irods_rest.authenticate('rods', 'rods', 'native')
-                logical_path = os.path.join(admin.home_collection, 'hello.cpp')
-                new_resc_name = 'newResc'
-                ## create a data object on default resource
-                admin.assert_icommand(["itouch", logical_path])
-                ## create new resource
                 lib.create_ufs_resource(new_resc_name, admin)
-                ## repl that resource with only the dest resource specified
+
+                # Create a data object on default resource
+                admin.assert_icommand(["itouch", logical_path])
+                self.assertTrue(lib.replica_exists_on_resource(admin, logical_path, admin.default_resource))
+                self.assertFalse(lib.replica_exists_on_resource(admin, logical_path, new_resc_name))
+
+                # Replicate the data object to the new resource and ensure a new replica appears on that resource
                 res = irods_rest.logical_path_replicate(token, logical_path, _dst_resource=new_resc_name)
-                ## ilsresc to make sure that the data object has been repl'd
                 self.assertEqual(res, "")
+                self.assertTrue(lib.replica_exists_on_resource(admin, logical_path, new_resc_name))
+
             finally:
                 admin.run_icommand(['iadmin', 'rmresc', new_resc_name])
-                admin.run_icommand(['irm', '-r', '-f', logical_path])
+                admin.run_icommand(['irm', '-f', logical_path])
 
     def test_replicate_collection(self):
         token = irods_rest.authenticate('rods', 'rods', 'native')
 
         with session.make_session_for_existing_admin() as admin:
+            coll_name = 'irods_coll_1'
+            coll = os.path.join(admin.home_collection, coll_name)
+
+            data_obj_name = 'data_object_1'
+            data_obj = os.path.join(coll, data_obj_name)
+
+            resc_one = "newResc1"
+
             try:
-                coll_name = 'irods_coll_1'
-                coll = os.path.join(admin.home_collection, coll_name)
-
-                data_obj_name = 'data_object_1'
-                data_obj = os.path.join(coll, data_obj_name)
-
-                resc_one = "newResc1"
-
-                ## create a collection
-                admin.assert_icommand(['imkdir', coll])
-                admin.assert_icommand(['itouch'. data_object_name])
-
-                ## try to repl it without the recursive flag
                 lib.create_ufs_resource(resc_one, admin)
 
-                repl_output = irods_rest.logical_path_replicate(token, coll, _dst_resource=resc_one, _recursive=False)
-                self.assertIn("Make sure you want to repl the whole sub-tree", repl_output)
+                # Create a collection and create a data object inside of it on the default resource
+                admin.assert_icommand(['imkdir', coll])
+                admin.assert_icommand(['itouch', data_obj])
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, admin.default_resource))
+                self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, resc_one))
 
+                # Replicate the collection without the recursive flag
+                repl_output = irods_rest.logical_path_replicate(token, coll, _dst_resource=resc_one, _recursive=False)
+                self.assertIn("Make sure you want to replicate the whole sub-tree", repl_output)
+                self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, resc_one))
+
+                # Replicate the collection to the new resource and ensure a new replica appears on that resource
                 repl_output = irods_rest.logical_path_replicate(token, coll, _dst_resource=resc_one, _recursive=True)
                 self.assertEqual(repl_output, "")
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, resc_one))
+
             finally:
                 admin.run_icommand(['iadmin', 'rmresc', resc_one])
-                admin.run_icommand(['irm', '-r', '-f', ''])
+                admin.run_icommand(['irm', '-r', '-f', coll])
 
     def test_trim_data_object(self):
         token = irods_rest.authenticate('rods', 'rods', 'native')
 
         with session.make_session_for_existing_admin() as admin:
+            data_obj_name = "data_obj"
+            data_obj = os.path.join(admin.home_collection, data_obj_name)
+
+            resource_base_name = 'newResc'
+            resources = [f'{resource_base_name}_{i}' for i in range(2)]
+
             try:
-                data_obj_name = "data_obj"
-                data_obj = os.path.join(admin.home_collection, data_obj_name)
+                # Create a data object on the default resource
                 admin.assert_icommand(['itouch', data_obj])
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, admin.default_resource))
 
-                num_resources = 4
-
-                resource_name_base = "newResc_{0}"
-                for i in range(num_resources):
-                    resc = resource_base_name.format(i)
-                    admin.assert_icommand(['iadmin', 'mkresc', resc])
+                # Replicate the data object to each new resource
+                for resc in resources:
+                    lib.create_ufs_resource(resc, admin)
+                    self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, resc))
                     admin.assert_icommand(['irepl', data_obj, '-R', resc])
+                    self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, resc))
 
-                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=resource_name_base.format(0))
+                # Trim the data object targeting a particular resource and ensure that replica is trimmed
+                trim_resource = f'{resource_base_name}_0'
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, trim_resource))
+                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=trim_resource)
                 self.assertEqual(res, "")
+                self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, trim_resource))
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, admin.default_resource))
 
             finally:
-               admin.run_icommand(['irm', '-f', data_obj])
-               for i in range(num_resources):
-                   admin.run_icommand(['iadmin', 'rmresc', resource_name_base.format(i)])
+                admin.run_icommand(['irm', '-f', data_obj])
+                for resc in resources:
+                   admin.run_icommand(['iadmin', 'rmresc', resc])
 
     def test_trim_collection(self):
         token = irods_rest.authenticate('rods', 'rods', 'native')
 
         with session.make_session_for_existing_admin() as admin:
+            coll_name = 'collection_one'
+            coll = os.path.join(admin.home_collection, coll_name)
+            data_obj = os.path.join(coll, 'junk0000')
+
+            resource_base_name = 'newResc'
+            resources = [f'{resource_base_name}_{i}' for i in range(2)]
+
             try:
-                coll_name = 'collection_one'
-                file_count = 1
-                file_size = 10
-                lib.make_large_local_tmp_dir(coll_name, fil_count, file_size)
-                admin.assert_icommand(['iput', '-r', coll_name])
+                # Create a directory and put it as a collection to the default resource
+                lib.make_large_local_tmp_dir(coll_name, 1, 10)
+                admin.assert_icommand(['iput', '-r', coll_name, coll], 'STDOUT_SINGLELINE', 'Running')
+                admin.assert_icommand(['ils', '-r', coll], 'STDOUT', coll_name)
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, admin.default_resource))
 
-                num_resources = 4
-                resource_name_base = "newResc_{0}"
-                for i in range(num_resources):
-                    resc = resource_base_name.format(i)
-                    admin.assert_icommand(['iadmin', 'mkresc', resc])
-                    admin.assert_icommand(['irepl', coll_name, '-R', resc])
+                # Replicate the collection to each new resource
+                for resc in resources:
+                    lib.create_ufs_resource(resc, admin)
+                    self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, resc))
+                    admin.assert_icommand(['irepl', '-r', coll, '-R', resc])
+                    self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, resc))
 
-                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=resource_name_base.format(0))
+                # Trim the collection without specifying the recursive flag
+                trim_resource = f'{resource_base_name}_0'
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, trim_resource))
+                res = irods_rest.logical_path_trim(token, coll, _src_resc=trim_resource)
                 self.assertIn('Make sure you want to trim the whole sub-tree', res)
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, trim_resource))
 
-                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=resource_name_base.format(0), _recursive=True)
+                # Trim the collection targeting a particular resource and ensure the replica is trimmed
+                res = irods_rest.logical_path_trim(token, data_obj, _src_resc=trim_resource, _recursive=True)
                 self.assertEqual(res, '')
+                self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, trim_resource))
+                self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, admin.default_resource))
 
             finally:
                 shutil.rmtree(coll_name)
                 admin.run_icommand(['irm', '-r', '-f', coll_name])
-                for i in range(num_resources):
-                    admin.run_icommand(['iadmin', 'rmresc', resource_name_base.format(i)])
-
+                for resc in resources:
+                   admin.run_icommand(['iadmin', 'rmresc', resc])
