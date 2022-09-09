@@ -611,3 +611,9 @@ When the tests have completed, the `irods-client-rest-cpp-tester` service will e
 ```bash
 docker-compose down
 ```
+
+To run a specific test, add the following line to the `irods-client-rest-cpp` service stanza in the `docker-compose.yml` file:
+```yaml
+command: ["--run_s test_irods_client_rest_cpp.TestClientRest.test_name_here"]
+```
+This will override the `CMD` defined in the Dockerfile which passes the specific test to run to the `ENTRYPOINT`.
