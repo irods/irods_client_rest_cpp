@@ -435,7 +435,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 logical_path = os.path.join(pwd, dir_name)
 
                 token  = irods_rest.authenticate('rods', 'rods', 'native')
-                result = irods_rest.list(token, logical_path, 'false', 'false', 'false', 0, 100)
+                result = irods_rest.list(token, logical_path, _offset=0, _limit=100, _recursive=True)
 
                 cnt = 0
                 lst = json.loads(result)
@@ -465,8 +465,8 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
 
                 offset = 0
                 limit = 0
-                res_deep = irods_rest.list(token, logical_path, 0, 0, 0, offset, limit)
-                res_shallow = irods_rest.list(token, logical_path, 0, 0, 0, offset, limit, _recursive=0)
+                res_deep = irods_rest.list(token, logical_path, _offset=offset, _limit=limit, _recursive=True)
+                res_shallow = irods_rest.list(token, logical_path, _offset=offset, _limit=limit)
 
                 self.assertGreater(len(res_deep), len(res_shallow))
 
@@ -493,8 +493,9 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 token  = irods_rest.authenticate('rods', 'rods', 'native')
 
                 offset = 0
+                limit = 1
                 for i in range(1,10):
-                    result = irods_rest.list(token, logical_path, 'false', 'false', 'false', offset, 1)
+                    result = irods_rest.list(token, logical_path, _offset=offset, _limit=limit, _recursive=True)
                     lst = json.loads(result)
 
                     assert(len(lst['_embedded']) == 1)
@@ -527,7 +528,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 admin.assert_icommand(['imeta', 'set', '-d', logical_path, 'attr', 'val', 'unit'])
 
                 token  = irods_rest.authenticate('rods', 'rods', 'native')
-                result = irods_rest.list(token, logical_path, 1, 1, 1, 0, 0)
+                result = irods_rest.list(token, logical_path, _stat=True, _permissions=True, _metadata=True, _offset=0, _limit=0)
 
                 lst = json.loads(result)['_embedded'][0]
 
@@ -548,6 +549,41 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             finally:
                 os.remove(file_name)
                 admin.run_icommand(['irm', '-f', file_name])
+
+    def test_list_with_stat_on_collection__issue_134(self):
+        with session.make_session_for_existing_admin() as admin:
+            dirname = 'test_list_with_stat_on_collection__issue_134'
+            logical_path = os.path.join(admin.home_collection, dirname)
+            physical_path = os.path.join(admin.local_session_dir, dirname)
+
+            try:
+                token  = irods_rest.authenticate('rods', 'rods', 'native')
+
+                file_size = 100
+                lib.make_deep_local_tmp_dir(physical_path, depth=3, files_per_level=5, file_size=file_size)
+
+                admin.assert_icommand(['iput', '-r', physical_path, logical_path], 'STDOUT', 'Running')
+
+                response = irods_rest.list(token, logical_path, _stat=True, _recursive=True)
+
+                result = json.loads(response)
+                self.assertIn('_embedded', list(result))
+
+                for o in result['_embedded']:
+                    stat = o['status_information']
+
+                    self.assertIn(o['type'], ['data_object', 'collection'])
+
+                    self.assertNotEqual(stat['last_write_time'], '')
+
+                    if (o['type'] == 'data_object'):
+                        self.assertEqual(stat['size'], file_size)
+                    else:
+                        self.assertNotIn('size', list(stat))
+
+            finally:
+                shutil.rmtree(physical_path)
+                admin.run_icommand(['irm', '-r', '-f', logical_path])
 
     def test_query_handles_case_insensitivity__issue_124(self):
         with session.make_session_for_existing_admin() as admin:
