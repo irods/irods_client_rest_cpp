@@ -44,3 +44,5 @@ RUN mkdir -p /etc/irods_client_rest_cpp && \
 COPY entrypoint.sh /
 RUN chmod u+x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["--run_s test_irods_client_rest_cpp"]
