@@ -218,14 +218,21 @@ def put_configuration(_token, _cfg):
 
     return body.decode('utf-8')
 
-def list(_token, _path, _stat, _permissions, _metadata, _offset, _limit, _recursive="1"):
+def list(_token, _path, _stat=False, _permissions=False, _metadata=False, _offset=0, _limit=0, _recursive=False):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    url = base_url()+f'list?path={_path}&stat={_stat}&permissions={_permissions}&metadata={_metadata}&offset={_offset}&limit={_limit}&recursive={_recursive}'
+    url = base_url()+f'list?path={_path}'
+
+    url += f'&stat={1 if _stat else 0}'
+    url += f'&permissions={1 if _permissions else 0}'
+    url += f'&metadata={1 if _metadata else 0}'
+    url += f'&recursive={1 if _recursive else 0}'
+    url += f'&offset={_offset}'
+    url += f'&limit={_limit}'
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
