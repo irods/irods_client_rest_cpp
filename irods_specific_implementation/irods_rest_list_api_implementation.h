@@ -215,7 +215,10 @@ namespace irods::rest {
         {
             auto stat_info = nlohmann::json::object();
 
-            stat_info["size"] = fcli::data_object_size(_comm, _path);
+            // Only a data object has a size associated with it.
+            if (fcli::is_data_object(_comm, _path)) {
+                stat_info["size"] = fcli::data_object_size(_comm, _path);
+            }
 
             using clock_type = std::chrono::system_clock;
             const auto last_write_time = clock_type::to_time_t(fcli::last_write_time(_comm, _path));
