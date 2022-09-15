@@ -249,7 +249,7 @@ def put(_token, _physical_path, _logical_path, _ticket_id=None):
     file_size = 0
     read_size = 1024 * 1024 * 4
     with open(_physical_path, 'r') as f:
-        for data in iter(partial(f.read, read_size), b''):
+        for data in iter(partial(f.read, read_size), ''):
             c = pycurl.Curl()
             c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
             c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
@@ -297,14 +297,17 @@ def get(_token, _physical_path, _logical_path, _ticket_id=None):
             url = '{0}stream?path={1}&offset={2}&count={3}'.format(base_url(), _logical_path, offset, read_size)
             c.setopt(c.URL, url)
 
-            body_buffer = StringIO()
+            body_buffer = BytesIO()
             c.setopt(c.WRITEDATA, body_buffer)
 
             c.perform()
             c.close()
 
             body = body_buffer.getvalue()
-            f.write(body)
+            if body == b'':
+                break
+
+            f.write(body.decode('utf-8'))
 
             offset = offset + len(body)
 
