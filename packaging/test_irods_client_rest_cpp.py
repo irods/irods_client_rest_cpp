@@ -731,7 +731,6 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             result = irods_rest.query(token, 'select COLL_NAME', 1, 0, 'general', _distinct='nopes')
             self.assertIn('error', result)
 
-    @unittest.skip('Hangs: #130')
     def test_stream_put_and_get(self):
         with session.make_session_for_existing_admin() as admin:
             try:
