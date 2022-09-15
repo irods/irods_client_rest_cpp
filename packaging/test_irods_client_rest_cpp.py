@@ -80,64 +80,72 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 os.remove(file_name)
                 admin.assert_icommand(['irm', '-f', file_name])
 
-    @unittest.skip('Fix me #129')
     def test_logical_path_rename(self):
         token = irods_rest.authenticate('rods', 'rods', 'native')
         with session.make_session_for_existing_admin() as admin:
+            coll = os.path.join(admin.home_collection, 'coll')
+            new_coll = coll.replace('coll', 'new_coll')
+            dobj = os.path.join(coll, 'data_object')
+            new_dobj = dobj.replace("data_object", "new_data_object")
+            new_new_dobj = os.path.join(new_coll, os.path.basename(new_dobj))
+
             try:
-                coll = admin.home_collection + "/coll"
+                admin.assert_icommand(['imkdir', coll])
+                admin.assert_icommand(['itouch', dobj])
 
                 # test on a data object
-                new_coll = coll.replace('coll', 'new_coll')
-                dobj = new_coll + "/data_object"
-                new_dobj = dobj.replace("data_object", "new_data_object")
-                admin.assert_icommand(['imkdir', coll])
-                res = irods_rest.logical_path_rename(
-                    token,
-                    coll,
-                    new_coll
-                )
+                res = irods_rest.logical_path_rename(token, dobj, new_dobj)
                 self.assertEqual(res, "")
+                admin.assert_icommand(['ils', dobj], 'STDERR', 'does not exist')
+                admin.assert_icommand(['ils', coll], 'STDOUT', os.path.basename(new_dobj))
+
                 # test on a collection
-                # make sure that it works with a collection that's actually populated
-                admin.assert_icommand(['itouch', dobj])
-                res = irods_rest.logical_path_rename(
-                    token,
-                    dobj,
-                    new_dobj
-                )
+                res = irods_rest.logical_path_rename(token, coll, new_coll)
                 self.assertEqual(res, "")
+                admin.assert_icommand(['ils', coll], 'STDERR', 'does not exist')
+                admin.assert_icommand(['ils', new_dobj], 'STDERR', 'does not exist')
+                admin.assert_icommand(['ils', new_coll], 'STDOUT', new_coll)
+                admin.assert_icommand(['ils', new_new_dobj], 'STDOUT', os.path.basename(new_new_dobj))
+
             finally:
                 admin.run_icommand(['irm', '-r', '-f', coll])
                 admin.run_icommand(['irm', '-r', '-f', new_coll])
 
 
-    @unittest.skip('Fix me #129')
     def test_logical_path_delete(self):
         token = irods_rest.authenticate('rods', 'rods', 'native')
         with session.make_session_for_existing_admin() as admin:
-            # test on data object
-            coll_path = admin.home_collection + '/coll'
-            dobj_path = coll_path + '/data_object'
-            admin.assert_icommand(['imkdir', coll_path])
-            admin.assert_icommand(['itouch', dobj_path])
-            res = irods_rest.logical_path_delete(
-                token,
-                dobj_path
-            )
-            self.assertEqual(res, "")
-            # test on collections
-            res = irods_rest.logical_path_delete(
-                token,
-                coll_path
-            )
-            self.assertIn( "'recursive=1' required to delete a collection. Make sure you want to delete the whole sub-tree.", res)
-            res = irods_rest.logical_path_delete(
-                token,
-                coll_path,
-                _recursive=True
-            )
-            self.assertEqual(res, "")
+            coll = os.path.join(admin.home_collection, 'coll')
+            dobj1 = os.path.join(coll, 'data_object1')
+            dobj2 = os.path.join(coll, 'data_object2')
+
+            try:
+                admin.assert_icommand(['imkdir', coll])
+                admin.assert_icommand(['itouch', dobj1])
+                self.assertTrue(lib.replica_exists(admin, dobj1, 0))
+                admin.assert_icommand(['itouch', dobj2])
+                self.assertTrue(lib.replica_exists(admin, dobj2, 0))
+
+                # test on data object
+                res = irods_rest.logical_path_delete(token, dobj1)
+                self.assertEqual(res, "")
+                self.assertFalse(lib.replica_exists(admin, dobj1, 0))
+                self.assertTrue(lib.replica_exists(admin, dobj2, 0))
+
+                # test on collection without recursive flag
+                res = irods_rest.logical_path_delete(token, coll)
+                self.assertIn("'recursive=1' required to delete a collection.", res)
+                admin.assert_icommand(['ils', coll], 'STDOUT', os.path.basename(dobj2))
+
+                # test on collection with recursive flag
+                res = irods_rest.logical_path_delete(token, coll, _recursive=True)
+                self.assertEqual(res, "")
+                admin.assert_icommand(['ils', coll], 'STDERR', 'does not exist')
+                self.assertFalse(lib.replica_exists(admin, dobj2, 0))
+
+            finally:
+                admin.run_icommand(['irm', '-r', '-f', coll])
+                admin.run_icommand(['irmtrash'])
 
 
     def test_access_with_explicit_arguments(self):
