@@ -57,7 +57,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 token = irods_rest.authenticate('rods', 'rods', 'native')
 
                 json_string = irods_rest.access(token, logical_path)
-                assert(json_string.find('error') == -1)
+                self.assertTrue(json_string.find('error') == -1)
 
                 json_object = json.loads(json_string)
                 ticket_id = json_object['headers']['irods-ticket'][0]
@@ -756,8 +756,10 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 self.assertEqual(sz, sz2)
 
             finally:
-                os.remove(file_name)
-                os.remove(downloaded_file_name)
+                if os.path.exists(file_name):
+                    os.remove(file_name)
+                if os.path.exists(file_name):
+                    os.remove(downloaded_file_name)
                 admin.run_icommand(['irm', '-f', file_name])
 
     def test_zone_report(self):
@@ -769,7 +771,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             zr1 = irods_rest.zone_report(token)
             js1 = json.loads(zr1)
 
-            assert(js0 == js1)
+            self.assertEqual(js0, js1)
 
     def test_changing_passwords_is_supported__issue_99(self):
         # Show that the user can execute commands without error.

@@ -31,11 +31,11 @@ namespace irods::rest
                    Pistache::Http::ResponseWriter& _response)
         {
             try {
-                auto _query_string = _request.query().get("query_string").get();
-                auto _query_limit = _request.query().get("query_limit").get();
-                auto _row_offset = _request.query().get("row_offset").get();
-                auto _query_type = _request.query().get("query_type").get();
-                auto _case_sensitive = _request.query().get("case_sensitive").getOrElse("1");
+                auto _query_string = _request.query().get("query").get();
+                auto _query_limit = _request.query().get("limit").get();
+                auto _row_offset = _request.query().get("offset").get();
+                auto _query_type = _request.query().get("type").get();
+                auto _case_sensitive = _request.query().get("case-sensitive").getOrElse("1");
                 auto _distinct = _request.query().get("distinct").getOrElse("1");
 
                 auto conn = get_connection(_request.headers().getRaw("authorization").value(), _query_string);
@@ -80,7 +80,7 @@ namespace irods::rest
                 double dbl_query_limit = static_cast<double>(query_limit);
                 double dbl_total_row_count = static_cast<double>(total_row_count);
                 nlohmann::json links = nlohmann::json::object();
-                constexpr auto* url_part = "query?query_string={}&query_limit={}&row_offset={}&query_type={}&case_sensitive={}&distinct={}";
+                constexpr auto* url_part = "query?query={}&limit={}&offset={}&type={}&case-sensitive={}&distinct={}";
                 links["self"] = base_url + fmt::format(url_part,
                                             query_string,
                                             _query_limit,

@@ -40,7 +40,7 @@ namespace irods::rest
         {
             try {
                 auto _body = _request.body();
-                auto _path = _request.query().get("path").get();
+                auto _path = _request.query().get("logical-path").get();
                 auto _offset = _request.query().get("offset");
                 auto _count = _request.query().get("count");
                 auto _truncate = _request.query().get("truncate");
