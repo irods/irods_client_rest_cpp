@@ -36,7 +36,7 @@ namespace irods::rest {
         {
             try {
                 // clang-format off
-                auto _logical_path = _request.query().get("path").get();
+                auto _logical_path = _request.query().get("logical-path").get();
                 auto _stat         = _request.query().get("stat").get();
                 auto _permissions  = _request.query().get("permissions").get();
                 auto _metadata     = _request.query().get("metadata").get();
@@ -137,7 +137,7 @@ namespace irods::rest {
                 results["_embedded"] = objects;
 
                 nlohmann::json links = nlohmann::json::object();
-                constexpr auto* url_part = "/list?path={}&stat={}&permissions={}&metadata={}&offset={}&limit={}";
+                constexpr auto* url_part = "/list?logical-path={}&stat={}&permissions={}&metadata={}&offset={}&limit={}";
                 links["self"] = base_url + fmt::format(url_part
                                 , _logical_path
                                 , _stat

@@ -43,7 +43,7 @@ def logical_path_rename(_token, _src, _dst):
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'POST')
-    url = base_url()+'logicalpath/rename?src={0}&dst={1}'.format(_src, _dst)
+    url = base_url()+f'logicalpath/rename?src={_src}&dst={_dst}'
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -55,9 +55,15 @@ def logical_path_rename(_token, _src, _dst):
 
     return body.decode('utf-8')
 
-def logical_path_replicate(_token, _logical_path, _admin=None, _all=None, _num_threads=None, _repl_num=None,
-         _recursive=None, _dst_resource=None,
-         _src_resource=None):
+def logical_path_replicate(_token,
+                           _logical_path,
+                           _admin=None,
+                           _all=None,
+                           _num_threads=None,
+                           _repl_num=None,
+                           _recursive=None,
+                           _dst_resource=None,
+                           _src_resource=None):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
@@ -84,14 +90,17 @@ def logical_path_replicate(_token, _logical_path, _admin=None, _all=None, _num_t
 
     return body.decode('utf-8')
 
-def logical_path_delete(_token, _logical_path, _no_trash = None,
-                        _recursive = None, _unregister = None):
+def logical_path_delete(_token,
+                        _logical_path,
+                        _no_trash = None,
+                        _recursive = None,
+                        _unregister = None):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Authorization: ' + _token])
     c.setopt(c.CUSTOMREQUEST, 'DELETE')
 
-    url = base_url()+'logicalpath?logical-path={0}'.format(_logical_path)
+    url = base_url()+f'logicalpath?logical-path={_logical_path}'
     if _no_trash: url += '&no-trash=1'
     if _unregister: url += '&unregister=1'
     if _recursive: url += '&recursive=1'
@@ -105,8 +114,14 @@ def logical_path_delete(_token, _logical_path, _no_trash = None,
 
     return body.decode('utf-8')
 
-def logical_path_trim(_token, _logical_path, _age=None, _repl_num=None, _src_resc=None, _num_copies=None,
-         _admin=None, _recursive=None):
+def logical_path_trim(_token,
+                      _logical_path,
+                      _age=None,
+                      _repl_num=None,
+                      _src_resc=None,
+                      _num_copies=None,
+                      _admin=None,
+                      _recursive=None):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
@@ -143,7 +158,6 @@ def metadata(_token, _cmds):
     c.setopt(c.READDATA, data_buf)
     c.setopt(c.UPLOAD, 1)
 
-
     url = base_url()+"metadata"
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -153,25 +167,32 @@ def metadata(_token, _cmds):
     body = buffer.getvalue()
     return body.decode('utf-8')
 
-def access(_token, _logical_path, _ticket_type=None, _use_count=None,
-           _write_file_count=None, _write_byte_count=None, _seconds_until_expiration=None,
-           _users=None, _groups=None, _hosts=None):
+def access(_token,
+           _logical_path,
+           _ticket_type=None,
+           _use_count=None,
+           _write_file_count=None,
+           _write_byte_count=None,
+           _seconds_until_expiration=None,
+           _users=None,
+           _groups=None,
+           _hosts=None):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'POST')
 
-    url = '{0}access?path={1}'.format(base_url(), _logical_path)
+    url = base_url()+f'access?logical-path={_logical_path}'
 
-    if _ticket_type             : url += '&type={0}'.format(_ticket_type)
-    if _use_count               : url += '&use_count={0}'.format(_use_count)
-    if _write_file_count        : url += '&write_file_count={0}'.format(_write_file_count)
-    if _write_byte_count        : url += '&write_byte_count={0}'.format(_write_byte_count)
-    if _seconds_until_expiration: url += '&seconds_until_expiration={0}'.format(_seconds_until_expiration)
-    if _users                   : url += '&users={0}'.format(_users)
-    if _groups                  : url += '&groups={0}'.format(_groups)
-    if _hosts                   : url += '&hosts={0}'.format(_hosts)
+    if _ticket_type             : url += f'&type={_ticket_type}'
+    if _use_count               : url += f'&use-count={_use_count}'
+    if _write_file_count        : url += f'&write-file-count={_write_file_count}'
+    if _write_byte_count        : url += f'&write-byte-count={_write_byte_count}'
+    if _seconds_until_expiration: url += f'&seconds-until-expiration={_seconds_until_expiration}'
+    if _users                   : url += f'&users={_users}'
+    if _groups                  : url += f'&groups={_groups}'
+    if _hosts                   : url += f'&hosts={_hosts}'
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -225,7 +246,7 @@ def list(_token, _path, _stat=False, _permissions=False, _metadata=False, _offse
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    url = base_url()+f'list?path={_path}'
+    url = base_url()+f'list?logical-path={_path}'
 
     url += f'&stat={1 if _stat else 0}'
     url += f'&permissions={1 if _permissions else 0}'
@@ -265,7 +286,9 @@ def put(_token, _physical_path, _logical_path, _ticket_id=None):
             c.setopt(c.UPLOAD, 1)
 
             file_size = file_size + len(data)
-            c.setopt(c.URL, '{0}stream?path={1}&offset={2}&count={3}'.format(base_url(), _logical_path, offset, file_size))
+            url = base_url()+f'stream?logical-path={_logical_path}&offset={offset}&count={file_size}'
+
+            c.setopt(c.URL, url)
 
             body_buffer = BytesIO()
             c.setopt(c.WRITEDATA, body_buffer)
@@ -294,7 +317,7 @@ def get(_token, _physical_path, _logical_path, _ticket_id=None):
 
             c.setopt(c.CUSTOMREQUEST, 'GET')
 
-            url = '{0}stream?path={1}&offset={2}&count={3}'.format(base_url(), _logical_path, offset, read_size)
+            url = base_url()+f'stream?logical-path={_logical_path}&offset={offset}&count={read_size}'
             c.setopt(c.URL, url)
 
             body_buffer = BytesIO()
@@ -346,7 +369,7 @@ def zone_report(_token):
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'POST')
-    url = '{0}zone_report'.format(base_url())
+    url = base_url()+'zone_report'
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
@@ -364,11 +387,11 @@ def query(_token, _string, _limit, _offset, _type, _case_sensitive='1', _distinc
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
     c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    params = {'query_string'  : _string,
-              'query_limit'   : _limit,
-              'row_offset'    : _offset,
-              'query_type'    : _type,
-              'case_sensitive': _case_sensitive,
+    params = {'query'         : _string,
+              'limit'         : _limit,
+              'offset'        : _offset,
+              'type'          : _type,
+              'case-sensitive': _case_sensitive,
               'distinct'      : _distinct}
     url = base_url() + 'query?' + urllib.parse.urlencode(params)
 

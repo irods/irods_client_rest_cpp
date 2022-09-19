@@ -196,24 +196,24 @@ Unless otherwise specified, successful operations by this client should return w
 ```
 
 ### /access
-This endpoint provides a service for the generation of a read-only iRODS ticket to a given logical path, be that a collection or a data object.
+This endpoint provides a service for the generation of an iRODS ticket to a given logical path, be that a collection or a data object.
 
 **Method**: POST
 
 **Parameters:**
-- path: The url encoded logical path to a collection or data object for which access is desired
+- logical-path: The url encoded logical path to a collection or data object for which access is desired
 - type: The type of ticket to create. The value must be either read or write. Defaults to read
-- use_count: The maximum number of times the ticket can be used. Defaults to 0 (unlimited use)
-- write_file_count: The maximum number of writes allowed to a data object. Defaults to 0 (unlimited writes)
-- write_byte_count: The maximum number of bytes allowed to be written to data object. Defaults to 0 (unlimited bytes)
-- seconds_until_expiration: The number of seconds before the ticket will expire. Defaults to 0 (no expiration)
+- use-count: The maximum number of times the ticket can be used. Defaults to 0 (unlimited use)
+- write-file-count: The maximum number of writes allowed to a data object. Defaults to 0 (unlimited writes)
+- write-byte-count: The maximum number of bytes allowed to be written to data object. Defaults to 0 (unlimited bytes)
+- seconds-until-expiration: The number of seconds before the ticket will expire. Defaults to 0 (no expiration)
 - users: A comma-separated list of iRODS users who are allowed to use the generated ticket
 - groups: A comma-separated list of iRODS groups that are allowed to use the generated ticket
 - hosts: A comma-separated list of hosts that are allowed to use the ticket
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/access?path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write_file_count=10'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/access?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write-file-count=10'
 ```
 
 **Returns**
@@ -224,7 +224,7 @@ An iRODS ticket token within the **irods-ticket** header, and a URL for streamin
   "headers": {
     "irods-ticket": ["CS11B8C4KZX2BIl"]
   },
-  "url": "/irods-rest/0.9.2/stream?path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
+  "url": "/irods-rest/0.9.2/stream?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
 }
 ```
 
@@ -289,7 +289,7 @@ This endpoint provides a recursive listing of a collection, or stat, metadata, a
 **Method**: GET
 
 **Parameters**
-- path: The url encoded logical path which is to be listed
+- logical-path: The url encoded logical path which is to be listed
 - stat: Boolean flag to indicate stat information is desired
 - permissions: Boolean flag to indicate access control information is desired
 - metadata: Boolean flag to indicate metadata is desired
@@ -298,7 +298,7 @@ This endpoint provides a recursive listing of a collection, or stat, metadata, a
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
 ```
 
 **Returns**
@@ -329,11 +329,11 @@ A JSON structured response within the body containing the listing, or an iRODS e
     }
   ],
   "_links": {
-    "first": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "last": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
-    "next": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
-    "prev": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "self": "/irods-rest/0.9.2/list?path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
+    "first": "/irods-rest/0.9.2/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "last": "/irods-rest/0.9.2/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
+    "next": "/irods-rest/0.9.2/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
+    "prev": "/irods-rest/0.9.2/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "self": "/irods-rest/0.9.2/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
   }
 }
 ```
@@ -489,16 +489,16 @@ This endpoint provides access to the iRODS General Query language, which is a ge
 **Method**: GET
 
 **Parameters**
-- query_string: A url encoded GenQuery string
-- query_limit: The max number of rows to return
-- row_offset: Number of rows to skip for paging
-- query_type: Either 'general' or 'specific'
-- case_sensitive: Affects string matching in GenQuery. Defaults to 1
+- query: A url encoded GenQuery string
+- limit: The max number of rows to return
+- offset: Number of rows to skip for paging
+- type: Either 'general' or 'specific'
+- case-sensitive: Affects string matching in GenQuery. Defaults to 1
 - distinct: Requests distinct rows from GenQuery. Defaults to 1
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/query?query_limit=100&row_offset=0&query_type=general&query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/query?limit=100&offset=0&type=general&query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
 ```
 
 **Returns**
@@ -524,11 +524,11 @@ A JSON structure containing the query results
     ]
   ],
   "_links": {
-    "first": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "last": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "next": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "prev": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1",
-    "self": "/irods-rest/0.9.2/query?query_string=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&query_limit=100&row_offset=0&query_type=general&case_sensitive=1&distinct=1"
+    "first": "/irods-rest/0.9.2/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "last": "/irods-rest/0.9.2/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "next": "/irods-rest/0.9.2/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "prev": "/irods-rest/0.9.2/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "self": "/irods-rest/0.9.2/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1"
   },
   "count": "4",
   "total": "4"
@@ -542,7 +542,7 @@ Stream data into and out of an iRODS data object
 **Method**: GET and PUT
 
 **Parameters**
-- path: The url encoded logical path to a data object
+- logical-path: The url encoded logical path to a data object
 - offset: The offset in bytes into the data object (Defaults to 0)
 - count: The maximum number of bytes to read or write.
   - Required for GET requests.
@@ -560,11 +560,11 @@ GET: The data requested in the body of the response
 
 **Example CURL Command:**
 ```
-curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/0.9.2/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
+curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/0.9.2/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
 ```
 or
 ```
-curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.2/stream?path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
+curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.2/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
 ```
 
 ### /zone_report

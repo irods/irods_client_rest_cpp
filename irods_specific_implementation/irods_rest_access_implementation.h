@@ -46,12 +46,12 @@ namespace irods::rest
             std::string ticket_id;
 
             try {
-                auto _logical_path = _request.query().get("path").get();
+                auto _logical_path = _request.query().get("logical-path").get();
                 auto _type = _request.query().get("type");
-                auto _use_count = _request.query().get("use_count");
-                auto _write_file_count = _request.query().get("write_file_count");
-                auto _write_byte_count = _request.query().get("write_byte_count");
-                auto _seconds_until_expiration = _request.query().get("seconds_until_expiration");
+                auto _use_count = _request.query().get("use-count");
+                auto _write_file_count = _request.query().get("write-file-count");
+                auto _write_byte_count = _request.query().get("write-byte-count");
+                auto _seconds_until_expiration = _request.query().get("seconds-until-expiration");
                 auto _users = _request.query().get("users");
                 auto _groups = _request.query().get("groups");
                 auto _hosts = _request.query().get("hosts");
@@ -81,7 +81,7 @@ namespace irods::rest
                     {"headers", json::object({
                         {"irods-ticket", json::array({ticket_id})}
                     })},
-                    {"url", fmt::format("{}/stream?path={}&offset=0&count={}", base_url, logical_path.c_str(), size)}
+                    {"url", fmt::format("{}/stream?logical-path={}&offset=0&count={}", base_url, logical_path.c_str(), size)}
                 });
 
                 return std::make_tuple(Pistache::Http::Code::Ok, results.dump());

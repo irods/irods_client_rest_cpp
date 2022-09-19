@@ -39,7 +39,7 @@ namespace irods::rest
                    Pistache::Http::ResponseWriter& _response)
         {
             try {
-                auto _path = _request.query().get("path").get();
+                auto _path = _request.query().get("logical-path").get();
                 auto _count = _request.query().get("count").get();
                 auto _offset = _request.query().get("offset");
 
