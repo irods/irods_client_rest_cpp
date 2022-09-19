@@ -31,16 +31,16 @@ tags:
     description: Operations available to regular users
 
 paths:
-  /access:
+  /ticket:
     post:
       tags:
         - auth
         - rodsuser
       summary:
-        obtain an access token and url for a given object
-      operationId: access
+        obtain an iRODS ticket and url for a given object
+      operationId: ticket
       description:
-        obtain an access token and url for a given object
+        obtain an iRODS ticket and url for a given object
       parameters:
         - in: query
           name: path
@@ -56,7 +56,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                description: access token and url to use in subsequent operations
+                description: iRODS ticket and url to use in subsequent operations
         '401':
           description: token acquisition failed
 

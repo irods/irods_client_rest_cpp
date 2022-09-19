@@ -195,10 +195,10 @@ Unless otherwise specified, successful operations by this client should return w
 }
 ```
 
-### /access
+### /ticket
 This endpoint provides a service for the generation of an iRODS ticket to a given logical path, be that a collection or a data object.
 
-**Method**: POST
+**Method**: GET
 
 **Parameters:**
 - logical-path: The url encoded logical path to a collection or data object for which access is desired
@@ -213,7 +213,7 @@ This endpoint provides a service for the generation of an iRODS ticket to a give
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/access?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write-file-count=10'
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/ticket?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write-file-count=10'
 ```
 
 **Returns**

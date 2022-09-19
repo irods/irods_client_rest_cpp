@@ -10,7 +10,7 @@
 * Do not edit the class manually.
 */
 
-#include "AccessApiImpl.h"
+#include "TicketApiImpl.h"
 
 #include "utils.hpp"
 
@@ -18,16 +18,16 @@ namespace io::swagger::server::api
 {
     using namespace io::swagger::server::model;
 
-    AccessApiImpl::AccessApiImpl(Pistache::Address addr)
-        : AccessApi(addr)
-        , irods_access_{}
+    TicketApiImpl::TicketApiImpl(Pistache::Address addr)
+        : TicketApi(addr)
+        , irods_ticket_{}
     {
     }
 
-    void AccessApiImpl::handler_impl(const Pistache::Rest::Request& request,
+    void TicketApiImpl::handler_impl(const Pistache::Rest::Request& request,
                                      Pistache::Http::ResponseWriter& response)
     {
-        irods::rest::handle_request(irods_access_, request, response);
+        irods::rest::handle_request(irods_ticket_, request, response);
     }
 } // namespace io::swagger::server::api
 

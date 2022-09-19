@@ -10,7 +10,7 @@
     },
     "rest_api": {
         "jwt_signing_key": "TEMPORARY_SIGNING_KEY",
-        "irods_rest_cpp_access_server": {
+        "irods_rest_cpp_ticket_server": {
             "port": 8080,
             "threads": 4,
             "maximum_idle_timeout_in_seconds": 10,
