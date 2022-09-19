@@ -326,7 +326,7 @@ paths:
         400:
           description: bad input parameter
 
-  /zone_report:
+  /zonereport:
     get:
       tags:
         - rodsadmin
@@ -335,7 +335,7 @@ paths:
         Produces an iRODS Zone Report, a json description of the entire
         zone, including all configuration.  This API is for administrators
         only.
-      operationId: zone_report
+      operationId: zonereport
 
       responses:
         200:

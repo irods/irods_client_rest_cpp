@@ -567,17 +567,17 @@ or
 curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.2/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
 ```
 
-### /zone_report
+### /zonereport
 Requests a JSON formatted iRODS Zone report, containing all configuration information for every server in the grid.
 
-**Method**: POST
+**Method**: GET
 
 **Parameters**
 - None
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/zone_report' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/zonereport' | jq
 ```
 
 **Returns**
