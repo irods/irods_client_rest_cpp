@@ -26,12 +26,12 @@ using json = nlohmann::json;
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
-    const std::string service_name{"irods_rest_cpp_access_server"};
+    const std::string service_name{"irods_rest_cpp_ticket_server"};
 
-    class access : public api_base
+    class ticket : public api_base
     {
     public:
-        access()
+        ticket()
             : api_base{service_name}
         {
             info("Endpoint initialized.");
@@ -304,6 +304,6 @@ namespace irods::rest
                 THROW(ec, fmt::format("Received error from rcTicketAdmin for ticket [{}]", _ticket_id));
             }
         } // rx_ticket
-    }; // class access
+    }; // class ticket
 } // namespace irods::rest
 

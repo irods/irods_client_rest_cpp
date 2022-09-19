@@ -1,7 +1,7 @@
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
-#include "AccessApiImpl.h"
+#include "TicketApiImpl.h"
 
 #include "logger.hpp"
 
@@ -34,7 +34,7 @@ int main()
         }
 
         auto addr = Pistache::Address(Pistache::Ipv4::any(), Pistache::Port(port.get<int>()));
-        auto server = AccessApiImpl(addr);
+        auto server = TicketApiImpl(addr);
         server.init(threads.get<int>());
         server.start();
 

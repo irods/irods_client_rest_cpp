@@ -167,7 +167,7 @@ def metadata(_token, _cmds):
     body = buffer.getvalue()
     return body.decode('utf-8')
 
-def access(_token,
+def ticket(_token,
            _logical_path,
            _ticket_type=None,
            _use_count=None,
@@ -181,9 +181,9 @@ def access(_token,
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
-    c.setopt(c.CUSTOMREQUEST, 'POST')
+    c.setopt(c.CUSTOMREQUEST, 'GET')
 
-    url = base_url()+f'access?logical-path={_logical_path}'
+    url = base_url()+f'ticket?logical-path={_logical_path}'
 
     if _ticket_type             : url += f'&type={_ticket_type}'
     if _use_count               : url += f'&use-count={_use_count}'
@@ -473,9 +473,9 @@ def main():
         mdata  = get_flag(args, 'metadata')
         perms  = get_flag(args, 'permissions')
         print(list(token, path, stat, perms, mdata, offset, limit))
-    elif('access' == cmd):
+    elif('ticket' == cmd):
         path = get_value(args, 'logical_path')
-        print(access(token, path))
+        print(ticket(token, path))
     elif('zone_report' == cmd):
         print(zone_report(token))
     else:

@@ -10,13 +10,13 @@
 * Do not edit the class manually.
 */
 /*
- * AccessApi.h
+ * TicketApi.h
  *
  * 
  */
 
-#ifndef AccessApi_H_
-#define AccessApi_H_
+#ifndef TicketApi_H_
+#define TicketApi_H_
 
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
@@ -32,11 +32,11 @@ namespace io::swagger::server::api
 {
     using namespace io::swagger::server::model;
 
-    class AccessApi
+    class TicketApi
     {
     public:
-        AccessApi(Pistache::Address addr);
-        virtual ~AccessApi() {};
+        TicketApi(Pistache::Address addr);
+        virtual ~TicketApi() {};
 
         void init(size_t thr);
         void start();
@@ -59,5 +59,5 @@ namespace io::swagger::server::api
     };
 } // namespace io::swagger::server::api
 
-#endif /* AccessApi_H_ */
+#endif /* TicketApi_H_ */
 

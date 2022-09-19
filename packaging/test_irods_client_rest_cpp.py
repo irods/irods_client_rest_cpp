@@ -41,10 +41,10 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
         token = irods_rest.authenticate('rods', 'rods', 'native')
         assert(token.find('827000') == -1)
 
-    def test_access_with_default_arguments(self):
+    def test_ticket_with_default_arguments(self):
         with session.make_session_for_existing_admin() as admin:
             try:
-                file_name = 'test_access_object'
+                file_name = 'test_ticket'
                 lib.make_file(file_name, 1024)
 
                 admin.assert_icommand(['iput', file_name])
@@ -56,7 +56,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
 
                 token = irods_rest.authenticate('rods', 'rods', 'native')
 
-                json_string = irods_rest.access(token, logical_path)
+                json_string = irods_rest.ticket(token, logical_path)
                 self.assertTrue(json_string.find('error') == -1)
 
                 json_object = json.loads(json_string)
@@ -148,10 +148,10 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 admin.run_icommand(['irmtrash'])
 
 
-    def test_access_with_explicit_arguments(self):
+    def test_ticket_with_explicit_arguments(self):
         with session.make_session_for_existing_admin() as admin:
             try:
-                file_name = 'test_access_object'
+                file_name = 'test_ticket'
                 lib.make_file(file_name, 1024)
 
                 admin.assert_icommand(['iput', file_name])
@@ -175,7 +175,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
 
                 admin.assert_icommand(['iadmin', 'mkgroup', groups])
 
-                json_string = irods_rest.access(token, logical_path, ticket_type, use_count,
+                json_string = irods_rest.ticket(token, logical_path, ticket_type, use_count,
                                                 write_file_count, write_byte_count, seconds_until_expiration,
                                                 users, groups, hosts)
 
@@ -206,10 +206,10 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 admin.run_icommand(['irm', '-f', file_name])
                 admin.run_icommand(['iadmin', 'rmgroup', groups])
 
-    def test_access_returns_error_on_invalid_value_for_seconds_until_expiration_parameter(self):
+    def test_ticket_returns_error_on_invalid_value_for_seconds_until_expiration_parameter(self):
         with session.make_session_for_existing_admin() as admin:
             try:
-                file_name = 'test_access_object'
+                file_name = 'test_ticket'
                 lib.make_file(file_name, 1024)
 
                 admin.assert_icommand(['iput', file_name])
@@ -221,7 +221,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
 
                 token = irods_rest.authenticate('rods', 'rods', 'native')
 
-                json_string = irods_rest.access(token, logical_path, _seconds_until_expiration=-1)
+                json_string = irods_rest.ticket(token, logical_path, _seconds_until_expiration=-1)
                 self.assertGreater(json_string.find('error'), 0)
                 json_object = json.loads(json_string)
                 self.assertEqual(json_object['error_code'], -130000)
@@ -523,7 +523,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
     def test_list_with_accoutrements(self):
         with session.make_session_for_existing_admin() as admin:
             try:
-                file_name = 'test_access_object'
+                file_name = 'test_list_object'
                 lib.make_file(file_name, 1024)
 
                 admin.assert_icommand(['iput', file_name])

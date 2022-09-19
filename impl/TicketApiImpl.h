@@ -11,13 +11,13 @@
 */
 
 /*
-* AccessApiImpl.h
+* TicketApiImpl.h
 *
 * 
 */
 
-#ifndef ACCESS_API_IMPL_H_
-#define ACCESS_API_IMPL_H_
+#ifndef TICKET_API_IMPL_H_
+#define TICKET_API_IMPL_H_
 
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
@@ -26,31 +26,31 @@
 
 #include "ModelBase.h"
 
-#include <AccessApi.h>
+#include <TicketApi.h>
 
 #include <memory>
 #include <string>
 
-#include "irods_rest_access_implementation.h"
+#include "irods_rest_ticket_implementation.h"
 
 namespace io::swagger::server::api
 {
     using namespace io::swagger::server::model;
 
-    class AccessApiImpl
-        : public io::swagger::server::api::AccessApi
+    class TicketApiImpl
+        : public io::swagger::server::api::TicketApi
     {
     public:
-        AccessApiImpl(Pistache::Address addr);
+        TicketApiImpl(Pistache::Address addr);
 
-        ~AccessApiImpl() = default;
+        ~TicketApiImpl() = default;
 
         void handler_impl(const Pistache::Rest::Request& request,
                           Pistache::Http::ResponseWriter& response) override;
 
-        irods::rest::access irods_access_;
-    }; // class AccessApiImpl
+        irods::rest::ticket irods_ticket_;
+    }; // class TicketApiImpl
 } // namespace io::swagger::server::api
 
-#endif // ACCESS_API_IMPL_H_
+#endif // TICKET_API_IMPL_H_
 

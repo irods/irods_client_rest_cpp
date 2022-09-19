@@ -10,7 +10,7 @@
 * Do not edit the class manually.
 */
 
-#include "AccessApi.h"
+#include "TicketApi.h"
 
 #include "constants.hpp"
 
@@ -23,37 +23,37 @@ namespace api {
 
 using namespace io::swagger::server::model;
 
-AccessApi::AccessApi(Pistache::Address addr)
+TicketApi::TicketApi(Pistache::Address addr)
     : httpEndpoint(std::make_shared<Pistache::Http::Endpoint>(addr))
 {
 }
 
-void AccessApi::init(size_t thr = 2) {
+void TicketApi::init(size_t thr = 2) {
     auto opts = Pistache::Http::Endpoint::options()
         .threads(thr);
     httpEndpoint->init(opts);
     setupRoutes();
 }
 
-void AccessApi::start() {
+void TicketApi::start() {
     httpEndpoint->setHandler(router.handler());
     httpEndpoint->serve();
 }
 
-void AccessApi::shutdown() {
+void TicketApi::shutdown() {
     httpEndpoint->shutdown();
 }
 
-void AccessApi::setupRoutes() {
+void TicketApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, irods::rest::base_url + "/access", Routes::bind(&AccessApi::handler, this));
+    Routes::Get(router, irods::rest::base_url + "/ticket", Routes::bind(&TicketApi::handler, this));
 
     // Default handler, called when a route is not found
-    router.addCustomHandler(Routes::bind(&AccessApi::default_handler, this));
+    router.addCustomHandler(Routes::bind(&TicketApi::default_handler, this));
 }
 
-void AccessApi::handler(const Pistache::Rest::Request& request,
+void TicketApi::handler(const Pistache::Rest::Request& request,
                         Pistache::Http::ResponseWriter response)
 {
     try {
@@ -64,10 +64,10 @@ void AccessApi::handler(const Pistache::Rest::Request& request,
     }
 }
 
-void AccessApi::default_handler(const Pistache::Rest::Request& request,
+void TicketApi::default_handler(const Pistache::Rest::Request& request,
                                 Pistache::Http::ResponseWriter response)
 {
-    response.send(Pistache::Http::Code::Not_Found, "The requested Access method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested ticket method does not exist");
 }
 
 }

@@ -5,7 +5,7 @@ server {
     add_header 'Access-Control-Allow-Headers' '*' always;
     add_header 'Access-Control-Allow-Methods' 'AUTHORIZATION,ACCEPT,GET,POST,OPTIONS,PUT,DELETE' always;
 
-    location /irods-rest/@IRODS_CLIENT_VERSION@/access {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/ticket {
         if ($request_method = 'OPTIONS') {
             return 204;
         }

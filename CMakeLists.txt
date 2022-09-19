@@ -110,17 +110,17 @@ set(MODEL_SOURCES
     )
 
 set(API_SERVER_NAMES
-    Access
     Admin
     Auth
     GetConfiguration
-    PutConfiguration
     List
     LogicalPath
     Metadata
+    PutConfiguration
     Query
     StreamGet
     StreamPut
+    Ticket
     ZoneReport
     )
 
