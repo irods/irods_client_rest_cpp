@@ -75,7 +75,7 @@ server {
         }
     }
 
-    location /irods-rest/@IRODS_CLIENT_VERSION@/zone_report {
+    location /irods-rest/@IRODS_CLIENT_VERSION@/zonereport {
         if ($request_method = 'OPTIONS') {
             return 204;
         }

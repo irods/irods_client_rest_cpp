@@ -368,8 +368,8 @@ def zone_report(_token):
     c = pycurl.Curl()
     c.setopt(pycurl.HTTPHEADER,['Accept: application/json'])
     c.setopt(pycurl.HTTPHEADER,['Authorization: '+_token])
-    c.setopt(c.CUSTOMREQUEST, 'POST')
-    url = base_url()+'zone_report'
+    c.setopt(c.CUSTOMREQUEST, 'GET')
+    url = base_url()+'zonereport'
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)

@@ -47,7 +47,7 @@ void ZoneReportApi::shutdown() {
 void ZoneReportApi::setupRoutes() {
     using namespace Pistache::Rest;
 
-    Routes::Post(router, irods::rest::base_url + "/zone_report", Routes::bind(&ZoneReportApi::handler, this));
+    Routes::Get(router, irods::rest::base_url + "/zonereport", Routes::bind(&ZoneReportApi::handler, this));
 
     // Default handler, called when a route is not found
     router.addCustomHandler(Routes::bind(&ZoneReportApi::default_handler, this));
@@ -67,7 +67,7 @@ void ZoneReportApi::handler(const Pistache::Rest::Request& request,
 void ZoneReportApi::default_handler(const Pistache::Rest::Request& request,
                                     Pistache::Http::ResponseWriter response)
 {
-    response.send(Pistache::Http::Code::Not_Found, "The requested zone_report method does not exist");
+    response.send(Pistache::Http::Code::Not_Found, "The requested zonereport method does not exist");
 }
 
 }

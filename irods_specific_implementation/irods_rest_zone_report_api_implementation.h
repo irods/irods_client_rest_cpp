@@ -11,7 +11,7 @@
 namespace irods::rest
 {
     // this is contractually tied directly to the api implementation
-    const std::string service_name{"irods_rest_cpp_zone_report_server"};
+    const std::string service_name{"irods_rest_cpp_zonereport_server"};
 
     class zone_report : public api_base
     {
