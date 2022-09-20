@@ -195,39 +195,6 @@ Unless otherwise specified, successful operations by this client should return w
 }
 ```
 
-### /ticket
-This endpoint provides a service for the generation of an iRODS ticket to a given logical path, be that a collection or a data object.
-
-**Method**: GET
-
-**Parameters:**
-- logical-path: The url encoded logical path to a collection or data object for which access is desired
-- type: The type of ticket to create. The value must be either read or write. Defaults to read
-- use-count: The maximum number of times the ticket can be used. Defaults to 0 (unlimited use)
-- write-file-count: The maximum number of writes allowed to a data object. Defaults to 0 (unlimited writes)
-- write-byte-count: The maximum number of bytes allowed to be written to data object. Defaults to 0 (unlimited bytes)
-- seconds-until-expiration: The number of seconds before the ticket will expire. Defaults to 0 (no expiration)
-- users: A comma-separated list of iRODS users who are allowed to use the generated ticket
-- groups: A comma-separated list of iRODS groups that are allowed to use the generated ticket
-- hosts: A comma-separated list of hosts that are allowed to use the ticket
-
-**Example CURL Command:**
-```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/ticket?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write-file-count=10'
-```
-
-**Returns**
-
-An iRODS ticket token within the **irods-ticket** header, and a URL for streaming the object.
-```
-{
-  "headers": {
-    "irods-ticket": ["CS11B8C4KZX2BIl"]
-  },
-  "url": "/irods-rest/0.9.2/stream?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
-}
-```
-
 ### /admin
 The administration interface to the iRODS Catalog which allows the creation, removal and modification of users, groups, resources, and other entities within the zone. **ALL input parameters must be defined. If an input parameter is not to be used, set it to nothing (e.g. arg7=)**
 
@@ -565,6 +532,39 @@ curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This 
 or
 ```
 curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.2/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
+```
+
+### /ticket
+This endpoint provides a service for the generation of an iRODS ticket to a given logical path, be that a collection or a data object.
+
+**Method**: GET
+
+**Parameters:**
+- logical-path: The url encoded logical path to a collection or data object for which access is desired
+- type: The type of ticket to create. The value must be either read or write. Defaults to read
+- use-count: The maximum number of times the ticket can be used. Defaults to 0 (unlimited use)
+- write-file-count: The maximum number of writes allowed to a data object. Defaults to 0 (unlimited writes)
+- write-byte-count: The maximum number of bytes allowed to be written to data object. Defaults to 0 (unlimited bytes)
+- seconds-until-expiration: The number of seconds before the ticket will expire. Defaults to 0 (no expiration)
+- users: A comma-separated list of iRODS users who are allowed to use the generated ticket
+- groups: A comma-separated list of iRODS groups that are allowed to use the generated ticket
+- hosts: A comma-separated list of hosts that are allowed to use the ticket
+
+**Example CURL Command:**
+```
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/ticket?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write-file-count=10'
+```
+
+**Returns**
+
+An iRODS ticket token within the **irods-ticket** header, and a URL for streaming the object.
+```
+{
+  "headers": {
+    "irods-ticket": ["CS11B8C4KZX2BIl"]
+  },
+  "url": "/irods-rest/0.9.2/stream?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
+}
 ```
 
 ### /zonereport
