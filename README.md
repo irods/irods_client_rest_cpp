@@ -57,6 +57,8 @@ $ mkdir build && cd build && cmake ..
 $ make -j package
 ```
 
+Note: For machines with fewer than 4 cores or heavy workloads, building using the `-j` option with `make` should be done with caution. Refer to the manual for more information on this topic: https://www.gnu.org/software/make/manual/make.html#Parallel-Execution
+
 ## Building with Docker
 
 This repository provides a Dockerfile with all of the tools needed to build a package for Ubuntu 20.04.
