@@ -30,11 +30,15 @@ namespace io::swagger::server::api
 
         void default_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
+        void post_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
         void delete_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
         void rename_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
         void trim_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
         void replicate_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response);
 
+        virtual void post_handler_impl(
+            const Pistache::Rest::Request& request,
+            Pistache::Http::ResponseWriter& response) = 0;
         virtual void delete_handler_impl(
             const Pistache::Rest::Request& request,
             Pistache::Http::ResponseWriter& response) = 0;

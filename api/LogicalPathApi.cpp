@@ -35,6 +35,8 @@ namespace io::swagger::server::api
     {
         using namespace Pistache::Rest;
 
+        Routes::Post(
+            router, irods::rest::base_url + "/logicalpath", Routes::bind(&LogicalPathApi::post_handler, this));
         Routes::Delete(
             router, irods::rest::base_url + "/logicalpath", Routes::bind(&LogicalPathApi::delete_handler, this));
         Routes::Post(
@@ -64,6 +66,16 @@ namespace io::swagger::server::api
     {
         try {
             this->delete_handler_impl(request, response);
+        }
+        catch (const std::runtime_error& e) {
+            response.send(Pistache::Http::Code::Bad_Request, e.what());
+        }
+    }
+
+    void LogicalPathApi::post_handler(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter response)
+    {
+        try {
+            this->post_handler_impl(request, response);
         }
         catch (const std::runtime_error& e) {
             response.send(Pistache::Http::Code::Bad_Request, e.what());

@@ -123,7 +123,42 @@ namespace irods::rest
                 error("Caught unknown exception.");
                 return make_error_response(SYS_UNKNOWN_ERROR, "Caught unknown exception");
             }
-        }
+        } // delete_dispatcher
+
+        auto post_dispatcher(const Pistache::Rest::Request& _request, Pistache::Http::ResponseWriter& _response)
+            -> std::tuple<Pistache::Http::Code, std::string>
+        {
+            try {
+                const auto logical_path = _request.query().get("logical-path").get();
+                if (logical_path.empty()) {
+                    return make_error_response(SYS_INVALID_INPUT_PARAM, "logical-path parameter is required");
+                }
+                const fs::path path = decode_url(logical_path);
+
+                const auto create_collection = "1" == _request.query().get("collection").getOrElse("0");
+                if (create_collection) {
+                    return mkdir(path, _request);
+                }
+
+                return std::make_tuple(Pistache::Http::Code::Ok, "");
+            }
+            catch (const fs::filesystem_error& e) {
+                error("Caught exception - [error_code={}] {}", e.code().value(), e.what());
+                return make_error_response(e.code().value(), e.what());
+            }
+            catch (const irods::exception& e) {
+                error("Caught exception - [error_code={}] {}", e.code(), e.client_display_what());
+                return make_error_response(e.code(), e.what());
+            }
+            catch (const std::exception& e) {
+                error("Caught exception - {}", e.what());
+                return make_error_response(SYS_INVALID_INPUT_PARAM, e.what());
+            }
+            catch (...) {
+                error("Caught unknown exception.");
+                return make_error_response(SYS_UNKNOWN_ERROR, "Caught unknown exception");
+            }
+        } // post_dispatcher
 
         auto trim_dispatcher(const Pistache::Rest::Request& _request, Pistache::Http::ResponseWriter& _response)
             -> std::tuple<Pistache::Http::Code, std::string>
@@ -246,6 +281,37 @@ namespace irods::rest
         } // replicate_dispatcher
 
       private:
+        auto mkdir(const fs::path& _path, const Pistache::Rest::Request& _request)
+            -> std::tuple<Pistache::Http::Code, std::string>
+        {
+            const auto create_parent_collections =
+                "1" == _request.query().get("create-parent-collections").getOrElse("0");
+
+            auto conn = get_connection(_request.headers().getRaw("authorization").value());
+
+            try {
+                if (create_parent_collections) {
+                    if (!fscli::create_collections(*conn(), _path)) {
+                        debug("Collection [{}] exists. Nothing to do.", _path.c_str());
+                    }
+                    return std::make_tuple(Pistache::Http::Code::Ok, "");
+                }
+
+                if (!fscli::create_collection(*conn(), _path)) {
+                    return make_error_response(
+                        CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME,
+                        fmt::format("Creating collection [{}] failed. Logical path already exists.", _path.c_str()));
+                }
+            }
+            catch (const fs::filesystem_error& e) {
+                error("Caught exception - [error_code={}] {}", e.code().value(), e.what());
+                return make_error_response(
+                    e.code().value(), fmt::format("Creating collection [{}] failed. Message:[{}]", _path.c_str(), e.what()));
+            }
+
+            return std::make_tuple(Pistache::Http::Code::Ok, "");
+        } // mkdir
+
         static auto create_data_obj_trim_inp(const Pistache::Http::Request& _request) -> DataObjInp
         {
             const auto _logical_path = _request.query().get("logical-path").getOrElse("");
