@@ -21,6 +21,7 @@ nginx, rsyslog, and logrotate can be configured and restarted before starting th
 # nginx - configure and restart
 $ sudo cp /etc/irods_client_rest_cpp/irods_client_rest_cpp_reverse_proxy.conf.template /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf
 $ sudo ln -s /etc/nginx/sites-available/irods_client_rest_cpp_reverse_proxy.conf /etc/nginx/sites-enabled/irods_client_rest_cpp_reverse_proxy.conf
+$ sudo rm /etc/nginx/sites-enabled/default
 $ sudo systemctl restart nginx
 
 # rsyslog - configure and restart
