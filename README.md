@@ -309,9 +309,29 @@ A JSON structured response within the body containing the listing, or an iRODS e
 ```
 
 ### /logicalpath
-Deletes a data object or a collection.
+Interactions for paths within the iRODS logical namespace.
+
+**Method** POST
+
+Create an entity in the iRODS logical namespace.
+
+**Parameters**
+- logical-path: The absolute path leading to the data object or collection to be created.
+- collection: Indicates that a collection is being created. Defaults to "0".
+- create-parent-collections: Indicates that parent collections of the destination collection should be created if necessary. Only applicable when `&collection=1` is used. Defaults to "0".
+
+**Example CURL command**
+```
+# Equivalent to: imkdir -p /tempZone/home/rods/a/b/c
+curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.2/logicalpath?logical-path=/tempZone/home/rods/a/b/c&collection=1&create-parent-collections=1"
+```
+
+**Returns**
+Nothing on success.
 
 **Method** DELETE
+
+Deletes a data object or a collection.
 
 **Parameters**
 - logical-path: The absolute path leading to the data object or collection to be deleted.

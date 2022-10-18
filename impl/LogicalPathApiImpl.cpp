@@ -14,6 +14,15 @@ namespace io::swagger::server::api
     {
     }
 
+    void LogicalPathApiImpl::post_handler_impl(const Pistache::Rest::Request& request,
+                                               Pistache::Http::ResponseWriter& response)
+    {
+        const auto irods_logic = [this](const Pistache::Rest::Request& _req, Pistache::Http::ResponseWriter& _res) {
+            return irods_logical_path_.post_dispatcher(_req, _res);
+        };
+        irods::rest::handle_request(irods_logic, request, response);
+    }
+
     void LogicalPathApiImpl::delete_handler_impl(const Pistache::Rest::Request& request,
                                                  Pistache::Http::ResponseWriter& response)
     {

@@ -28,6 +28,9 @@ namespace io::swagger::server::api
         void rename_handler_impl(const Pistache::Rest::Request& request,
                                  Pistache::Http::ResponseWriter& response) override;
 
+        void post_handler_impl(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter& response)
+            override;
+
         void delete_handler_impl(const Pistache::Rest::Request& request, Pistache::Http::ResponseWriter& response)
             override;
 
