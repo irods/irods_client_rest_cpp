@@ -383,6 +383,38 @@ curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.2/log
 **Returns**
 Nothing on success.
 
+### /metadata
+This endpoint allows executing multiple metadata operations on a single object atomically.
+
+**Method**: POST
+
+**Parameters**
+The commands provided to the API are passed as JSON in the data payload.
+See [here](https://docs.irods.org/4.3.0/doxygen/atomic__apply__metadata__operations_8h.html) for the format of these commands.
+
+**Example CURL Command:**
+```
+curl -X POST \
+-H "Authorization: ${TOKEN}" \
+-H "Content-Type: application/json" \
+--data '{
+  "entity_name": "/tempZone/home/rods/dir",
+  "entity_type": "collection",
+  "operations": [
+    {
+      "operation": "add",
+      "attribute": "attribute",
+      "value": "value",
+      "units": "unit"
+    }
+  ]
+}' \
+http://localhost/irods-rest/0.9.2/metadata
+```
+
+**Returns**
+Nothing on success
+
 ### /put_configuration
 This endpoint will write the url encoded JSON to the specified files in `/etc/irods`
 
@@ -413,41 +445,6 @@ This endpoint will write the url encoded JSON to the specified files in `/etc/ir
 ```
 export CONTENTS="%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
 curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.2/put_configuration?cfg=${CONTENTS}"
-```
-
-**Returns**
-Nothing on success
-
-### /metadata
-This endpoint allows executing multiple metadata operations on a single object atomically.
-
-**Method**: POST
-
-**Parameters**
-cmds: A JSON-object encoding a single target, its entity type, and a list of operations to perform on it.
-See [here](https://docs.irods.org/4.3.0/doxygen/atomic__apply__metadata__operations_8h.html) for the format of these commands.
-
-**Example CURL Command:**
-```
-export CMDS="{\
-  "entity_name": "foo.cpp",\
-  "entity_type": "data_object",\
-  "operations": [\
-    {\
-      "operation": "add",\
-      "attribute": "data_object_attrib_foo.cp",\
-      "value": "data_object_value_foo.cp",\
-      "units": "data_object_units_foo.cp"\
-    },\
-    {\
-      "operation": "remove",\
-      "attribute": "data_object_attrib_foo.cp",\
-      "value": "data_object_value_foo.cp",\
-      "units": "data_object_units_foo.cp"\
-    }\
-  ]\
-}"
-curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.2/metadata?cmds=${CMDS}"
 ```
 
 **Returns**
