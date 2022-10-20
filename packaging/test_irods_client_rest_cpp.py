@@ -932,3 +932,73 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
                 admin.run_icommand(['irm', '-r', '-f', coll_name])
                 for resc in resources:
                    admin.run_icommand(['iadmin', 'rmresc', resc])
+
+
+def collection_exists(session, full_collection_path):
+    out = session.run_icommand(['iquest',
+        f"select COLL_ID where COLL_NAME = '{full_collection_path}'"])[0]
+
+    return 'CAT_NO_ROWS_FOUND' not in out
+
+
+class test_logicalpath(session.make_sessions_mixin([], [('alice', 'apass')]), unittest.TestCase):
+    def setUp(self):
+        super(test_logicalpath, self).setUp()
+        self.user = self.user_sessions[0]
+
+    def tearDown(self):
+        super(test_logicalpath, self).tearDown()
+
+    def test_post_no_parameters(self):
+        logical_path = os.path.join(self.user.session_collection, 'test_post_no_parameters')
+        self.assertFalse(collection_exists(self.user, logical_path))
+
+        token = irods_rest.authenticate(self.user.username, self.user.password, 'native')
+
+        # This should result in nothing happening, for now.
+        res = irods_rest.logical_path_post(token, logical_path)
+        self.assertEqual(res, '')
+        self.assertFalse(collection_exists(self.user, logical_path))
+
+    def test_create_collection(self):
+        logical_path = os.path.join(self.user.session_collection, 'test_create_collection')
+        self.assertFalse(collection_exists(self.user, logical_path))
+
+        token = irods_rest.authenticate(self.user.username, self.user.password, 'native')
+
+        try:
+            res = irods_rest.logical_path_post(token, logical_path, _collection=1)
+            self.assertEqual(res, '')
+            self.assertTrue(collection_exists(self.user, logical_path))
+
+            # When the collection already exists, trying to create it again should fail.
+            res = irods_rest.logical_path_post(token, logical_path, _collection=1)
+            self.assertIn(f'Creating collection [{logical_path}] failed.', res)
+
+        finally:
+            self.user.run_icommand(['irm', '-rf', logical_path])
+
+    def test_create_collection_with_subcollections(self):
+        logical_path = os.path.join(self.user.session_collection, 'subcoll_a', 'subcoll_b', 'subcoll_c')
+        self.assertFalse(collection_exists(self.user, logical_path))
+
+        token = irods_rest.authenticate(self.user.username, self.user.password, 'native')
+
+        try:
+            # Try first without indicating that parent collections should be created. Should fail.
+            res = irods_rest.logical_path_post(token, logical_path, _collection=1)
+            self.assertIn(f'Creating collection [{logical_path}] failed.', res)
+            self.assertFalse(collection_exists(self.user, logical_path))
+
+            # Now indicate that parent collections should be created. Should succeed.
+            res = irods_rest.logical_path_post(token, logical_path, _collection=1, _create_parent_collections=1)
+            self.assertEqual(res, '')
+            self.assertTrue(collection_exists(self.user, logical_path))
+
+            # When the collection already exists, trying to create it again should succeed when it is indicated
+            # that parent collections should be created.
+            res = irods_rest.logical_path_post(token, logical_path, _collection=1, _create_parent_collections=1)
+            self.assertEqual(res, '')
+
+        finally:
+            self.user.run_icommand(['irm', '-rf', logical_path])

@@ -404,6 +404,28 @@ def query(_token, _string, _limit, _offset, _type, _case_sensitive='1', _distinc
 
     return body.decode('utf-8')
 
+def logical_path_post(_token,
+                      _logical_path,
+                      _collection = None,
+                      _create_parent_collections = None):
+    buffer = BytesIO()
+    c = pycurl.Curl()
+    c.setopt(pycurl.HTTPHEADER,['Authorization: ' + _token])
+    c.setopt(c.CUSTOMREQUEST, 'POST')
+
+    url = base_url()+f'logicalpath?logical-path={_logical_path}'
+    if _collection: url += f'&collection={_collection}'
+    if _create_parent_collections: url += f'&create-parent-collections={_create_parent_collections}'
+
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+
+    return body.decode('utf-8')
+
 def get_arguments():
     full_args = sys.argv
     arg_list  = full_args[1:]
