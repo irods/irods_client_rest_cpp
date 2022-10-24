@@ -13,6 +13,6 @@ services:
             context: .
             dockerfile: irods_client_rest_cpp.Dockerfile
         volumes:
-            - ./irods-client-rest-cpp_0.9.2-0~focal_amd64.deb:/irods-client-rest-cpp_package.deb:ro
+            - ./irods-client-rest-cpp_0.9.3-0~focal_amd64.deb:/irods-client-rest-cpp_package.deb:ro
         environment:
             - local_package=/irods-client-rest-cpp_package.deb
