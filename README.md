@@ -41,7 +41,7 @@ This project depends on `irods-dev(el)` and `irods-runtime` version 4.3.0 (avail
 
 Once these are installed, the other `irods-externals-*` versions will be revealed through building with `cmake` and may change over time as this code base develops.
 
-Prerequisites ():
+Prerequisites (available from https://packages.irods.org):
 ```
 irods-dev(el)
 irods-runtime
