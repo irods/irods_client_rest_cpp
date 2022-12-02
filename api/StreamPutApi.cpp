@@ -29,7 +29,8 @@ StreamPutApi::StreamPutApi(Pistache::Address addr)
 
 void StreamPutApi::init(size_t thr = 2) {
     auto opts = Pistache::Http::Endpoint::options()
-        .threads(thr);
+        .threads(thr)
+        .maxRequestSize(8 * 1024 * 1024);
     httpEndpoint->init(opts);
     setupRoutes();
 }
