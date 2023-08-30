@@ -80,7 +80,7 @@ namespace irods::rest
                 double dbl_query_limit = static_cast<double>(query_limit);
                 double dbl_total_row_count = static_cast<double>(total_row_count);
                 nlohmann::json links = nlohmann::json::object();
-                constexpr auto* url_part = "query?query={}&limit={}&offset={}&type={}&case-sensitive={}&distinct={}";
+                constexpr auto* url_part = "/query?query={}&limit={}&offset={}&type={}&case-sensitive={}&distinct={}";
                 links["self"] = base_url + fmt::format(url_part,
                                             query_string,
                                             _query_limit,
