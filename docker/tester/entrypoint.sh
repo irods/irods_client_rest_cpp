@@ -23,4 +23,4 @@ RUN cp /etc/irods_client_rest_cpp/irods_client_rest_cpp.conf.rsyslog /etc/rsyslo
 /etc/init.d/irods_client_rest_cpp start
 
 # TODO: Should this be the CMD rather than part of the ENTRYPOINT?
-su - irods -c "python3 /var/lib/irods/scripts/run_tests.py --topology_test icat --hostnames localhost tester_nginx-reverse-proxy_1 none none $1"
+su - irods -c "python3 /var/lib/irods/scripts/run_tests.py --topology_test icat --hostnames localhost nginx-reverse-proxy none none $1"
