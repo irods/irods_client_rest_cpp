@@ -89,12 +89,15 @@ target_include_directories(
   irods_client_rest_cpp_common
   PRIVATE
   ${IRODS_INCLUDE_DIRS}
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
 )
 
 target_link_libraries(
   irods_client_rest_cpp_common
   PRIVATE
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
 )
 
