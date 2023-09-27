@@ -165,7 +165,7 @@ To run, the following things will be required:
 
 The Compose project is found under `docker/runner` along with the attendant files.
 
-Copy the `.deb` package into `docker/runner` (i.e. `cp /path/to/package.deb ./docker/run`). The package will be installed as part of the Docker image built for the REST client service. If you are having trouble, check to make sure that the name of the file you copied matches the `local_package` build argument under the `irods-client-rest-cpp` service definition in the `./docker/runner/docker-compose.yml` file.
+Copy the `.deb` package into `docker/runner` (i.e. `cp /path/to/package.deb ./docker/runner`). The package will be installed as part of the Docker image built for the REST client service. If you are having trouble, check to make sure that the name of the file you copied matches the `local_package` build argument under the `irods-client-rest-cpp` service definition in the `./docker/runner/docker-compose.yml` file.
 
 You will also need to modify `./docker/runner/irods_client_rest_cpp.json` to match the desired iRODS client environment. You may also wish to change the `jwt_signing_key` outside of an experimental context.
 
