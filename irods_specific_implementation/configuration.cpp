@@ -1,7 +1,9 @@
 #include "configuration.hpp"
 
+#include <boost/filesystem.hpp>
 #include <fmt/format.h>
 
+#include <cstdlib>
 #include <fstream>
 
 namespace
@@ -29,6 +31,20 @@ namespace irods::rest::configuration
 {
     auto init() -> void
     {
+        // The HOME directory of the REST API.
+        const boost::filesystem::path home_dir = "/etc/irods_client_rest_cpp";
+
+        // Because some iRODS functions rely on the HOME environment being set,
+        // we manually set it to avoid deployment issues. This call will cause
+        // the REST API to search /etc/irods_client_rest_cpp whenever an .irodsA
+        // file is needed.
+        setenv("HOME", home_dir.c_str(), 1);
+
+        // Create the hidden iRODS directory if it doesn't exist yet.
+        // The obfuscation library functions used in iRODS C/C++ clients expect
+        // to find the .irodsA in this directory.
+        boost::filesystem::create_directories(home_dir / ".irods");
+
         ::configuration = load();
     } // init
 

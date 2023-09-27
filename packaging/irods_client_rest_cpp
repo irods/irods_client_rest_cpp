@@ -56,7 +56,6 @@ start_irods_client_rest_cpp() {
     do
         ${API}&
     done
-    mkdir -p "${HOME}"/.irods
 }
 
 if [ "$DETECTEDOS" = "MacOSX" ] ; then
