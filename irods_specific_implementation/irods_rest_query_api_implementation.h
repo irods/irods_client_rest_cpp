@@ -32,9 +32,9 @@ namespace irods::rest
         {
             try {
                 auto _query_string = _request.query().get("query").get();
-                auto _query_limit = _request.query().get("limit").get();
-                auto _row_offset = _request.query().get("offset").get();
-                auto _query_type = _request.query().get("type").get();
+                auto _query_limit = _request.query().get("limit").getOrElse("25");
+                auto _row_offset = _request.query().get("offset").getOrElse("0");
+                auto _query_type = _request.query().get("type").getOrElse("general");
                 auto _case_sensitive = _request.query().get("case-sensitive").getOrElse("1");
                 auto _distinct = _request.query().get("distinct").getOrElse("1");
 
