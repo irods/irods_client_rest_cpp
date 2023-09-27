@@ -216,7 +216,7 @@ The administration interface to the iRODS Catalog which allows the creation, rem
 
 **Example CURL Command:**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone&arg7='
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/admin?action=add&target=resource&arg2=ufs0&arg3=unixfilesystem&arg4=/tmp/irods/ufs0&arg5=&arg6=tempZone&arg7='
 ```
 
 **Returns**
@@ -234,7 +234,7 @@ This endpoint provides an authentication service for the iRODS zone, currently o
 **Example CURL Command:**
 ```
 export SECRETS=$(echo -n rods:rods | base64)
-export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhost:80/irods-rest/0.9.3/auth)
+export TOKEN=$(curl -X POST -H "Authorization: Basic ${SECRETS}" http://localhost:80/irods-rest/0.9.4/auth)
 ```
 
 **Returns:**
@@ -251,7 +251,7 @@ This endpoint will return a JSON structure holding the configuration for an iROD
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/get_configuration' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/get_configuration' | jq
 ```
 
 ### /list
@@ -269,7 +269,7 @@ This endpoint provides a recursive listing of a collection, or stat, metadata, a
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100' | jq
 ```
 
 **Returns**
@@ -300,11 +300,11 @@ A JSON structured response within the body containing the listing, or an iRODS e
     }
   ],
   "_links": {
-    "first": "/irods-rest/0.9.3/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "last": "/irods-rest/0.9.3/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
-    "next": "/irods-rest/0.9.3/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
-    "prev": "/irods-rest/0.9.3/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
-    "self": "/irods-rest/0.9.3/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
+    "first": "/irods-rest/0.9.4/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "last": "/irods-rest/0.9.4/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=UNSUPPORTED&limit=100",
+    "next": "/irods-rest/0.9.4/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=100&limit=100",
+    "prev": "/irods-rest/0.9.4/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100",
+    "self": "/irods-rest/0.9.4/list?logical-path=%2FtempZone%2Fhome%2Frods&stat=0&permissions=0&metadata=0&offset=0&limit=100"
   }
 }
 ```
@@ -324,7 +324,7 @@ Create an entity in the iRODS logical namespace.
 **Example CURL command**
 ```
 # Equivalent to: imkdir -p /tempZone/home/rods/a/b/c
-curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.3/logicalpath?logical-path=/tempZone/home/rods/a/b/c&collection=1&create-parent-collections=1"
+curl -X POST -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.4/logicalpath?logical-path=/tempZone/home/rods/a/b/c&collection=1&create-parent-collections=1"
 ```
 
 **Returns**
@@ -342,7 +342,7 @@ Deletes a data object or a collection.
 
 **Example CURL command**
 ```
-curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.3/logicalpath?logical-path=/tempZone/home/rods/hello.cpp&no-trash=1"
+curl -X DELETE -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.4/logicalpath?logical-path=/tempZone/home/rods/hello.cpp&no-trash=1"
 ```
 
 **Returns**
@@ -359,7 +359,7 @@ Renames a data object or collection
 
 **Example CURL command**
 ```
-curl -X POST -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.3/logicalpath/rename?src=/tempZone/home/rods/hello&dst=/tempZone/home/rods/goodbye"
+curl -X POST -H "Authorization: ${TOKEN}" "http://localhost:80/irods-rest/0.9.4/logicalpath/rename?src=/tempZone/home/rods/hello&dst=/tempZone/home/rods/goodbye"
 ```
 
 **Returns**
@@ -382,7 +382,7 @@ Replicates a data object into some resource
 
 **Example CURL command**:
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/logicalpath/replicate?logical-path=/tempZone/home/rods/hello.cpp&dst-resource=ufs0'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/logicalpath/replicate?logical-path=/tempZone/home/rods/hello.cpp&dst-resource=ufs0'
 ```
 
 ### /logicalpath/trim
@@ -398,7 +398,7 @@ curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/log
 
 **Example CURL command**:
 ```
-curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/logicalpath/trim?logical-path=/tempZone/home/rods/foo&src-resource=ufs0'
+curl -X POST -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/logicalpath/trim?logical-path=/tempZone/home/rods/foo&src-resource=ufs0'
 ```
 
 **Returns**
@@ -430,7 +430,7 @@ curl -X POST \
     }
   ]
 }' \
-http://localhost/irods-rest/0.9.3/metadata
+http://localhost/irods-rest/0.9.4/metadata
 ```
 
 **Returns**
@@ -465,7 +465,7 @@ This endpoint will write the url encoded JSON to the specified files in `/etc/ir
 **Example CURL Command:**
 ```
 export CONTENTS="%5B%7B%22file_name%22%3A%22test_rest_cfg_put_1.json%22%2C%20%22contents%22%3A%7B%22key0%22%3A%22value0%22%2C%22key1%22%20%3A%20%22value1%22%7D%7D%2C%7B%22file_name%22%3A%22test_rest_cfg_put_2.json%22%2C%22contents%22%3A%7B%22key2%22%20%3A%20%22value2%22%2C%22key3%22%20%3A%20%22value3%22%7D%7D%5D"
-curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.3/put_configuration?cfg=${CONTENTS}"
+curl -X PUT -H "Authorization: ${TOKEN}" "http://localhost/irods-rest/0.9.4/put_configuration?cfg=${CONTENTS}"
 ```
 
 **Returns**
@@ -486,7 +486,7 @@ This endpoint provides access to the iRODS General Query language, which is a ge
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/query?limit=100&offset=0&type=general&query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/query?limit=100&offset=0&type=general&query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27' | jq
 ```
 
 **Returns**
@@ -512,11 +512,11 @@ A JSON structure containing the query results
     ]
   ],
   "_links": {
-    "first": "/irods-rest/0.9.3/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
-    "last": "/irods-rest/0.9.3/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
-    "next": "/irods-rest/0.9.3/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
-    "prev": "/irods-rest/0.9.3/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
-    "self": "/irods-rest/0.9.3/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1"
+    "first": "/irods-rest/0.9.4/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "last": "/irods-rest/0.9.4/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "next": "/irods-rest/0.9.4/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "prev": "/irods-rest/0.9.4/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1",
+    "self": "/irods-rest/0.9.4/query?query=SELECT%20COLL_NAME%2C%20DATA_NAME%20WHERE%20COLL_NAME%20LIKE%20%27%2FtempZone%2Fhome%2Frods%25%27&limit=100&offset=0&type=general&case-sensitive=1&distinct=1"
   },
   "count": "4",
   "total": "4"
@@ -548,11 +548,11 @@ GET: The data requested in the body of the response
 
 **Example CURL Command:**
 ```
-curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/0.9.3/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
+curl -X PUT -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] -d"This is some data" 'http://localhost/irods-rest/0.9.4/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=10'
 ```
 or
 ```
-curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.3/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
+curl -X GET -H "Authorization: ${TOKEN}" [-H "irods-ticket: ${TICKET}"] 'http://localhost/irods-rest/0.9.4/stream?logical-path=%2FtempZone%2Fhome%2Frods%2FfileX&offset=0&count=1000'
 ```
 
 ### /ticket
@@ -573,7 +573,7 @@ This endpoint provides a service for the generation of an iRODS ticket to a give
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/ticket?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write-file-count=10'
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/ticket?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&type=write&write-file-count=10'
 ```
 
 **Returns**
@@ -584,7 +584,7 @@ An iRODS ticket token within the **irods-ticket** header, and a URL for streamin
   "headers": {
     "irods-ticket": ["CS11B8C4KZX2BIl"]
   },
-  "url": "/irods-rest/0.9.3/stream?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
+  "url": "/irods-rest/0.9.4/stream?logical-path=%2FtempZone%2Fhome%2Frods%2Ffile0&offset=0&count=33064"
 }
 ```
 
@@ -598,7 +598,7 @@ Requests a JSON formatted iRODS Zone report, containing all configuration inform
 
 **Example CURL Command:**
 ```
-curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.3/zonereport' | jq
+curl -X GET -H "Authorization: ${TOKEN}" 'http://localhost/irods-rest/0.9.4/zonereport' | jq
 ```
 
 **Returns**
