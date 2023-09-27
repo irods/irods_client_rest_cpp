@@ -54,7 +54,8 @@ irods-externals-spdlog
 
 Create and enter a build directory, run CMake (make sure it is visible in your `$PATH`), and then make the REST API package:
 ```
-$ mkdir build && cd build && cmake ..
+$ mkdir build && cd build
+$ cmake -DIRODS_BUILD_WITH_WERROR=NO ..
 $ make -j package
 ```
 
@@ -66,8 +67,8 @@ This repository provides a Dockerfile with all of the tools needed to build a pa
 
 The builder image itself must first be built. This can be done by running the following:
 ```bash
-cd docker/builder
-docker build -t irods-client-rest-cpp-builder:ubuntu-20.04 .
+$ cd docker/builder
+$ docker build -t irods-client-rest-cpp-builder:ubuntu-20.04 .
 ```
 
 This will produce a Docker Image with tag `irods-client-rest-cpp-builder:ubuntu-20.04`. The tag can be anything, as long as it is used consistently.
