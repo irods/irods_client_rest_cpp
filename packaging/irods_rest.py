@@ -14,7 +14,7 @@ except ImportError:
 def base_url(reverse_proxy_host=None):
     if reverse_proxy_host == None:
         reverse_proxy_host = settings.HOSTNAME_1
-    return f"http://{reverse_proxy_host}/irods-rest/0.9.3/"
+    return f"http://{reverse_proxy_host}/irods-rest/0.9.4/"
 
 def authenticate(_user_name, _password, _auth_type):
     buffer = BytesIO()
