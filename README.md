@@ -1,3 +1,11 @@
+Note: This repository has been deprecated and archived.
+
+Please find the new HTTP API implementation at:
+
+https://github.com/irods/irods_client_http_api
+
+----
+
 # iRODS C++ REST Mid-Tier API
 
 This REST API is designed to be deployed in front of an iRODS Server to provide an HTTP REST interface into the iRODS protocol.
