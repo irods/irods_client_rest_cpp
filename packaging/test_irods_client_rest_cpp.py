@@ -370,7 +370,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
         token = irods_rest.authenticate('rods', 'rods', 'native')
         with session.make_session_for_existing_admin() as admin:
             try:
-                lib.create_ufs_resource(admin, resource)
+                lib.create_ufs_resource(resource, admin)
                 cmds = self.construct_add_metadata_op_for_target(resource, 'resource')
                 res = irods_rest.metadata(
                     token,
@@ -693,7 +693,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             data_object = 'foo.issue_71'
 
             try:
-                lib.create_ufs_resource(admin, other_resc)
+                lib.create_ufs_resource(other_resc, admin)
 
                 admin.assert_icommand(['itouch', '-R', 'demoResc', data_object])
                 admin.assert_icommand(['irepl', '-R', other_resc, data_object])
@@ -803,7 +803,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             logical_path = os.path.join(admin.home_collection, 'hello.cpp')
 
             try:
-                lib.create_ufs_resource(admin, new_resc_name)
+                lib.create_ufs_resource(new_resc_name, admin)
 
                 # Create a data object on default resource
                 admin.assert_icommand(["itouch", logical_path])
@@ -832,7 +832,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
             resc_one = "newResc1"
 
             try:
-                lib.create_ufs_resource(admin, resc_one)
+                lib.create_ufs_resource(resc_one, admin)
 
                 # Create a collection and create a data object inside of it on the default resource
                 admin.assert_icommand(['imkdir', coll])
@@ -871,7 +871,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
 
                 # Replicate the data object to each new resource
                 for resc in resources:
-                    lib.create_ufs_resource(admin, resc)
+                    lib.create_ufs_resource(resc, admin)
                     self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, resc))
                     admin.assert_icommand(['irepl', data_obj, '-R', resc])
                     self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, resc))
@@ -909,7 +909,7 @@ class TestClientRest(session.make_sessions_mixin([], [('alice', 'apass')]), unit
 
                 # Replicate the collection to each new resource
                 for resc in resources:
-                    lib.create_ufs_resource(admin, resc)
+                    lib.create_ufs_resource(resc, admin)
                     self.assertFalse(lib.replica_exists_on_resource(admin, data_obj, resc))
                     admin.assert_icommand(['irepl', '-r', coll, '-R', resc])
                     self.assertTrue(lib.replica_exists_on_resource(admin, data_obj, resc))
